@@ -1,0 +1,167 @@
+
+// MARK: Assign
+extension LeagueScheduleData {
+    /// Assign a matchup pair to the given slot.
+    /// 
+    /// - Parameters:
+    ///   - matchup: The associated matchup pair.
+    ///   - slot: The slot to assign the `matchup`.
+    /// - Returns: The final matchup data that was assigned.
+    mutating func assign(
+        matchup: LeagueMatchupPair,
+        to slot: LeagueAvailableSlot,
+        canPlayAtFunc: CanPlayAtClosure
+    ) -> LeagueMatchup {
+        return assignmentState.assign(
+            matchup: matchup,
+            to: slot,
+            day: day,
+            entriesCount: entriesCount,
+            entryDivisions: entryDivisions,
+            gameGap: gameGap,
+            entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+            divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+            canPlayAtFunc: canPlayAtFunc
+        )
+    }
+}
+
+extension AssignmentState {
+    /// - Returns: The final matchup data that was assigned.
+    /// - Warning: Assigns the literal pair. **DOES NOT** balance home/away.
+    @discardableResult
+    mutating func assign(
+        matchup: LeagueMatchupPair,
+        to slot: LeagueAvailableSlot,
+        day: LeagueDayIndex,
+        entriesCount: Int,
+        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        gameGap: GameGap.TupleValue,
+        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+    ) -> LeagueMatchup {
+        prioritizedEntries.remove(matchup.team1)
+        prioritizedEntries.remove(matchup.team2)
+        let home:LeagueEntry.IDValue = matchup.team1
+        let away:LeagueEntry.IDValue = matchup.team2
+        incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval)
+
+        incrementAssignData(home: home, away: away, slot: slot)
+        insertPlaysAt(home: home, away: away, slot: slot)
+        availableSlots.remove(slot)
+        let leagueMatchup = LeagueMatchup(
+            time: slot.time,
+            location: slot.location,
+            home: home,
+            away: away
+        )
+        matchups.insert(leagueMatchup)
+
+        availableMatchups.remove(matchup)
+        // TODO: fix (why is the following line necessary | it fixes an issue that allowed matchups to exceed the maximumSameOpponentsMatchupsCap, but availableMatchups still contains matchups that shouldn't be scheduled when scheduling b2b)
+        availableMatchups.remove(.init(team1: matchup.team2, team2: matchup.team1))
+        if playsAtTimes[unchecked: home].count == entryMatchupsPerGameDay {
+            #if LOG
+            remainingAllocations[unchecked: home].removeAll()
+            #endif
+            availableMatchups = availableMatchups.filter({ $0.team1 != home && $0.team2 != home })
+        }
+        if playsAtTimes[unchecked: away].count == entryMatchupsPerGameDay {
+            #if LOG
+            remainingAllocations[unchecked: away].removeAll()
+            #endif
+            availableMatchups = availableMatchups.filter({ $0.team1 != away && $0.team2 != away })
+        }
+        if numberOfAssignedMatchups[unchecked: home] == maximumPlayableMatchups[unchecked: home] {
+            availableMatchups = availableMatchups.filter({ $0.team1 != home && $0.team2 != home })
+        }
+        if numberOfAssignedMatchups[unchecked: away] == maximumPlayableMatchups[unchecked: away] {
+            availableMatchups = availableMatchups.filter({ $0.team1 != away && $0.team2 != away })
+        }
+
+        #if LOG
+        for av in availableMatchups {
+            if assignedEntryHomeAways[unchecked: av.team1][unchecked: av.team2].sum == maxSameOpponentMatchups[unchecked: av.team1][unchecked: av.team2] {
+                fatalError("assign;day=\(day);gameGap=\(gameGap);matchup=\(matchup);av=\(av);availableSlots.count=\(availableSlots.count);matchups.count=\(matchups.count)")
+            } else if assignedEntryHomeAways[unchecked: av.team2][unchecked: av.team1].sum == maxSameOpponentMatchups[unchecked: av.team2][unchecked: av.team1] {
+                fatalError("assign;day=\(day);gameGap=\(gameGap);matchup=\(matchup);av=\(av);availableSlots.count=\(availableSlots.count);matchups.count=\(matchups.count)")
+            }
+        }
+
+        var string = "assign;day=\(day);matchup=\(matchup);slot=\(slot);availableMatchups.count=\(availableMatchups.count)"
+        if availableMatchups.count <= 8 {
+            string += ";availableMatchups=\(availableMatchups.map({ "\($0)" }))"
+        }
+        //string += ";recurringDayLimits=\(recurringDayLimits)"
+        if availableSlots.first(where: { $0.time == slot.time }) == nil {
+            string += ";filled slots for time"
+        }
+        print(string)
+        #endif
+
+        recalculateAllRemainingAllocations(
+            day: day,
+            entriesCount: entriesCount,
+            gameGap: gameGap,
+            canPlayAtFunc: canPlayAtFunc
+        )
+        return leagueMatchup
+    }
+}
+
+// MARK: Increment assigned data
+extension AssignmentState {
+    mutating func incrementAssignData(
+        home: LeagueEntry.IDValue,
+        away: LeagueEntry.IDValue,
+        slot: LeagueAvailableSlot
+    ) {
+        numberOfAssignedMatchups[unchecked: home] += 1
+        numberOfAssignedMatchups[unchecked: away] += 1
+        assignedTimes[unchecked: home][unchecked: slot.time] += 1
+        assignedTimes[unchecked: away][unchecked: slot.time] += 1
+        assignedLocations[unchecked: home][unchecked: slot.location] += 1
+        assignedLocations[unchecked: away][unchecked: slot.location] += 1
+        assignedEntryHomeAways[unchecked: home][unchecked: away].home += 1
+        assignedEntryHomeAways[unchecked: away][unchecked: home].away += 1
+        homeMatchups[unchecked: home] += 1
+        awayMatchups[unchecked: away] += 1
+    }
+    mutating func insertPlaysAt(
+        home: LeagueEntry.IDValue,
+        away: LeagueEntry.IDValue,
+        slot: LeagueAvailableSlot
+    ) {
+        playsAt[unchecked: home].insert(slot)
+        playsAt[unchecked: away].insert(slot)
+        playsAtTimes[unchecked: home].insert(slot.time)
+        playsAtTimes[unchecked: away].insert(slot.time)
+        playsAtLocations[unchecked: home].insert(slot.location)
+        playsAtLocations[unchecked: away].insert(slot.location)
+    }
+}
+
+// MARK: Increment RDL
+extension AssignmentState {
+    mutating func incrementRecurringDayLimits(
+        home: LeagueEntry.IDValue,
+        away: LeagueEntry.IDValue,
+        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>
+    ) {
+        Self.incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval, recurringDayLimits: &recurringDayLimits)
+    }
+
+    static func incrementRecurringDayLimits(
+        home: LeagueEntry.IDValue,
+        away: LeagueEntry.IDValue,
+        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        recurringDayLimits: inout RecurringDayLimits
+    ) {
+        let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: home]]
+        recurringDayLimits[unchecked: home][unchecked: away] += recurringDayLimitInterval
+        recurringDayLimits[unchecked: away][unchecked: home] += recurringDayLimitInterval
+    }
+}

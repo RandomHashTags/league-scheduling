@@ -1,0 +1,109 @@
+// Copyright 2026 Evan Anderson. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Evan Anderson nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto3";
+
+package lit_leagues.leagues;
+
+import "BalanceStrictness.proto";
+import "LocationTimeExclusivities.proto";
+import "LocationTravelDurations.proto";
+import "RedistributionSettings.proto";
+import "StaticTimes.proto";
+import "UInt32Array.proto";
+
+// General settings for a league.
+//
+// All optional fields default to the schedule's value for the same field.
+message GeneralSettings {
+    // Allowed game gaps when scheduling matchups.
+    //
+    // - Note: A value is required when providing the core settings.
+    optional string gameGap = 1;
+
+    // Number of entries that can play at a single location at the same time.
+    //
+    // 0...255.
+    //
+    // - Note: A value is required when providing the core settings.
+    optional uint32 entriesPerLocation = 2;
+
+    // Number of available time slots.
+    optional uint32 timeSlots = 3;
+
+    // Times where matchups are scheduled to start.
+    optional StaticTimes startingTimes = 4;
+
+    // Number of available locations.
+    //
+    // - Note: A value is required when providing the core settings.
+    optional uint32 locations = 5;
+
+    // Maximum number of matchups a single entry can play on a single game day.
+    //
+    // 0...255.
+    //
+    // - Note: A value is required when providing the core settings.
+    optional uint32 entryMatchupsPerGameDay = 6;
+
+    // Maximum number of matchups each entry can play through the schedule.
+    //
+    // The index of the value in the array is the target entry ID's value.
+    optional UInt32Array maximumPlayableMatchups = 7;
+
+    // Number of seconds that are reserved for a matchup to play.
+    optional double matchupDuration = 8;
+
+    // - Usage: [`LeagueLocationIndex`: `Set<LeagueTimeIndex>`]
+    optional LocationTimeExclusivities locationTimeExclusivities = 9;
+
+    // - Usage: [`LeagueLocationIndex`: [`LeagueLocationIndex`: `LeagueMatchupDuration`]]
+    optional LocationTravelDurations locationTravelDurations = 10;
+
+    // Strictness level when balancing time allocations.
+    optional BalanceStrictness balanceTimeStrictness = 11;
+
+    // Times that should be balanced.
+    optional UInt32Array balancedTimes = 12;
+
+    // Strictness level when balancing location allocations.
+    optional BalanceStrictness balanceLocationStrictness = 13;
+
+    // Locations that should be balanced.
+    optional UInt32Array balancedLocations = 14;
+
+    // Redistribution settings.
+    //
+    // - If `nil`: do not redistribute
+    optional RedistributionSettings redistributionSettings = 15;
+
+    // Packed bits that save boolean settings.
+    //
+    // The value for a `SettingFlags` can be calculated by: `flags` & (1 << flag.rawValue) != 0.
+    optional uint32 flags = 16;
+}

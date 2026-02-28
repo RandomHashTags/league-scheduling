@@ -1,0 +1,321 @@
+
+// MARK: Assign slots
+extension LeagueScheduleData {
+    /// Assigns available slots for the day, taking into account all schedule settings, previously assigned matchups and generation data.
+    /// 
+    /// - Returns: Whether assigning the slots was successful.
+    mutating func assignSlots() throws(LeagueError) -> Bool {
+        let now = clock.now
+        let completed = try selectAndAssignSlots()
+        executionSteps.append(.init(key: "assignSlots", duration: clock.now - now))
+        return completed
+    }
+    private mutating func selectAndAssignSlots() throws(LeagueError) -> Bool {
+        #if LOG
+        print("AssignSlots;selectAndAssignSlots;assignmentState.matchupDuration=\(assignmentState.matchupDuration);sameLocationIfB2B=\(sameLocationIfB2B);gameGap=\(gameGap);defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay)")
+        #endif
+
+        let (canPlayAtFunc, shuffleCanPlayAtFunc) = canPlayAtFunctions()
+        assignmentState.recalculateAllRemainingAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAtFunc: canPlayAtFunc)
+        if gameGap.min == 1 && gameGap.max == 1 && defaultMaxEntryMatchupsPerGameDay != 1 { // back 2 back
+            return try assignSlotsB2B(
+                canPlayAtFunc: canPlayAtFunc,
+                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            )
+        }
+        let getAvailableSlotFunc:AvailableSlotClosure
+        if prioritizeEarlierTimes {
+            if sameLocationIfB2B {
+                getAvailableSlotFunc = Self.getSlotEarliestTimeAndSameLocationIfB2B
+            } else {
+                getAvailableSlotFunc = Self.getSlotEarliestTime
+            }
+        } else {
+            getAvailableSlotFunc = Self.getSlot
+        }
+        var assignmentIndex = 0
+        var fms = failedMatchupSelections[unchecked: assignmentIndex]
+        var optimalAvailableMatchups = assignmentState.availableMatchups.filter { !fms.contains($0) }
+        var prioritizedMatchups = PrioritizedMatchups(
+            entriesCount: entriesCount,
+            prioritizedEntries: assignmentState.prioritizedEntries,
+            availableMatchups: optimalAvailableMatchups
+        )
+        /*let isBack2Back = gameGap.min == 1 && gameGap.max == 1 && entryMatchupsPerGameDay != 1
+        var remainingB2BMatchupsToBeScheduled = entryMatchupsPerGameDay
+        var previousPrioritizedEntries = Set<LeagueEntry.IDValue>()
+        var prioritizedEntriesB2B = Set<LeagueEntry.IDValue>(minimumCapacity: entriesPerMatchup * locations)*/
+        while assignmentIndex != expectedMatchupsCount {
+            if Task.isCancelled {
+                throw .timedOut(function: "selectAndAssignSlots")
+            }
+            /*combinationLoop: for combination in allowedDivisionCombinations {
+                for (divisionIndex, divisionCombination) in combination.enumerated() {
+                    let division = LeagueDivision.IDValue(divisionIndex)
+                    let divisionMatchups = assignmentState.availableDivisionMatchups[unchecked: division]
+                    prioritizedMatchups.update(prioritizedEntries: [], availableMatchups: divisionMatchups)
+                    for matchupBlockCount in divisionCombination {
+                        guard matchupBlockCount > 0 else { continue }
+                    }
+                }
+            }*/
+            guard let originalPair = selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return false }
+            var matchup = originalPair
+            matchup.balanceHomeAway(assignmentState: assignmentState)
+            // successfully selected a matchup
+            guard let _ = assignMatchupPair(
+                matchup,
+                getAvailableSlotFunc: getAvailableSlotFunc,
+                canPlayAtFunc: canPlayAtFunc,
+                allAvailableMatchups: assignmentState.allMatchups,
+                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            ) else {
+                // failed to assign matchup, skip it for now
+                failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
+                prioritizedMatchups.remove(originalPair)
+                assignmentState.availableMatchups.remove(originalPair)
+                continue
+            }
+            // successfully assigned pair
+            assignmentIndex += 1
+            if assignmentIndex != expectedMatchupsCount {
+                fms = failedMatchupSelections[unchecked: assignmentIndex]
+                optimalAvailableMatchups = assignmentState.availableMatchups.filter { !fms.contains($0) }
+                /*if isBack2Back {
+                    prioritizedEntriesB2B.insert(matchup.team1)
+                    prioritizedEntriesB2B.insert(matchup.team2)
+                    if assignmentIndex % locations == 0 { // all locations were filled for a time
+                        remainingB2BMatchupsToBeScheduled -= 1
+                        if remainingB2BMatchupsToBeScheduled == 0 {
+                            remainingB2BMatchupsToBeScheduled = entryMatchupsPerGameDay
+                            prioritizedEntriesB2B.removeAll(keepingCapacity: true)
+                            assignmentState.prioritizedEntries = previousPrioritizedEntries
+                        } else {
+                            previousPrioritizedEntries = assignmentState.prioritizedEntries
+                            assignmentState.prioritizedEntries = prioritizedEntriesB2B
+                        }
+                    }
+                }*/
+                prioritizedMatchups.update(
+                    prioritizedEntries: assignmentState.prioritizedEntries,
+                    availableMatchups: optimalAvailableMatchups
+                )
+            }
+            assignmentState.availableMatchups.remove(originalPair)
+        }
+        return assignmentState.matchups.count == expectedMatchupsCount
+    }
+}
+// MARK: Assign slots b2b
+extension LeagueScheduleData {
+    private mutating func assignSlotsB2B(
+        canPlayAtFunc: CanPlayAtClosure,
+        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+    ) throws(LeagueError) -> Bool {
+        let slots = assignmentState.availableSlots
+        let assignmentStateCopy = assignmentState.copy()
+        whileLoop: while assignmentState.matchups.count != expectedMatchupsCount {
+            if Task.isCancelled {
+                throw LeagueError.timedOut(function: "assignSlotsB2B")
+            }
+            // TODO: pick the optimal combination that should be selected?
+            combinationLoop: for combination in allowedDivisionCombinations {
+                var assignedSlots = Set<LeagueAvailableSlot>()
+                var combinationTimeAllocations:ContiguousArray<Set<LeagueTimeIndex>> = .init(
+                    repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay),
+                    count: combination.first?.count ?? 10
+                )
+                for (divisionIndex, divisionCombination) in combination.enumerated() {
+                    let division = LeagueDivision.IDValue(divisionIndex)
+                    let divisionMatchups = assignmentState.allDivisionMatchups[unchecked: division]
+                    assignmentState.availableMatchups = divisionMatchups
+                    assignmentState.prioritizedEntries.removeAll(keepingCapacity: true)
+                    for matchup in assignmentState.availableMatchups {
+                        assignmentState.prioritizedEntries.insert(matchup.team1)
+                        assignmentState.prioritizedEntries.insert(matchup.team2)
+                    }
+                    assignmentState.recalculateAllRemainingAllocations(
+                        day: day,
+                        entriesCount: entriesCount,
+                        gameGap: gameGap,
+                        canPlayAtFunc: canPlayAtFunc
+                    )
+                    #if LOG
+                    print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
+                    #endif
+                    var disallowedTimes = Set<LeagueTimeIndex>(minimumCapacity: defaultMaxEntryMatchupsPerGameDay)
+                    for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
+                        guard amount > 0 else { continue }
+                        let combinationTimeAllocation = combinationTimeAllocations[divisionCombinationIndex]
+                        if !combinationTimeAllocation.isEmpty {
+                            assignmentState.availableSlots = slots.filter { combinationTimeAllocation.contains($0.time) }
+                            assignmentState.recalculateAvailableMatchups(
+                                day: day,
+                                entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+                                allAvailableMatchups: divisionMatchups
+                            )
+                            assignmentState.recalculateAllRemainingAllocations(
+                                day: day,
+                                entriesCount: entriesCount,
+                                gameGap: gameGap,
+                                canPlayAtFunc: canPlayAtFunc
+                            )
+                        }
+                        guard let matchups = assignBlockOfMatchups(
+                            amount: amount,
+                            division: division,
+                            canPlayAtFunc: canPlayAtFunc,
+                            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+                        ) else {
+                            assignmentState = assignmentStateCopy.copy()
+                            #if LOG
+                            print("assignSlotsB2B;failed to assign matchups for division \(division) and combination \(divisionCombination);skipping")
+                            #endif
+                            continue combinationLoop
+                        }
+                        for matchup in matchups {
+                            disallowedTimes.insert(matchup.time)
+                            combinationTimeAllocations[divisionCombinationIndex].insert(matchup.time)
+                            assignedSlots.insert(matchup.slot)
+                        }
+                        assignmentState.availableSlots = slots.filter { !disallowedTimes.contains($0.time) }
+                        assignmentState.recalculateAvailableMatchups(
+                            day: day,
+                            entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+                            allAvailableMatchups: divisionMatchups
+                        )
+                        assignmentState.recalculateAllRemainingAllocations(
+                            day: day,
+                            entriesCount: entriesCount,
+                            gameGap: gameGap,
+                            canPlayAtFunc: canPlayAtFunc
+                        )
+                        #if LOG
+                        print("assignSlots;b2b;combination=\(divisionCombination);assigned \(amount) for division \(division);availableSlots=\(assignmentState.availableSlots.map({ "\($0)" }))")
+                        #endif
+                        // successfully assigned matchup block of <amount> for <division>
+                    }
+                    assignmentState.availableSlots = slots.filter { !assignedSlots.contains($0) }
+                    assignmentState.recalculateAllRemainingAllocations(
+                        day: day,
+                        entriesCount: entriesCount,
+                        gameGap: gameGap,
+                        canPlayAtFunc: canPlayAtFunc
+                    )
+                    #if LOG
+                    print("assignSlots;b2b;assigned \(divisionCombination) for division \(division)")
+                    #endif
+                }
+                break whileLoop
+            }
+            return false
+        }
+        #if LOG
+        print("assignSlotsB2B;assignmentState.matchups.count=\(assignmentState.matchups.count);expectedMatchupsCount=\(expectedMatchupsCount)")
+        #endif
+        return assignmentState.matchups.count == expectedMatchupsCount
+    }
+}
+
+// MARK: Select and assign matchup
+extension LeagueScheduleData {
+    /// Selects and assigns a matchup to an available slot.
+    /// 
+    /// - Returns: The successfully assigned `LeagueMatchup`.
+    static func selectAndAssignMatchup(
+        day: LeagueDayIndex,
+        entriesPerMatchup: LeagueEntriesPerMatchup,
+        entriesCount: Int,
+        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        gameGap: GameGap.TupleValue,
+        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        getAvailableSlotFunc: AvailableSlotClosure,
+        canPlayAtFunc: CanPlayAtClosure,
+        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        allAvailableMatchups: Set<LeagueMatchupPair>,
+        assignmentState: inout AssignmentState,
+        shouldSkipSelection: (LeagueMatchupPair) -> Bool,
+        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+    ) -> LeagueMatchup? {
+        var pair:LeagueMatchupPair? = nil
+        var prioritizedMatchups = PrioritizedMatchups(
+            entriesCount: entriesCount,
+            prioritizedEntries: assignmentState.prioritizedEntries,
+            availableMatchups: assignmentState.availableMatchups
+        )
+        while pair == nil {
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            if !shouldSkipSelection(selected) {
+                pair = selected
+                prioritizedMatchups.update(prioritizedEntries: assignmentState.prioritizedEntries, availableMatchups: assignmentState.availableMatchups)
+            } else {
+                prioritizedMatchups.remove(selected)
+                assignmentState.availableMatchups.remove(selected)
+            }
+        }
+        guard var pair else { return nil }
+        pair.balanceHomeAway(assignmentState: assignmentState)
+
+        #if LOG
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        #endif
+        return assignmentState.assignMatchupPair(
+            pair,
+            getAvailableSlotFunc: getAvailableSlotFunc,
+            canPlayAtFunc: canPlayAtFunc,
+            entriesCount: entriesCount,
+            entryDivisions: entryDivisions,
+            day: day,
+            gameGap: gameGap,
+            entryMatchupsPerGameDay: entryMatchupsPerGameDay,
+            divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+            allAvailableMatchups: allAvailableMatchups,
+            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+        )
+    }
+
+    static func selectAndAssignMatchup(
+        day: LeagueDayIndex,
+        entriesPerMatchup: LeagueEntriesPerMatchup,
+        entriesCount: Int,
+        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        gameGap: GameGap.TupleValue,
+        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        getAvailableSlotFunc: AvailableSlotClosure,
+        canPlayAtFunc: CanPlayAtClosure,
+        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        allAvailableMatchups: Set<LeagueMatchupPair>,
+        assignmentState: inout AssignmentState,
+        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+    ) -> LeagueMatchup? {
+        var pair:LeagueMatchupPair? = nil
+        var prioritizedMatchups = PrioritizedMatchups(
+            entriesCount: entriesCount,
+            prioritizedEntries: assignmentState.prioritizedEntries,
+            availableMatchups: assignmentState.availableMatchups
+        )
+        while pair == nil {
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            pair = selected
+        }
+        guard var pair else { return nil }
+        pair.balanceHomeAway(assignmentState: assignmentState)
+
+        #if LOG
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        #endif
+        return assignmentState.assignMatchupPair(
+            pair,
+            getAvailableSlotFunc: getAvailableSlotFunc,
+            canPlayAtFunc: canPlayAtFunc,
+            entriesCount: entriesCount,
+            entryDivisions: entryDivisions,
+            day: day,
+            gameGap: gameGap,
+            entryMatchupsPerGameDay: entryMatchupsPerGameDay,
+            divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+            allAvailableMatchups: allAvailableMatchups,
+            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+        )
+    }
+}

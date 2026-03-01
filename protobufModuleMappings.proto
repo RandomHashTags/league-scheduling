@@ -1,7 +1,4 @@
-mapping {
-  module_name: "Sports"
-  proto_file_path: "Activity.proto"
-}
+
 mapping {
   module_name: "StaticDateTimes"
   proto_file_path: "StaticDateTime.proto"

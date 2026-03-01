@@ -1,4 +1,6 @@
 
+#if UnitTesting
+
 @testable import LeagueScheduling
 import Testing
 
@@ -70,3 +72,5 @@ struct BalancedHomeAwayThroughput {
         }
     }
 }
+
+#endif

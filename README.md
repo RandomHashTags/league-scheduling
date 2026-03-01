@@ -17,6 +17,7 @@ A high-performance, feature-rich league scheduling library.
 
 ### Scheduling
 
+- [x] 'Fair' scheduling
 - [x] Balancing times, locations, and home/away allocations
 - [x] Multiple divisions
 - [x] Back-to-back matchups

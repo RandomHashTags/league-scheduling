@@ -9,8 +9,7 @@ extension LeagueScheduleData {
     mutating func selectAndAssignMatchupBlock(
         amount: Int,
         division: LeagueDivision.IDValue,
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
         return Self.assignBlockOfMatchups(
             amount: amount,
@@ -23,8 +22,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             assignmentState: &assignmentState,
-            canPlayAtFunc: canPlayAtFunc,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 }

@@ -6,102 +6,75 @@ import Testing
 @Suite
 struct CanPlayAtTests {
     @Test
-    func canPlayAt() {
-        let startingTimes = [
-            StaticTime(hour: 6, minute: 30),
-            StaticTime(hour: 7, minute: 0),
-            StaticTime(hour: 7, minute: 30)
-        ]
+    func canPlayAtNormal() {
+        let times = 3
         let locations = 3
-        let matchupDuration:LeagueMatchupDuration = 0
-        let travelDurations = [[LeagueMatchupDuration]]()
 
         var gameGap = GameGap.upTo(1).minMax
         var playsAt:PlaysAt.Element = []
         var playsAtTimes:PlaysAtTimes.Element = []
-        var playsAtLocations:PlaysAtLocations.Element = []
-        var timeNumbers:LeagueAssignedTimes.Element = .init(repeating: 0, count: startingTimes.count)
+        var timeNumbers:LeagueAssignedTimes.Element = .init(repeating: 0, count: times)
         var locationNumbers:LeagueAssignedLocations.Element = .init(repeating: 0, count: locations)
-        let maxTimeNumbers:MaximumTimeAllocations.Element = .init(repeating: 1, count: startingTimes.count)
+        let maxTimeNumbers:MaximumTimeAllocations.Element = .init(repeating: 1, count: times)
         var maxLocationNumbers:MaximumLocationAllocations.Element = .init(repeating: 1, count: locations)
 
         var location:LeagueLocationIndex = 0
-        for time in 0..<LeagueTimeIndex(startingTimes.count) {
-            #expect(LeagueScheduleData.canPlayAt(
-                startingTimes: startingTimes,
-                matchupDuration: matchupDuration,
-                travelDurations: travelDurations,
+        for time in 0..<LeagueTimeIndex(times) {
+            #expect(CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                gameGap: gameGap,
                 allowedTimes: [0, 1, 2],
                 allowedLocations: [0, 1, 2],
-                playsAt: playsAt,
                 playsAtTimes: playsAtTimes,
-                playsAtLocations: playsAtLocations,
-                timeNumbers: timeNumbers,
-                locationNumbers: locationNumbers,
-                maxTimeNumbers: maxTimeNumbers,
-                maxLocationNumbers: maxLocationNumbers
+                timeNumber: timeNumbers[unchecked: time],
+                locationNumber: locationNumbers[unchecked: location],
+                maxTimeNumber: UInt8(maxTimeNumbers[unchecked: time]),
+                maxLocationNumber: UInt8(maxLocationNumbers[unchecked: location]),
+                gameGap: gameGap
             ))
-            #expect(!LeagueScheduleData.canPlayAt(
-                startingTimes: startingTimes,
-                matchupDuration: matchupDuration,
-                travelDurations: travelDurations,
+            #expect(!CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                gameGap: gameGap,
                 allowedTimes: [],
                 allowedLocations: [],
-                playsAt: playsAt,
                 playsAtTimes: playsAtTimes,
-                playsAtLocations: playsAtLocations,
-                timeNumbers: timeNumbers,
-                locationNumbers: locationNumbers,
-                maxTimeNumbers: maxTimeNumbers,
-                maxLocationNumbers: maxLocationNumbers
+                timeNumber: timeNumbers[unchecked: time],
+                locationNumber: locationNumbers[unchecked: location],
+                maxTimeNumber: UInt8(maxTimeNumbers[unchecked: time]),
+                maxLocationNumber: UInt8(maxLocationNumbers[unchecked: location]),
+                gameGap: gameGap
             ))
         }
 
         playsAt.insert(LeagueAvailableSlot(time: 0, location: location))
         playsAtTimes.insert(0)
-        #expect(!LeagueScheduleData.canPlayAt(
-            startingTimes: startingTimes,
-            matchupDuration: matchupDuration,
-            travelDurations: travelDurations,
+        #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            gameGap: gameGap,
             allowedTimes: [0, 1, 2],
             allowedLocations: [0, 1, 2],
-            playsAt: playsAt,
             playsAtTimes: playsAtTimes,
-            playsAtLocations: playsAtLocations,
-            timeNumbers: timeNumbers,
-            locationNumbers: locationNumbers,
-            maxTimeNumbers: maxTimeNumbers,
-            maxLocationNumbers: maxLocationNumbers
+            timeNumber: timeNumbers[unchecked: 0],
+            locationNumber: locationNumbers[unchecked: location],
+            maxTimeNumber: UInt8(maxTimeNumbers[unchecked: 0]),
+            maxLocationNumber: UInt8(maxLocationNumbers[unchecked: location]),
+            gameGap: gameGap
         ))
 
         playsAt = []
         playsAtTimes = []
         timeNumbers[0] = 1
-        #expect(!LeagueScheduleData.canPlayAt(
-            startingTimes: startingTimes,
-            matchupDuration: matchupDuration,
-            travelDurations: travelDurations,
+        #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            gameGap: gameGap,
             allowedTimes: [0, 1, 2],
             allowedLocations: [0, 1, 2],
-            playsAt: playsAt,
             playsAtTimes: playsAtTimes,
-            playsAtLocations: playsAtLocations,
-            timeNumbers: timeNumbers,
-            locationNumbers: locationNumbers,
-            maxTimeNumbers: maxTimeNumbers,
-            maxLocationNumbers: maxLocationNumbers
+            timeNumber: timeNumbers[0],
+            locationNumber: locationNumbers[unchecked: location],
+            maxTimeNumber: UInt8(maxTimeNumbers[0]),
+            maxLocationNumber: UInt8(maxLocationNumbers[unchecked: location]),
+            gameGap: gameGap
         ))
     }
 }
@@ -109,7 +82,7 @@ struct CanPlayAtTests {
 // MARK: Travel Durations
 extension CanPlayAtTests {
     @Test
-    func travelDurationAllowed() {
+    func canPlayAtWithTravelDurations() {
         let startingTimes = [
             StaticTime(hour: 6, minute: 30),
             StaticTime(hour: 7, minute: 0),
@@ -126,46 +99,51 @@ extension CanPlayAtTests {
         var time:LeagueTimeIndex = 0
         var location:LeagueLocationIndex = 0
         var playsAt:Set<LeagueAvailableSlot> = []
+        var gameGap = GameGap.upTo(5).minMax
         
-        #expect(LeagueScheduleData.travelDurationAllowed(
+        #expect(CanPlayAtWithTravelDurations.test(
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,
             travelDurations: travelDurations,
             time: time,
             location: location,
-            playsAt: playsAt
+            playsAt: playsAt,
+            gameGap: gameGap
         ))
 
         matchupDuration = .minutes(30)
         playsAt = [LeagueAvailableSlot(time: 1, location: 0)]
-        #expect(LeagueScheduleData.travelDurationAllowed(
+        #expect(CanPlayAtWithTravelDurations.test(
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,
             travelDurations: travelDurations,
             time: time,
             location: location,
-            playsAt: playsAt
+            playsAt: playsAt,
+            gameGap: gameGap
         ))
 
         time = 2
-        #expect(LeagueScheduleData.travelDurationAllowed(
+        #expect(CanPlayAtWithTravelDurations.test(
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,
             travelDurations: travelDurations,
             time: time,
             location: location,
-            playsAt: playsAt
+            playsAt: playsAt,
+            gameGap: gameGap
         ))
 
         time = 0
         matchupDuration = .minutes(31)
-        #expect(!LeagueScheduleData.travelDurationAllowed(
+        #expect(!CanPlayAtWithTravelDurations.test(
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,
             travelDurations: travelDurations,
             time: time,
             location: location,
-            playsAt: playsAt
+            playsAt: playsAt,
+            gameGap: gameGap
         ))
     }
 }

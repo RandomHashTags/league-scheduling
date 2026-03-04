@@ -10,7 +10,7 @@ extension LeagueScheduleData {
     mutating func assign(
         matchup: LeagueMatchupPair,
         to slot: LeagueAvailableSlot,
-        canPlayAtFunc: CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup {
         return assignmentState.assign(
             matchup: matchup,
@@ -21,7 +21,7 @@ extension LeagueScheduleData {
             gameGap: gameGap,
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 }
@@ -39,7 +39,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup {
         prioritizedEntries.remove(matchup.team1)
         prioritizedEntries.remove(matchup.team2)
@@ -104,7 +104,7 @@ extension AssignmentState {
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
         return leagueMatchup
     }

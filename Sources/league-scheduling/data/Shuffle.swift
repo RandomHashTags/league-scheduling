@@ -11,8 +11,7 @@ extension AssignmentState {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure,
-        shuffleCanPlayAtFunc: LeagueScheduleData.OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueAvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)
         let team1AllowedTimes = entries[unchecked: matchup.team1].gameTimes[unchecked: day]
@@ -35,32 +34,35 @@ extension AssignmentState {
         let team2MaxLocationNumbers = maxLocationAllocations[unchecked: matchup.team2]
         for swapped in matchups {
             // make sure the failed assigned matchup is allowed to go where the assigned matchup is
-            guard shuffleCanPlayAtFunc(
-                startingTimes,
-                matchupDuration,
-                locationTravelDurations,
-                swapped.time,
-                swapped.location,
-                gameGap,
-                team1AllowedTimes,
-                team1AllowedLocations,
-                team1PlaysAt,
-                team1PlaysAtTimes,
-                team1PlaysAtLocations,
-                team1TimeNumbers,
-                team1LocationNumbers,
-                team1MaxTimeNumbers,
-                team1MaxLocationNumbers,
-                team2AllowedTimes,
-                team2AllowedLocations,
-                team2PlaysAt,
-                team2PlaysAtTimes,
-                team2PlaysAtLocations,
-                team2TimeNumbers,
-                team2LocationNumbers,
-                team2MaxTimeNumbers,
-                team2MaxLocationNumbers
-            ) else { continue }
+            guard canPlayAt.test(
+                time: swapped.time,
+                location: swapped.location,
+                allowedTimes: team1AllowedTimes,
+                allowedLocations: team1AllowedLocations,
+                playsAt: team1PlaysAt,
+                playsAtTimes: team1PlaysAtTimes,
+                playsAtLocations: team1PlaysAtLocations,
+                timeNumber: team1TimeNumbers[unchecked: swapped.time],
+                locationNumber: team1LocationNumbers[unchecked: swapped.location],
+                maxTimeNumber: UInt8(team1MaxTimeNumbers[unchecked: swapped.time]),
+                maxLocationNumber: UInt8(team1MaxLocationNumbers[unchecked: swapped.location]),
+                gameGap: gameGap
+            ) && canPlayAt.test(
+                time: swapped.time,
+                location: swapped.location,
+                allowedTimes: team2AllowedTimes,
+                allowedLocations: team2AllowedLocations,
+                playsAt: team2PlaysAt,
+                playsAtTimes: team2PlaysAtTimes,
+                playsAtLocations: team2PlaysAtLocations,
+                timeNumber: team2TimeNumbers[unchecked: swapped.time],
+                locationNumber: team2LocationNumbers[unchecked: swapped.location],
+                maxTimeNumber: UInt8(team2MaxTimeNumbers[unchecked: swapped.time]),
+                maxLocationNumber: UInt8(team2MaxLocationNumbers[unchecked: swapped.location]),
+                gameGap: gameGap
+            ) else {
+                continue
+            }
 
             let swappedSlot = swapped.slot
             var homePlaysAt = playsAt[unchecked: swapped.home]
@@ -95,31 +97,32 @@ extension AssignmentState {
             let maxAwayTimeNumbers = maxTimeAllocations[unchecked: swapped.away]
             let maxAwayLocationNumbers = maxLocationAllocations[unchecked: swapped.away]
             guard let slot = availableSlots.first(where: {
-                return shuffleCanPlayAtFunc(
-                    startingTimes,
-                    matchupDuration,
-                    locationTravelDurations,
-                    $0.time,
-                    $0.location,
-                    gameGap,
-                    homeAllowedTimes,
-                    homeAllowedLocations,
-                    homePlaysAt,
-                    homePlaysAtTimes,
-                    homePlaysAtLocations,
-                    homeAssignedTimes,
-                    homeAssignedLocations,
-                    maxHomeTimeNumbers,
-                    maxHomeLocationNumbers,
-                    awayAllowedTimes,
-                    awayAllowedLocations,
-                    awayPlaysAt,
-                    awayPlaysAtTimes,
-                    awayPlaysAtLocations,
-                    awayAssignedTimes,
-                    awayAssignedLocations,
-                    maxAwayTimeNumbers,
-                    maxAwayLocationNumbers
+                return canPlayAt.test(
+                    time: $0.time,
+                    location: $0.location,
+                    allowedTimes: homeAllowedTimes,
+                    allowedLocations: homeAllowedLocations,
+                    playsAt: homePlaysAt,
+                    playsAtTimes: homePlaysAtTimes,
+                    playsAtLocations: homePlaysAtLocations,
+                    timeNumber: homeAssignedTimes[unchecked: $0.time],
+                    locationNumber: homeAssignedLocations[unchecked: $0.location],
+                    maxTimeNumber: UInt8(maxHomeTimeNumbers[unchecked: $0.time]),
+                    maxLocationNumber: UInt8(maxHomeLocationNumbers[unchecked: $0.location]),
+                    gameGap: gameGap
+                ) && canPlayAt.test(
+                    time: $0.time,
+                    location: $0.location,
+                    allowedTimes: awayAllowedTimes,
+                    allowedLocations: awayAllowedLocations,
+                    playsAt: awayPlaysAt,
+                    playsAtTimes: awayPlaysAtTimes,
+                    playsAtLocations: awayPlaysAtLocations,
+                    timeNumber: awayAssignedTimes[unchecked: $0.time],
+                    locationNumber: awayAssignedLocations[unchecked: $0.location],
+                    maxTimeNumber: UInt8(maxAwayTimeNumbers[unchecked: $0.time]),
+                    maxLocationNumber: UInt8(maxAwayLocationNumbers[unchecked: $0.location]),
+                    gameGap: gameGap
                 )
             }) else { continue }
 
@@ -136,7 +139,7 @@ extension AssignmentState {
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                 allAvailableMatchups: allAvailableMatchups,
-                canPlayAtFunc: canPlayAtFunc
+                canPlayAt: canPlayAt
             )
             shuffleHistory.append(.init(day: day, from: swappedSlot, to: slot, pair: swapped.pair))
             return swappedSlot

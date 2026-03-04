@@ -8,16 +8,38 @@ extension LeagueScheduleData {
         guard day > 0 else {
             throw .failedRedistributionRequiresPreviouslyScheduledMatchups
         }
-        try tryRedistributing(
-            startDayIndex: day-1,
-            settings: settings,
-            generationData: &generationData
-        )
+        if assignmentState.matchupDuration > 0 {
+            try tryRedistributing(
+                startDayIndex: day-1,
+                settings: settings,
+                canPlayAt: CanPlayAtWithTravelDurations(
+                    startingTimes: assignmentState.startingTimes,
+                    matchupDuration: assignmentState.matchupDuration,
+                    travelDurations: assignmentState.locationTravelDurations
+                ),
+                generationData: &generationData
+            )
+        } else if sameLocationIfB2B {
+            try tryRedistributing(
+                startDayIndex: day-1,
+                settings: settings,
+                canPlayAt: CanPlayAtSameLocationIfB2B(),
+                generationData: &generationData
+            )
+        } else {
+            try tryRedistributing(
+                startDayIndex: day-1,
+                settings: settings,
+                canPlayAt: CanPlayAtNormal(),
+                generationData: &generationData
+            )
+        }
     }
 
     mutating func tryRedistributing(
         startDayIndex: LeagueDayIndex,
         settings: LeagueRequestPayload.Runtime,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         if redistributionData == nil {
@@ -31,7 +53,7 @@ extension LeagueScheduleData {
         let previousSchedule = generationData.schedule
         guard redistributionData!.redistributeMatchups(
             clock: clock,
-            canPlayAtFunc: canPlayAtFunctions().0,
+            canPlayAt: canPlayAt,
             day: day,
             gameGap: gameGap,
             assignmentState: &assignmentState,

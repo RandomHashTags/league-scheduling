@@ -56,7 +56,7 @@ extension AssignmentState {
         day: LeagueDayIndex,
         entriesCount: Int,
         gameGap: GameGap.TupleValue,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         var cached = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
         for matchup in availableMatchups {
@@ -65,7 +65,7 @@ extension AssignmentState {
                 for: matchup,
                 cached: &cached,
                 gameGap: gameGap,
-                canPlayAtFunc: canPlayAtFunc
+                canPlayAt: canPlayAt
             )
         }
         #if LOG
@@ -78,21 +78,21 @@ extension AssignmentState {
         for pair: LeagueMatchupPair,
         cached: inout Set<LeagueEntry.IDValue>,
         gameGap: GameGap.TupleValue,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         recalculateRemainingAllocations(
             day: day,
             for: pair.team1,
             cached: &cached,
             gameGap: gameGap,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
         recalculateRemainingAllocations(
             day: day,
             for: pair.team2,
             cached: &cached,
             gameGap: gameGap,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 
@@ -101,7 +101,7 @@ extension AssignmentState {
         for team: LeagueEntry.IDValue,
         cached: inout Set<LeagueEntry.IDValue>,
         gameGap: GameGap.TupleValue,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         guard !cached.contains(team) else { return }
         cached.insert(team)
@@ -116,22 +116,19 @@ extension AssignmentState {
         let maxLocationNumbers = maxLocationAllocations[unchecked: team]
         var available = availableSlots
         for slot in availableSlots {
-            if !canPlayAtFunc(
-                startingTimes,
-                matchupDuration,
-                locationTravelDurations,
-                slot.time,
-                slot.location,
-                allowedTimes,
-                allowedLocations,
-                playsAt,
-                playsAtTimes,
-                playsAtLocations,
-                timeNumbers[unchecked: slot.time],
-                locationNumbers[unchecked: slot.location],
-                maxTimeNumbers[unchecked: slot.time],
-                maxLocationNumbers[unchecked: slot.location],
-                gameGap
+            if !canPlayAt.test(
+                time: slot.time,
+                location: slot.location,
+                allowedTimes: allowedTimes,
+                allowedLocations: allowedLocations,
+                playsAt: playsAt,
+                playsAtTimes: playsAtTimes,
+                playsAtLocations: playsAtLocations,
+                timeNumber: timeNumbers[unchecked: slot.time],
+                locationNumber: locationNumbers[unchecked: slot.location],
+                maxTimeNumber: UInt8(maxTimeNumbers[unchecked: slot.time]),
+                maxLocationNumber: UInt8(maxLocationNumbers[unchecked: slot.location]),
+                gameGap: gameGap
             ) {
                 available.remove(slot)
             }

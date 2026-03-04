@@ -6,22 +6,20 @@ extension LeagueScheduleData {
     mutating func assignMatchupPair(
         _ pair: LeagueMatchupPair,
         getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAtFunc: CanPlayAtClosure,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
+        allAvailableMatchups: Set<LeagueMatchupPair>
     ) -> LeagueMatchup? {
         return assignmentState.assignMatchupPair(
             pair,
             getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAtFunc: canPlayAtFunc,
+            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            allAvailableMatchups: allAvailableMatchups
         )
     }
 }
@@ -30,15 +28,14 @@ extension AssignmentState {
     mutating func assignMatchupPair(
         _ pair: LeagueMatchupPair,
         getAvailableSlotFunc: LeagueScheduleData.AvailableSlotClosure,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         entriesCount: Int,
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         day: LeagueDayIndex,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
-        shuffleCanPlayAtFunc: LeagueScheduleData.OptimizedTeamCanPlayAtClosure
+        allAvailableMatchups: Set<LeagueMatchupPair>
     ) -> LeagueMatchup? {
         var slots = playableSlots(for: pair)
         #if LOG
@@ -68,8 +65,7 @@ extension AssignmentState {
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval, 
                 allAvailableMatchups: allAvailableMatchups,
-                canPlayAtFunc: canPlayAtFunc,
-                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+                canPlayAt: canPlayAt
             )
         }
         if let slot {
@@ -82,7 +78,7 @@ extension AssignmentState {
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-                canPlayAtFunc: canPlayAtFunc
+                canPlayAt: canPlayAt
             )
         }
         #if LOG

@@ -5,52 +5,52 @@ extension LeagueScheduleData {
     @discardableResult
     mutating func assignMatchupPair(
         _ pair: LeagueMatchupPair,
-        getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
-        allAvailableMatchups: Set<LeagueMatchupPair>
+        allAvailableMatchups: Set<LeagueMatchupPair>,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         return assignmentState.assignMatchupPair(
             pair,
-            getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups
+            allAvailableMatchups: allAvailableMatchups,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         )
     }
 }
+
 extension AssignmentState {
     /// - Returns: The `LeagueMatchup` that was successfully assigned.
     mutating func assignMatchupPair(
         _ pair: LeagueMatchupPair,
-        getAvailableSlotFunc: LeagueScheduleData.AvailableSlotClosure,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         entriesCount: Int,
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         day: LeagueDayIndex,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>
+        allAvailableMatchups: Set<LeagueMatchupPair>,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         var slots = playableSlots(for: pair)
         #if LOG
         let playableSlots = slots
         #endif
 
-        var slot = getAvailableSlotFunc(
-            entryMatchupsPerGameDay,
-            pair.team1,
-            pair.team2,
-            playsAtTimes,
-            playsAtLocations,
-            assignedTimes,
-            assignedLocations,
-            &slots
+        var slot = selectSlot.select(
+            team1: pair.team1,
+            team2: pair.team2,
+            assignedTimes: assignedTimes,
+            assignedLocations: assignedLocations,
+            playsAtTimes: playsAtTimes,
+            playsAtLocations: playsAtLocations,
+            playableSlots: &slots
         )
         #if LOG
         print("assignMatchupPair;pair=\(pair.description);slot=\(slot == nil ? "nil" : slot!.description);prioritizedEntries=\(prioritizedEntries);slots (\(slots.count))=\(slots.map({ $0.description }));playableSlots (\(playableSlots.count))=\(playableSlots.map({ $0.description }))")

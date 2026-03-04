@@ -7,19 +7,37 @@ extension LeagueScheduleData {
         division: LeagueDivision.IDValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
-        return Self.assignBlockOfMatchups(
-            amount: amount,
-            division: division,
-            day: day,
-            entriesPerMatchup: entriesPerMatchup,
-            entriesCount: entriesCount,
-            entryDivisions: entryDivisions,
-            gameGap: gameGap,
-            entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
-            divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            assignmentState: &assignmentState,
-            canPlayAt: canPlayAt
-        )
+        if gameGap.min == 1 && gameGap.max == 1 {
+            return Self.assignBlockOfMatchups(
+                amount: amount,
+                division: division,
+                day: day,
+                entriesPerMatchup: entriesPerMatchup,
+                entriesCount: entriesCount,
+                entryDivisions: entryDivisions,
+                gameGap: gameGap,
+                entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+                divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                assignmentState: &assignmentState,
+                selectSlot: SelectSlotB2B(entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay),
+                canPlayAt: canPlayAt
+            )
+        } else {
+            return Self.assignBlockOfMatchups(
+                amount: amount,
+                division: division,
+                day: day,
+                entriesPerMatchup: entriesPerMatchup,
+                entriesCount: entriesCount,
+                entryDivisions: entryDivisions,
+                gameGap: gameGap,
+                entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+                divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                assignmentState: &assignmentState,
+                selectSlot: SelectSlotNormal(),
+                canPlayAt: canPlayAt
+            )
+        }
     }
 }
 
@@ -36,13 +54,10 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         assignmentState: inout AssignmentState,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
         let limit = amount * entryMatchupsPerGameDay
-        let getAvailableSlotFunc =
-            gameGap.min == 1 && gameGap.max == 1 ? Self.getSlotB2B
-            : Self.getSlot
-        
         var remainingPrioritizedEntries = assignmentState.prioritizedEntries
         var remainingAvailableSlots = assignmentState.availableSlots
         var localAssignmentState = assignmentState.copy()
@@ -68,14 +83,14 @@ extension LeagueScheduleData {
             entryDivisions: entryDivisions,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-            getAvailableSlotFunc: getAvailableSlotFunc,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: { _ in false },
-            canPlayAt: canPlayAt,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
-            selectedEntries: &selectedEntries
+            selectedEntries: &selectedEntries,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         ) else { return nil }
         adjacentTimes = Self.adjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
         localAssignmentState.availableSlots = localAssignmentState.availableSlots.filter { $0.time == firstMatchup.time }
@@ -95,13 +110,13 @@ extension LeagueScheduleData {
                 entryDivisions: entryDivisions,
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-                getAvailableSlotFunc: getAvailableSlotFunc,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                 allAvailableMatchups: localAssignmentState.availableMatchups,
                 localAssignmentState: &localAssignmentState,
-                canPlayAt: canPlayAt,
                 remainingPrioritizedEntries: &remainingPrioritizedEntries,
-                selectedEntries: &selectedEntries
+                selectedEntries: &selectedEntries,
+                selectSlot: selectSlot,
+                canPlayAt: canPlayAt
             ) else { return nil }
             #if LOG
             print("assignBlockOfMatchups;remainingAmount=\(remainingAmount);assigned;selectedEntries (\(selectedEntries.count))=\(selectedEntries);localAvailableSlots.count=\(localAssignmentState.availableSlots.count)")
@@ -135,14 +150,14 @@ extension LeagueScheduleData {
             entryDivisions: entryDivisions,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-            getAvailableSlotFunc: getAvailableSlotFunc,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
-            canPlayAt: canPlayAt,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
-            selectedEntries: &selectedEntries
+            selectedEntries: &selectedEntries,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         ) else { return nil }
         // last matchup was successfully assigned; continue
         if var time = adjacentTimes.randomElement() { // TODO: pick an adjacent time that needs to be prioritized over others
@@ -167,11 +182,11 @@ extension LeagueScheduleData {
                         entryDivisions: entryDivisions,
                         gameGap: gameGap,
                         entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-                        getAvailableSlotFunc: getAvailableSlotFunc,
-                        canPlayAt: canPlayAt,
                         divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                         allAvailableMatchups: localAssignmentState.availableMatchups,
                         assignmentState: &localAssignmentState,
+                        selectSlot: selectSlot,
+                        canPlayAt: canPlayAt
                     ) else { return nil }
                 }
                 adjacentTimes.remove(time)
@@ -205,13 +220,13 @@ extension LeagueScheduleData {
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        getAvailableSlotFunc: AvailableSlotClosure,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
         localAssignmentState: inout AssignmentState,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
-        selectedEntries: inout Set<LeagueEntry.IDValue>
+        selectedEntries: inout Set<LeagueEntry.IDValue>,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         guard let leagueMatchup = selectAndAssignMatchup(
             day: day,
@@ -220,11 +235,11 @@ extension LeagueScheduleData {
             entryDivisions: entryDivisions,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-            getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAt: canPlayAt,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
-            assignmentState: &localAssignmentState
+            assignmentState: &localAssignmentState,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         ) else {
             return nil
         }
@@ -242,14 +257,14 @@ extension LeagueScheduleData {
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        getAvailableSlotFunc: AvailableSlotClosure,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
         localAssignmentState: inout AssignmentState,
         shouldSkipSelection: (LeagueMatchupPair) -> Bool,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
-        selectedEntries: inout Set<LeagueEntry.IDValue>
+        selectedEntries: inout Set<LeagueEntry.IDValue>,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         guard let leagueMatchup = selectAndAssignMatchup(
             day: day,
@@ -258,12 +273,12 @@ extension LeagueScheduleData {
             entryDivisions: entryDivisions,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-            getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAt: canPlayAt,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
             assignmentState: &localAssignmentState,
-            shouldSkipSelection: shouldSkipSelection
+            shouldSkipSelection: shouldSkipSelection,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         ) else {
             return nil
         }

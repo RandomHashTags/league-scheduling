@@ -5,26 +5,6 @@ extension LeagueScheduleData {
     func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups) -> LeagueMatchupPair? {
         return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups)
     }
-
-    mutating func selectAndAssignMatchupBlock(
-        amount: Int,
-        division: LeagueDivision.IDValue,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> Set<LeagueMatchup>? {
-        return Self.assignBlockOfMatchups(
-            amount: amount,
-            division: division,
-            day: day,
-            entriesPerMatchup: entriesPerMatchup,
-            entriesCount: entriesCount,
-            entryDivisions: entryDivisions,
-            gameGap: gameGap,
-            entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
-            divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            assignmentState: &assignmentState,
-            canPlayAt: canPlayAt
-        )
-    }
 }
 
 extension AssignmentState {

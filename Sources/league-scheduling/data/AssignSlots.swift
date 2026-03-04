@@ -36,16 +36,20 @@ extension LeagueScheduleData {
         if gameGap.min == 1 && gameGap.max == 1 && defaultMaxEntryMatchupsPerGameDay != 1 { // back 2 back
             return try assignSlotsB2B(canPlayAt: canPlayAt)
         }
-        let getAvailableSlotFunc:AvailableSlotClosure
         if prioritizeEarlierTimes {
             if sameLocationIfB2B {
-                getAvailableSlotFunc = Self.getSlotEarliestTimeAndSameLocationIfB2B
+                return try selectAndAssignSlots(selectSlot: SelectSlotEarliestTimeAndSameLocationIfB2B(), canPlayAt: canPlayAt)
             } else {
-                getAvailableSlotFunc = Self.getSlotEarliestTime
+                return try selectAndAssignSlots(selectSlot: SelectSlotEarliestTime(), canPlayAt: canPlayAt)
             }
         } else {
-            getAvailableSlotFunc = Self.getSlot
+            return try selectAndAssignSlots(selectSlot: SelectSlotNormal(), canPlayAt: canPlayAt)
         }
+    }
+    private mutating func selectAndAssignSlots(
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
+    ) throws(LeagueError) -> Bool {
         var assignmentIndex = 0
         var fms = failedMatchupSelections[unchecked: assignmentIndex]
         var optimalAvailableMatchups = assignmentState.availableMatchups.filter { !fms.contains($0) }
@@ -78,9 +82,9 @@ extension LeagueScheduleData {
             // successfully selected a matchup
             guard let _ = assignMatchupPair(
                 matchup,
-                getAvailableSlotFunc: getAvailableSlotFunc,
-                canPlayAt: canPlayAt,
-                allAvailableMatchups: assignmentState.allMatchups
+                allAvailableMatchups: assignmentState.allMatchups,
+                selectSlot: selectSlot,
+                canPlayAt: canPlayAt
             ) else {
                 // failed to assign matchup, skip it for now
                 failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
@@ -118,6 +122,7 @@ extension LeagueScheduleData {
         return assignmentState.matchups.count == expectedMatchupsCount
     }
 }
+
 // MARK: Assign slots b2b
 extension LeagueScheduleData {
     private mutating func assignSlotsB2B(
@@ -239,12 +244,12 @@ extension LeagueScheduleData {
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
         assignmentState: inout AssignmentState,
-        shouldSkipSelection: (LeagueMatchupPair) -> Bool
+        shouldSkipSelection: (LeagueMatchupPair) -> Bool,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups(
@@ -270,15 +275,15 @@ extension LeagueScheduleData {
         #endif
         return assignmentState.assignMatchupPair(
             pair,
-            getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups
+            allAvailableMatchups: allAvailableMatchups,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         )
     }
 
@@ -289,11 +294,11 @@ extension LeagueScheduleData {
         entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        assignmentState: inout AssignmentState
+        assignmentState: inout AssignmentState,
+        selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups(
@@ -313,15 +318,15 @@ extension LeagueScheduleData {
         #endif
         return assignmentState.assignMatchupPair(
             pair,
-            getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups
+            allAvailableMatchups: allAvailableMatchups,
+            selectSlot: selectSlot,
+            canPlayAt: canPlayAt
         )
     }
 }

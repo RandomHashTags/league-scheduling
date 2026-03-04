@@ -10,7 +10,7 @@ extension AssignmentState {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: matchup.home]]
         recurringDayLimits[unchecked: matchup.home][unchecked: matchup.away] -= recurringDayLimitInterval
@@ -29,7 +29,7 @@ extension AssignmentState {
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
         #if LOG
         print("unassign;day=\(day);matchup=\(matchup);availableMatchups.count=\(availableMatchups.count);remainingAllocations=\(remainingAllocations.map { $0.count })")

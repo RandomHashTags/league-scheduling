@@ -11,17 +11,30 @@ extension LeagueScheduleData {
         return completed
     }
     private mutating func selectAndAssignSlots() throws(LeagueError) -> Bool {
+        if assignmentState.matchupDuration > 0 {
+            return try selectAndAssignSlots(
+                canPlayAt: CanPlayAtWithTravelDurations(
+                    startingTimes: assignmentState.startingTimes,
+                    matchupDuration: assignmentState.matchupDuration,
+                    travelDurations: assignmentState.locationTravelDurations
+                )
+            )
+        } else if sameLocationIfB2B {
+            return try selectAndAssignSlots(canPlayAt: CanPlayAtSameLocationIfB2B())
+        } else {
+            return try selectAndAssignSlots(canPlayAt: CanPlayAtNormal())
+        }
+    }
+    private mutating func selectAndAssignSlots(
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
+    ) throws(LeagueError) -> Bool {
         #if LOG
         print("AssignSlots;selectAndAssignSlots;assignmentState.matchupDuration=\(assignmentState.matchupDuration);sameLocationIfB2B=\(sameLocationIfB2B);gameGap=\(gameGap);defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay)")
         #endif
 
-        let (canPlayAtFunc, shuffleCanPlayAtFunc) = canPlayAtFunctions()
-        assignmentState.recalculateAllRemainingAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAtFunc: canPlayAtFunc)
+        assignmentState.recalculateAllRemainingAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAt: canPlayAt)
         if gameGap.min == 1 && gameGap.max == 1 && defaultMaxEntryMatchupsPerGameDay != 1 { // back 2 back
-            return try assignSlotsB2B(
-                canPlayAtFunc: canPlayAtFunc,
-                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
-            )
+            return try assignSlotsB2B(canPlayAt: canPlayAt)
         }
         let getAvailableSlotFunc:AvailableSlotClosure
         if prioritizeEarlierTimes {
@@ -66,9 +79,8 @@ extension LeagueScheduleData {
             guard let _ = assignMatchupPair(
                 matchup,
                 getAvailableSlotFunc: getAvailableSlotFunc,
-                canPlayAtFunc: canPlayAtFunc,
-                allAvailableMatchups: assignmentState.allMatchups,
-                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+                canPlayAt: canPlayAt,
+                allAvailableMatchups: assignmentState.allMatchups
             ) else {
                 // failed to assign matchup, skip it for now
                 failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
@@ -109,8 +121,7 @@ extension LeagueScheduleData {
 // MARK: Assign slots b2b
 extension LeagueScheduleData {
     private mutating func assignSlotsB2B(
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) throws(LeagueError) -> Bool {
         let slots = assignmentState.availableSlots
         let assignmentStateCopy = assignmentState.copy()
@@ -138,7 +149,7 @@ extension LeagueScheduleData {
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,
-                        canPlayAtFunc: canPlayAtFunc
+                        canPlayAt: canPlayAt
                     )
                     #if LOG
                     print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
@@ -158,14 +169,13 @@ extension LeagueScheduleData {
                                 day: day,
                                 entriesCount: entriesCount,
                                 gameGap: gameGap,
-                                canPlayAtFunc: canPlayAtFunc
+                                canPlayAt: canPlayAt
                             )
                         }
                         guard let matchups = assignBlockOfMatchups(
                             amount: amount,
                             division: division,
-                            canPlayAtFunc: canPlayAtFunc,
-                            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+                            canPlayAt: canPlayAt
                         ) else {
                             assignmentState = assignmentStateCopy.copy()
                             #if LOG
@@ -188,7 +198,7 @@ extension LeagueScheduleData {
                             day: day,
                             entriesCount: entriesCount,
                             gameGap: gameGap,
-                            canPlayAtFunc: canPlayAtFunc
+                            canPlayAt: canPlayAt
                         )
                         #if LOG
                         print("assignSlots;b2b;combination=\(divisionCombination);assigned \(amount) for division \(division);availableSlots=\(assignmentState.availableSlots.map({ "\($0)" }))")
@@ -200,7 +210,7 @@ extension LeagueScheduleData {
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,
-                        canPlayAtFunc: canPlayAtFunc
+                        canPlayAt: canPlayAt
                     )
                     #if LOG
                     print("assignSlots;b2b;assigned \(divisionCombination) for division \(division)")
@@ -230,12 +240,11 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAtFunc: CanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
         assignmentState: inout AssignmentState,
-        shouldSkipSelection: (LeagueMatchupPair) -> Bool,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        shouldSkipSelection: (LeagueMatchupPair) -> Bool
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups(
@@ -262,15 +271,14 @@ extension LeagueScheduleData {
         return assignmentState.assignMatchupPair(
             pair,
             getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAtFunc: canPlayAtFunc,
+            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            allAvailableMatchups: allAvailableMatchups
         )
     }
 
@@ -282,11 +290,10 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         getAvailableSlotFunc: AvailableSlotClosure,
-        canPlayAtFunc: CanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        assignmentState: inout AssignmentState,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        assignmentState: inout AssignmentState
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups(
@@ -307,15 +314,14 @@ extension LeagueScheduleData {
         return assignmentState.assignMatchupPair(
             pair,
             getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAtFunc: canPlayAtFunc,
+            canPlayAt: canPlayAt,
             entriesCount: entriesCount,
             entryDivisions: entryDivisions,
             day: day,
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            allAvailableMatchups: allAvailableMatchups,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            allAvailableMatchups: allAvailableMatchups
         )
     }
 }

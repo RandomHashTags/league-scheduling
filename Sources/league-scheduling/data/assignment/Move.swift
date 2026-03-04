@@ -8,7 +8,7 @@ extension LeagueScheduleData {
         to slot: LeagueAvailableSlot,
         day: LeagueDayIndex,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         assignmentState.move(
             matchup: matchup,
@@ -20,7 +20,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 }
@@ -37,7 +37,7 @@ extension AssignmentState {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         #if LOG
         print("move;matchup=\(matchup);to slot=\(slot);day=\(day)")
@@ -51,7 +51,7 @@ extension AssignmentState {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
         assign(
             matchup: matchup.pair,
@@ -62,7 +62,7 @@ extension AssignmentState {
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 }

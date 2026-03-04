@@ -39,7 +39,7 @@ extension RedistributionData {
     /// - Returns: If redistributing matchups was successful.
     mutating func redistributeMatchups(
         clock: ContinuousClock,
-        canPlayAtFunc: LeagueScheduleData.CanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         day: LeagueDayIndex,
         gameGap: GameGap.TupleValue,
         assignmentState: inout AssignmentState,
@@ -69,38 +69,32 @@ extension RedistributionData {
                 let awayMaxAssignedLocations = assignmentState.maxLocationAllocations[unchecked: matchup.away]
                 for slot in assignmentState.availableSlots {
                     assignmentState.decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
-                    if canPlayAtFunc(
-                        assignmentState.startingTimes,
-                        assignmentState.matchupDuration,
-                        assignmentState.locationTravelDurations,
-                        slot.time,
-                        slot.location,
-                        homeAllowedTimes,
-                        homeAllowedLocations,
-                        assignmentState.playsAt[unchecked: matchup.home],
-                        assignmentState.playsAtTimes[unchecked: matchup.home],
-                        assignmentState.playsAtLocations[unchecked: matchup.home],
-                        assignmentState.assignedTimes[unchecked: matchup.home][unchecked: slot.time],
-                        assignmentState.assignedLocations[unchecked: matchup.home][unchecked: slot.location],
-                        homeMaxAssignedTimes[unchecked: slot.time],
-                        homeMaxAssignedLocations[unchecked: slot.location],
-                        gameGap
-                    ) && canPlayAtFunc(
-                        assignmentState.startingTimes,
-                        assignmentState.matchupDuration,
-                        assignmentState.locationTravelDurations,
-                        slot.time,
-                        slot.location,
-                        awayAllowedTimes,
-                        awayAllowedLocations,
-                        assignmentState.playsAt[unchecked: matchup.away],
-                        assignmentState.playsAtTimes[unchecked: matchup.away],
-                        assignmentState.playsAtLocations[unchecked: matchup.away],
-                        assignmentState.assignedTimes[unchecked: matchup.away][unchecked: slot.time],
-                        assignmentState.assignedLocations[unchecked: matchup.away][unchecked: slot.location],
-                        awayMaxAssignedTimes[unchecked: slot.time],
-                        awayMaxAssignedLocations[unchecked: slot.location],
-                        gameGap
+                    if canPlayAt.test(
+                        time: slot.time,
+                        location: slot.location,
+                        allowedTimes: homeAllowedTimes,
+                        allowedLocations: homeAllowedLocations,
+                        playsAt: assignmentState.playsAt[unchecked: matchup.home],
+                        playsAtTimes: assignmentState.playsAtTimes[unchecked: matchup.home],
+                        playsAtLocations: assignmentState.playsAtLocations[unchecked: matchup.home],
+                        timeNumber: assignmentState.assignedTimes[unchecked: matchup.home][unchecked: slot.time],
+                        locationNumber: assignmentState.assignedLocations[unchecked: matchup.home][unchecked: slot.location],
+                        maxTimeNumber: UInt8(homeMaxAssignedTimes[unchecked: slot.time]),
+                        maxLocationNumber: UInt8(homeMaxAssignedLocations[unchecked: slot.location]),
+                        gameGap: gameGap
+                    ) && canPlayAt.test(
+                        time: slot.time,
+                        location: slot.location,
+                        allowedTimes: awayAllowedTimes,
+                        allowedLocations: awayAllowedLocations,
+                        playsAt: assignmentState.playsAt[unchecked: matchup.away],
+                        playsAtTimes: assignmentState.playsAtTimes[unchecked: matchup.away],
+                        playsAtLocations: assignmentState.playsAtLocations[unchecked: matchup.away],
+                        timeNumber: assignmentState.assignedTimes[unchecked: matchup.away][unchecked: slot.time],
+                        locationNumber: assignmentState.assignedLocations[unchecked: matchup.away][unchecked: slot.location],
+                        maxTimeNumber: UInt8(awayMaxAssignedTimes[unchecked: slot.time]),
+                        maxLocationNumber: UInt8(awayMaxAssignedLocations[unchecked: slot.location]),
+                        gameGap: gameGap
                     ) {
                         redistributables.insert(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
                     }

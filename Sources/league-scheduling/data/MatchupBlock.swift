@@ -5,8 +5,7 @@ extension LeagueScheduleData {
     mutating func assignBlockOfMatchups(
         amount: Int,
         division: LeagueDivision.IDValue,
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
         return Self.assignBlockOfMatchups(
             amount: amount,
@@ -19,8 +18,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             assignmentState: &assignmentState,
-            canPlayAtFunc: canPlayAtFunc,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            canPlayAt: canPlayAt
         )
     }
 }
@@ -38,8 +36,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         assignmentState: inout AssignmentState,
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
         let limit = amount * entryMatchupsPerGameDay
         let getAvailableSlotFunc =
@@ -76,8 +73,7 @@ extension LeagueScheduleData {
             allAvailableMatchups: localAssignmentState.availableMatchups,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: { _ in false },
-            canPlayAtFunc: canPlayAtFunc,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc,
+            canPlayAt: canPlayAt,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
             selectedEntries: &selectedEntries
         ) else { return nil }
@@ -87,7 +83,7 @@ extension LeagueScheduleData {
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
-            canPlayAtFunc: canPlayAtFunc
+            canPlayAt: canPlayAt
         )
         // assign matchups, except the last one
         var remainingAmount = amount-2
@@ -103,8 +99,7 @@ extension LeagueScheduleData {
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                 allAvailableMatchups: localAssignmentState.availableMatchups,
                 localAssignmentState: &localAssignmentState,
-                canPlayAtFunc: canPlayAtFunc,
-                shuffleCanPlayAtFunc: shuffleCanPlayAtFunc,
+                canPlayAt: canPlayAt,
                 remainingPrioritizedEntries: &remainingPrioritizedEntries,
                 selectedEntries: &selectedEntries
             ) else { return nil }
@@ -145,8 +140,7 @@ extension LeagueScheduleData {
             allAvailableMatchups: localAssignmentState.availableMatchups,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
-            canPlayAtFunc: canPlayAtFunc,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc,
+            canPlayAt: canPlayAt,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
             selectedEntries: &selectedEntries
         ) else { return nil }
@@ -161,7 +155,7 @@ extension LeagueScheduleData {
                 day: day,
                 entriesCount: entriesCount,
                 gameGap: gameGap,
-                canPlayAtFunc: canPlayAtFunc
+                canPlayAt: canPlayAt
             )
             for j in 1..<entryMatchupsPerGameDay {
                 for _ in 0..<amount {
@@ -174,11 +168,10 @@ extension LeagueScheduleData {
                         gameGap: gameGap,
                         entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                         getAvailableSlotFunc: getAvailableSlotFunc,
-                        canPlayAtFunc: canPlayAtFunc,
+                        canPlayAt: canPlayAt,
                         divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                         allAvailableMatchups: localAssignmentState.availableMatchups,
                         assignmentState: &localAssignmentState,
-                        shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
                     ) else { return nil }
                 }
                 adjacentTimes.remove(time)
@@ -216,8 +209,7 @@ extension LeagueScheduleData {
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
         localAssignmentState: inout AssignmentState,
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
         selectedEntries: inout Set<LeagueEntry.IDValue>
     ) -> LeagueMatchup? {
@@ -229,11 +221,10 @@ extension LeagueScheduleData {
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAtFunc: canPlayAtFunc,
+            canPlayAt: canPlayAt,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
-            assignmentState: &localAssignmentState,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            assignmentState: &localAssignmentState
         ) else {
             return nil
         }
@@ -256,8 +247,7 @@ extension LeagueScheduleData {
         allAvailableMatchups: Set<LeagueMatchupPair>,
         localAssignmentState: inout AssignmentState,
         shouldSkipSelection: (LeagueMatchupPair) -> Bool,
-        canPlayAtFunc: CanPlayAtClosure,
-        shuffleCanPlayAtFunc: OptimizedTeamCanPlayAtClosure,
+        canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
         selectedEntries: inout Set<LeagueEntry.IDValue>
     ) -> LeagueMatchup? {
@@ -269,12 +259,11 @@ extension LeagueScheduleData {
             gameGap: gameGap,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             getAvailableSlotFunc: getAvailableSlotFunc,
-            canPlayAtFunc: canPlayAtFunc,
+            canPlayAt: canPlayAt,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
             assignmentState: &localAssignmentState,
-            shouldSkipSelection: shouldSkipSelection,
-            shuffleCanPlayAtFunc: shuffleCanPlayAtFunc
+            shouldSkipSelection: shouldSkipSelection
         ) else {
             return nil
         }

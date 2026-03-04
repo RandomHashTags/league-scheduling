@@ -1,0 +1,52 @@
+
+import StaticDateTimes
+
+struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
+    func test(
+        time: LeagueTimeIndex,
+        location: LeagueLocationIndex,
+        allowedTimes: Set<LeagueTimeIndex>,
+        allowedLocations: Set<LeagueLocationIndex>,
+        playsAt: PlaysAt.Element,
+        playsAtTimes: PlaysAtTimes.Element,
+        playsAtLocations: PlaysAtLocations.Element,
+        timeNumber: UInt8,
+        locationNumber: UInt8,
+        maxTimeNumber: UInt8,
+        maxLocationNumber: UInt8,
+        gameGap: GameGap.TupleValue
+    ) -> Bool {
+        return CanPlayAtNormal.test(
+            time: time,
+            location: location,
+            allowedTimes: allowedTimes,
+            allowedLocations: allowedLocations,
+            playsAtTimes: playsAtTimes,
+            timeNumber: timeNumber,
+            locationNumber: locationNumber,
+            maxTimeNumber: maxTimeNumber,
+            maxLocationNumber: maxLocationNumber,
+            gameGap: gameGap
+        )
+        && Self.test(
+            time: time,
+            location: location,
+            playsAtTimes: playsAtTimes,
+            playsAtLocations: playsAtLocations
+        )
+    }
+
+    /// - Returns: If a team with the provided data can play at the given `time` and `location`.
+    static func test(
+        time: LeagueTimeIndex,
+        location: LeagueLocationIndex,
+        playsAtTimes: PlaysAtTimes.Element,
+        playsAtLocations: PlaysAtLocations.Element
+    ) -> Bool {
+        if time > 0 && playsAtTimes.contains(time-1) || playsAtTimes.contains(time+1) {
+            // is back-to-back
+            return playsAtLocations.contains(location)
+        }
+        return true
+    }
+}

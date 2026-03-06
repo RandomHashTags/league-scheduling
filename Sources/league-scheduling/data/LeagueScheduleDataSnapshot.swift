@@ -1,7 +1,7 @@
 
 import StaticDateTimes
 
-public struct LeagueScheduleDataSnapshot: Sendable {
+struct LeagueScheduleDataSnapshot: Sendable {
     let entriesPerMatchup:LeagueEntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<LeagueDivision.IDValue>

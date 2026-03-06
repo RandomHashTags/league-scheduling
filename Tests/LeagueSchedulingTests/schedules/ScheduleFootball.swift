@@ -41,7 +41,7 @@ extension ScheduleFootball {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 30, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 30, data: data)
     }
 }

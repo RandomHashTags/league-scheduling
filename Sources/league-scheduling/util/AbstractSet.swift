@@ -1,5 +1,5 @@
 
-public protocol AbstractSet: Sendable, ~Copyable {
+protocol AbstractSet: Sendable, ~Copyable {
     associatedtype Element:Sendable
 
     init()
@@ -19,19 +19,22 @@ public protocol AbstractSet: Sendable, ~Copyable {
     mutating func removeMember(_ member: Element)
 }
 
-public protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {
+protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {
 }
 protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LeagueLocationIndex {
 }
 
 extension Set: AbstractSet {
     @inline(__always)
-    public mutating func removeMember(_ member: Element) {
+    mutating func removeMember(_ member: Element) {
         self.remove(member)
     }
 
     @inline(__always)
-    public mutating func insertMember(_ member: Element) {
+    mutating func insertMember(_ member: Element) {
         insert(member)
     }
 }
+
+extension Set<LeagueTimeIndex>: SetOfTimeIndexes {}
+extension Set<LeagueLocationIndex>: SetOfLocationIndexes {}

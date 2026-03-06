@@ -86,7 +86,7 @@ extension ScheduleTestsProtocol {
         divisionsCanPlayOnSameDay: Bool = true,
         divisionsCanPlayAtSameTime: Bool = true,
         entries: [LeagueEntry.Runtime]
-    ) -> LeagueSchedule {
+    ) -> some LeagueRequestPayload.RuntimeProtocol {
         let correctMaximumPlayableMatchups = LeagueRequestPayload.calculateMaximumPlayableMatchups(
             gameDays: gameDays,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
@@ -95,7 +95,7 @@ extension ScheduleTestsProtocol {
         )
         let times:LeagueTimeIndex = LeagueTimeIndex(startingTimes.count)
         let timeSlots:Set<LeagueTimeIndex> = Set(0..<times)
-        let matchupSlots:BitSet64<LeagueLocationIndex> = .init(0..<locations)
+        let matchupSlots:Set<LeagueLocationIndex> = Set(0..<locations)
         let generalSettings = LeagueGeneralSettings.Runtime.init(
             gameGap: gameGaps,
             timeSlots: LeagueTimeIndex(startingTimes.count),
@@ -108,7 +108,7 @@ extension ScheduleTestsProtocol {
             locationTimeExclusivities: nil,
             locationTravelDurations: nil,
             balanceTimeStrictness: balanceTimeStrictness,
-            balancedTimes: .init(timeSlots),
+            balancedTimes: timeSlots,
             balanceLocationStrictness: balanceLocationStrictness,
             balancedLocations: matchupSlots,
             redistributionSettings: redistributionSettings,
@@ -121,22 +121,19 @@ extension ScheduleTestsProtocol {
             )
         )
         
-        var daySettings = [LeagueDaySettings.Runtime]()
+        var daySettings = [LeagueGeneralSettings.Runtime<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>]()
         daySettings.reserveCapacity(gameDays)
         for day in 0..<gameDays {
             var settings = generalSettings
             settings.computeSettings(day: day, entries: entries)
-            daySettings.append(.init(general: settings))
+            daySettings.append(settings)
         }
-        let settings = LeagueRequestPayload.Runtime(
+        return LeagueRequestPayload.Runtime(
             gameDays: gameDays,
             divisions: divisions,
-            //divisionsCanPlayOnSameDay: divisionsCanPlayOnSameDay,
-            //divisionsCanPlayAtSameTime: divisionsCanPlayAtSameTime,
             entries: entries,
             general: generalSettings,
             daySettings: daySettings
         )
-        return LeagueSchedule(settings: settings)
     }
 }

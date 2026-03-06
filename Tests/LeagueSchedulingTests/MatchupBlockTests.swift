@@ -44,3 +44,20 @@ extension MatchupBlockTests {
         #expect(adjacent == .init([0, 1, 3, 4]))
     }
 }
+
+extension BitSet64: Hashable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.storage == rhs.storage
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(storage)
+    }
+}
+extension BitSet128: Hashable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.storage == rhs.storage
+    }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(storage)
+    }
+}

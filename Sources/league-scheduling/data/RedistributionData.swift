@@ -13,7 +13,7 @@ struct RedistributionData: Sendable {
     init(
         dayIndex: LeagueDayIndex,
         startDayIndex: LeagueDayIndex,
-        settings: LeagueRequestPayload.Runtime,
+        settings: LitLeagues_Leagues_RedistributionSettings?,
         data: borrowing LeagueScheduleData
     ) {
         self.startDayIndex = startDayIndex
@@ -24,7 +24,7 @@ struct RedistributionData: Sendable {
         let threshold = (data.entriesCount / data.entriesPerMatchup)// * entryMatchupsPerGameDay
         var minMatchupsRequired = threshold
         var maxMovableMatchups = threshold
-        if let r = settings.daySettings[unchecked: dayIndex].general.redistributionSettings ?? settings.general.redistributionSettings {
+        if let r = settings {
             minMatchupsRequired = r.hasMinMatchupsRequired ? Int(r.minMatchupsRequired) : threshold
             maxMovableMatchups =  r.hasMaxMovableMatchups  ? Int(r.maxMovableMatchups)  : threshold
         }

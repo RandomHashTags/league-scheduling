@@ -1,5 +1,4 @@
 
-import struct FoundationEssentials.Date
 import StaticDateTimes
 
 #if canImport(SwiftGlibc)
@@ -8,9 +7,9 @@ import SwiftGlibc
 import Foundation
 #endif
 
-// MARK: Parse
+// MARK: Generate
 extension LeagueRequestPayload {
-    func parseSettings() throws(LeagueError) -> LeagueRequestPayload.Runtime {
+    public func generate() async throws(LeagueError) -> LeagueGenerationResult {
         guard gameDays > 0 else {
             throw .malformedInput(msg: "'gameDays' needs to be > 0")
         }
@@ -52,15 +51,96 @@ extension LeagueRequestPayload {
         } else {
             startingDayOfWeek = 0
         }
-        var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
+        return try await generate(
+            defaultGameGap: defaultGameGap,
+            divisionsCount: divisionsCount,
+            startingDayOfWeek: startingDayOfWeek
+        )
+    }
+}
+
+extension LeagueRequestPayload {
+    private func generate(
+        defaultGameGap: GameGap,
+        divisionsCount: Int,
+        startingDayOfWeek: LeagueDayOfWeek
+    ) async throws(LeagueError) -> LeagueGenerationResult {
+        switch settings.timeSlots {
+        case 1...64:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                t: BitSet64<LeagueTimeIndex>()
+            )
+        case 1...128:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                t: BitSet128<LeagueTimeIndex>()
+            )
+        default:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                t: Set<LeagueTimeIndex>()
+            )
+        }
+    }
+    private func generate<Times: SetOfTimeIndexes>(
+        defaultGameGap: GameGap,
+        divisionsCount: Int,
+        startingDayOfWeek: LeagueDayOfWeek,
+        t: Times,
+    ) async throws(LeagueError) -> LeagueGenerationResult {
+        switch settings.locations {
+        case 1...64:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                defaultTimes: t,
+                defaultLocations: BitSet64<LeagueLocationIndex>()
+            )
+        case 65...128:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                defaultTimes: t,
+                defaultLocations: BitSet128<LeagueLocationIndex>()
+            )
+        default:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                defaultTimes: t,
+                defaultLocations: Set<LeagueLocationIndex>()
+            )
+        }
+    }
+}
+
+extension LeagueRequestPayload {
+    private func generate<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
+        defaultGameGap: GameGap,
+        divisionsCount: Int,
+        startingDayOfWeek: LeagueDayOfWeek,
+        defaultTimes: Times,
+        defaultLocations: Locations
+    ) async throws(LeagueError) -> LeagueGenerationResult {
         let divisionDefaults = loadDivisionDefaults(divisionsCount: divisionsCount)
+        var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
         let entries = try parseEntries(
             divisionsCount: divisionsCount,
             teams: entries,
             teamsForDivision: &teamsForDivision,
             divisionDefaults: divisionDefaults
         )
-        let runtimeDivisions = try parseDivisions(
+        let divisions = try parseDivisions(
             divisionsCount: divisionsCount,
             locations: settings.locations,
             divisionGameDays: divisionDefaults.gameDays,
@@ -68,8 +148,14 @@ extension LeagueRequestPayload {
             fallbackDayOfWeek: startingDayOfWeek,
             teamsForDivision: teamsForDivision
         )
-        let timesSet = BitSet64<LeagueTimeIndex>(0..<settings.timeSlots)
-        let locationsSet = BitSet64<LeagueLocationIndex>(0..<settings.locations)
+        let correctMaximumPlayableMatchups = Self.calculateMaximumPlayableMatchups(
+            gameDays: gameDays,
+            entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
+            teamsCount: entries.count,
+            maximumPlayableMatchups: settings.maximumPlayableMatchups.array
+        )
+
+        let timesSet = Times(0..<settings.timeSlots)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
@@ -86,55 +172,63 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        var balancedTimes:BitSet64<LeagueTimeIndex>
-        var balancedLocations:BitSet64<LeagueLocationIndex>
+        var balancedTimes:Times
+        var balancedLocations:Locations
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
-            balancedTimes = .init()
+            balancedTimes = defaultTimes
         }
         if settings.balanceLocationStrictness != .lenient {
-            balancedLocations = locationsSet
+            balancedLocations = Locations(0..<settings.locations)
         } else {
-            balancedLocations = .init()
+            balancedLocations = defaultLocations
         }
+        return try await generate(
+            divisions: divisions,
+            entries: entries,
+            correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
+            general: LeagueGeneralSettings.Runtime(
+                gameGap: defaultGameGap,
+                timeSlots: settings.timeSlots,
+                startingTimes: settings.startingTimes.times,
+                entriesPerLocation: settings.entriesPerLocation,
+                locations: settings.locations,
+                entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
+                maximumPlayableMatchups: correctMaximumPlayableMatchups,
+                matchupDuration: settings.matchupDuration,
+                locationTimeExclusivities: defaultTimeExclusivities,
+                locationTravelDurations: defaultTravelDurations,
+                balanceTimeStrictness: settings.balanceTimeStrictness,
+                balancedTimes: balancedTimes,
+                balanceLocationStrictness: settings.balanceLocationStrictness,
+                balancedLocations: balancedLocations,
+                redistributionSettings: settings.hasRedistributionSettings ? settings.redistributionSettings : nil,
+                flags: settings.flags
+            )
+        )
+    }
+}
 
-        let correctMaximumPlayableMatchups = Self.calculateMaximumPlayableMatchups(
-            gameDays: gameDays,
-            entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
-            teamsCount: entries.count,
-            maximumPlayableMatchups: settings.maximumPlayableMatchups.array
-        )
-        let general = LeagueGeneralSettings.Runtime(
-            gameGap: defaultGameGap,
-            timeSlots: settings.timeSlots,
-            startingTimes: settings.startingTimes.times,
-            entriesPerLocation: settings.entriesPerLocation,
-            locations: settings.locations,
-            entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
-            maximumPlayableMatchups: correctMaximumPlayableMatchups,
-            matchupDuration: settings.matchupDuration,
-            locationTimeExclusivities: defaultTimeExclusivities,
-            locationTravelDurations: defaultTravelDurations,
-            balanceTimeStrictness: settings.balanceTimeStrictness,
-            balancedTimes: balancedTimes,
-            balanceLocationStrictness: settings.balanceLocationStrictness,
-            balancedLocations: balancedLocations,
-            redistributionSettings: settings.hasRedistributionSettings ? settings.redistributionSettings : nil,
-            flags: settings.flags
-        )
+extension LeagueRequestPayload {
+    private func generate<T: LeagueGeneralSettings.RuntimeProtocol>(
+        divisions: [LeagueDivision.Runtime],
+        entries: [LeagueEntry.Runtime],
+        correctMaximumPlayableMatchups: [UInt32],
+        general: T
+    ) async throws(LeagueError) -> LeagueGenerationResult {
         let daySettings = try parseDaySettings(
             general: general,
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
             entries: entries
         )
-        return .init(
+        return await LeagueSchedule.generate(LeagueRequestPayload.Runtime(
             gameDays: gameDays,
-            divisions: runtimeDivisions,
+            divisions: divisions,
             entries: entries,
             general: general,
             daySettings: daySettings
-        )
+        ))
     }
 }
 
@@ -150,6 +244,7 @@ extension LeagueRequestPayload {
 
 // MARK: Load division defaults
 extension LeagueRequestPayload {
+    // TODO: fix (pass the generic times and locations)
     private func loadDivisionDefaults(
         divisionsCount: Int
     ) -> DivisionDefaults {
@@ -354,85 +449,33 @@ extension LeagueRequestPayload {
 
 // MARK: Parse day settings
 extension LeagueRequestPayload {
-    private func parseDaySettings(
-        general: LeagueGeneralSettings.Runtime,
+    private func parseDaySettings<T: LeagueGeneralSettings.RuntimeProtocol>(
+        general: T,
         correctMaximumPlayableMatchups: [UInt32],
         entries: [LeagueEntry.Runtime]
-    ) throws(LeagueError) -> [LeagueDaySettings.Runtime] {
-        var daySettings = [LeagueDaySettings.Runtime]()
+    ) throws(LeagueError) -> [T] {
+        var daySettings = [T]()
         daySettings.reserveCapacity(gameDays)
         if hasIndividualDaySettings {
             for dayIndex in 0..<gameDays {
                 var settings = general
                 let targetDaySettings = individualDaySettings.days[unchecked: dayIndex]
                 if targetDaySettings.hasSettings {
-                    let customDaySettings = targetDaySettings.settings
-                    if customDaySettings.hasGameGap, let gg = GameGap(htmlInputValue: customDaySettings.gameGap) {
-                        settings.gameGap = gg
-                    }
-                    if customDaySettings.hasTimeSlots {
-                        settings.timeSlots = customDaySettings.timeSlots
-                    }
-                    if customDaySettings.hasStartingTimes {
-                        settings.startingTimes = customDaySettings.startingTimes.times
-                    }
-                    if customDaySettings.hasEntriesPerLocation {
-                        settings.entriesPerLocation = customDaySettings.entriesPerLocation
-                    }
-                    if customDaySettings.hasLocations {
-                        settings.locations = customDaySettings.locations
-                    }
-                    if customDaySettings.hasEntryMatchupsPerGameDay {
-                        settings.defaultMaxEntryMatchupsPerGameDay = customDaySettings.entryMatchupsPerGameDay
-                    }
-                    if customDaySettings.hasMaximumPlayableMatchups {
-                        settings.maximumPlayableMatchups = Self.calculateMaximumPlayableMatchups(
-                            gameDays: gameDays,
-                            entryMatchupsPerGameDay: settings.defaultMaxEntryMatchupsPerGameDay,
-                            teamsCount: entries.count,
-                            maximumPlayableMatchups: customDaySettings.maximumPlayableMatchups.array
-                        )
-                    } else {
-                        settings.maximumPlayableMatchups = correctMaximumPlayableMatchups
-                    }
-                    if customDaySettings.hasMatchupDuration {
-                        settings.matchupDuration = customDaySettings.matchupDuration
-                    }
-                    if customDaySettings.hasLocationTimeExclusivities {
-                        settings.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ BitSet64($0.times) })
-                    }
-                    if customDaySettings.hasLocationTravelDurations {
-                        settings.locationTravelDurations = customDaySettings.locationTravelDurations.locations.map({ $0.travelDurationTo })
-                    }
-                    if customDaySettings.hasBalanceTimeStrictness {
-                        settings.balanceTimeStrictness = customDaySettings.balanceTimeStrictness
-                    }
-                    if customDaySettings.hasBalanceLocationStrictness {
-                        settings.balanceLocationStrictness = customDaySettings.balanceLocationStrictness
-                    }
-                    if customDaySettings.hasRedistributionSettings {
-                        settings.redistributionSettings = customDaySettings.redistributionSettings
-                        if let defaultSettings = general.redistributionSettings {
-                            if !customDaySettings.redistributionSettings.hasMinMatchupsRequired, defaultSettings.hasMinMatchupsRequired {
-                                settings.redistributionSettings!.minMatchupsRequired = defaultSettings.minMatchupsRequired
-                            }
-                            if !customDaySettings.redistributionSettings.hasMaxMovableMatchups, defaultSettings.hasMaxMovableMatchups {
-                                settings.redistributionSettings!.maxMovableMatchups = defaultSettings.maxMovableMatchups
-                            }
-                        }
-                    }
-                    if customDaySettings.hasFlags {
-                        settings.flags = customDaySettings.flags
-                    }
+                    settings.apply(
+                        gameDays: gameDays, entriesCount: entries.count,
+                        correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
+                        general: general,
+                        customDaySettings: targetDaySettings.settings
+                    )
                 }
                 settings.computeSettings(day: dayIndex, entries: entries)
-                daySettings.append(.init(general: settings))
+                daySettings.append(settings)
             }
         } else {
             for dayIndex in 0..<gameDays {
                 var settings = general
                 settings.computeSettings(day: dayIndex, entries: entries)
-                daySettings.append(.init(general: settings))
+                daySettings.append(settings)
             }
         }
         return daySettings

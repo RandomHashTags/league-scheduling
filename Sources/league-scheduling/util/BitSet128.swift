@@ -1,45 +1,45 @@
 
 /// - Warning: Only supports a maximum of 128 entries!
 /// - Warning: Only supports integers < `128`!
-public struct BitSet128<Element: FixedWidthInteger & Sendable>: Sendable {
+struct BitSet128<Element: FixedWidthInteger & Sendable>: Sendable {
     private(set) var storage:UInt128
 
-    public init() {
+    init() {
         storage = 0
     }
 
-    public init(_ collection: some Collection<Element>) {
+    init(_ collection: some Collection<Element>) {
         storage = 0
         for e in collection {
             insertMember(e)
         }
     }
 
-    public var count: Int {
+    var count: Int {
         storage.nonzeroBitCount
     }
-    public var isEmpty: Bool {
-        count == 0
+    var isEmpty: Bool {
+        storage == 0
     }
 }
 
 // MARK: contains
 extension BitSet128 {
-    public func contains(_ member: Element) -> Bool {
+    func contains(_ member: Element) -> Bool {
         (storage & (1 << member)) != 0
     }
 }
 
 // MARK: insert
 extension BitSet128 {
-    public mutating func insertMember(_ member: Element) {
+    mutating func insertMember(_ member: Element) {
         storage |= (1 << member)
     }
 }
 
 // MARK: remove
 extension BitSet128 {
-    public mutating func removeMember(_ member: Element) {
+    mutating func removeMember(_ member: Element) {
         storage &= ~(1 << member)
     }
 }
@@ -85,19 +85,23 @@ extension BitSet128 {
 // MARK: Random
 extension BitSet128 {
     func randomElement() -> Element? {
-        let c = count
-        guard c > 0 else { return nil }
-        return Element.random(in: 0..<Element(c))
+        guard storage != 0 else { return nil }
+        let skip = Int.random(in: 0..<count)
+        var temp = storage
+        for _ in 0..<skip {
+            temp &= temp - 1
+        }
+        return Element(temp.trailingZeroBitCount)
     }
 }
 
 // MARK: Codable
 extension BitSet128: Codable {
-    public init(from decoder: any Decoder) throws {
+    init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         storage = try container.decode(UInt128.self)
     }
-    public func encode(to encoder: any Encoder) throws {
+    func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(storage)
     }

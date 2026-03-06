@@ -73,3 +73,16 @@ extension BalanceHomeAwayExpectations {
         return (home, away)
     }
 }
+
+extension LeagueEntry.Runtime: Hashable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+        && lhs.division == rhs.division
+        && lhs.gameDays == rhs.gameDays
+        && lhs.gameTimes == rhs.gameTimes
+        && lhs.gameLocations == rhs.gameLocations
+        && lhs.homeLocations == rhs.homeLocations
+        && lhs.byes == rhs.byes
+        && lhs.matchupsPerGameDay == rhs.matchupsPerGameDay
+    }
+}

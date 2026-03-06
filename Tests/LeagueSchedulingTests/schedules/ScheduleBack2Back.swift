@@ -44,8 +44,8 @@ struct ScheduleBack2Back: ScheduleTestsProtocol {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
 }
 
@@ -54,10 +54,10 @@ extension ScheduleBack2Back {
     @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() async throws {
         let schedule = try Self.scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10()
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
-    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> LeagueSchedule {
+    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> some LeagueRequestPayload.RuntimeProtocol {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 6, 24)
         var entryDivisions = [LeagueDivision.IDValue]()
@@ -135,7 +135,7 @@ extension ScheduleBack2Back {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 200, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 200, data: data)
     }
 }

@@ -82,21 +82,6 @@ extension LeagueScheduleData {
     }
 }
 
-// MARK: HomeAwayValue
-extension LeagueSchedule {
-    public struct HomeAwayValue: Codable, Sendable {
-        /// Number of matchups played at 'home'.
-        public var home:UInt8
-
-        /// Number of matchups played at 'away'.
-        public var away:UInt8
-
-        public var sum: UInt16 {
-            UInt16(home) + UInt16(away)
-        }
-    }
-}
-
 // MARK: New Day
 extension LeagueScheduleData {
     /// Indicates a new day will begin to be scheduled.
@@ -107,10 +92,10 @@ extension LeagueScheduleData {
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
     mutating func newDay(
         day: LeagueDayIndex,
-        daySettings: LeagueGeneralSettings.Runtime,
+        daySettings: some LeagueGeneralSettings.RuntimeProtocol,
         divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
         availableSlots: Set<LeagueAvailableSlot>,
-        settings: LeagueRequestPayload.Runtime,
+        settings: some LeagueRequestPayload.RuntimeProtocol,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         let now = clock.now

@@ -39,7 +39,7 @@ public typealias LeagueMatchupPair = LitLeagues_Leagues_MatchupPair
 /// Number of times an entry was assigned to play at home or away against another entry.
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: [opponent `LeagueEntry.IDValue`: [`home (0) or away (1)`: `total played`]]]
-typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<LeagueSchedule.HomeAwayValue>>
+typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<HomeAwayValue>>
 
 /// Maximum number of times an entry can play against another entry.
 ///
@@ -104,4 +104,22 @@ public struct Leagues3 {
     public static let maximumAllowedRegenerationAttemptsForANegativeDayIndex:LeagueRegenerationAttempt = 100
     public static let maximumAllowedRegenerationAttemptsForASingleDay:LeagueRegenerationAttempt = 100
     public static let failedRegenerationAttemptsThreshold:LeagueRegenerationAttempt = 10_000
+}
+
+// MARK: global
+func optimalTimeSlots(
+    availableTimeSlots: LeagueTimeIndex,
+    locations: LeagueLocationIndex,
+    matchupsCount: LeagueLocationIndex
+) -> LeagueTimeIndex {
+    var totalMatchupsPlayed:LeagueLocationIndex = 0
+    var filledTimes:LeagueTimeIndex = 0
+    while totalMatchupsPlayed < matchupsCount {
+        filledTimes += 1
+        totalMatchupsPlayed += locations
+    }
+    #if LOG
+    print("LeagueSchedule;optimalTimeSlots;availableTimeSlots=\(availableTimeSlots);locations=\(locations);matchupsCount=\(matchupsCount);totalMatchupsPlayed=\(totalMatchupsPlayed);filledTimes=\(filledTimes)")
+    #endif
+    return min(availableTimeSlots, filledTimes)
 }

@@ -23,8 +23,8 @@ struct CanPlayAtTests {
             #expect(CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                allowedTimes: .init([0, 1, 2]),
-                allowedLocations: .init([0, 1, 2]),
+                allowedTimes: BitSet64([0, 1, 2]),
+                allowedLocations: BitSet64([0, 1, 2]),
                 playsAtTimes: playsAtTimes,
                 timeNumber: timeNumbers[unchecked: time],
                 locationNumber: locationNumbers[unchecked: location],
@@ -35,8 +35,8 @@ struct CanPlayAtTests {
             #expect(!CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                allowedTimes: .init(),
-                allowedLocations: .init(),
+                allowedTimes: BitSet64(),
+                allowedLocations: BitSet64(),
                 playsAtTimes: playsAtTimes,
                 timeNumber: timeNumbers[unchecked: time],
                 locationNumber: locationNumbers[unchecked: location],
@@ -47,12 +47,12 @@ struct CanPlayAtTests {
         }
 
         playsAt.insert(LeagueAvailableSlot(time: 0, location: location))
-        playsAtTimes.insert(0)
+        playsAtTimes.insertMember(0)
         #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            allowedTimes: .init([0, 1, 2]),
-            allowedLocations: .init([0, 1, 2]),
+            allowedTimes: BitSet64([0, 1, 2]),
+            allowedLocations: BitSet64([0, 1, 2]),
             playsAtTimes: playsAtTimes,
             timeNumber: timeNumbers[unchecked: 0],
             locationNumber: locationNumbers[unchecked: location],
@@ -67,8 +67,8 @@ struct CanPlayAtTests {
         #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            allowedTimes: .init([0, 1, 2]),
-            allowedLocations: .init([0, 1, 2]),
+            allowedTimes: BitSet64([0, 1, 2]),
+            allowedLocations: BitSet64([0, 1, 2]),
             playsAtTimes: playsAtTimes,
             timeNumber: timeNumbers[0],
             locationNumber: locationNumbers[unchecked: location],

@@ -1,6 +1,4 @@
 
-import struct FoundationEssentials.UUID
-
 #if canImport(SwiftGlibc)
 import SwiftGlibc
 #elseif canImport(Foundation)
@@ -8,18 +6,8 @@ import Foundation
 #endif
 
 // TODO: support divisions on the same day with different times
-public struct LeagueSchedule: Sendable, ~Copyable {
-    /// Settings for this schedule.
-    public let settings:LeagueRequestPayload.Runtime
-
-    public init(
-        settings: LeagueRequestPayload.Runtime
-    ) {
-        self.settings = settings
-    }
-
-    // MARK: Generate
-    public func generate() async -> LeagueGenerationResult {
+enum LeagueSchedule: Sendable, ~Copyable {
+    static func generate(_ settings: some LeagueRequestPayload.RuntimeProtocol) async -> LeagueGenerationResult {
         var err:String? = nil
         var results = [LeagueGenerationData]()
         do {
@@ -37,18 +25,16 @@ public struct LeagueSchedule: Sendable, ~Copyable {
             err = "\(error)"
         }
         return .init(
-            id: UUID(),
             results: results,
-            error: err,
-            settings: settings
+            error: err
         )
     }
 }
 
 // MARK: Generate schedules
 extension LeagueSchedule {
-    func generateSchedules(
-        settings: LeagueRequestPayload.Runtime
+    static func generateSchedules(
+        settings: some LeagueRequestPayload.RuntimeProtocol
     ) async throws -> [LeagueGenerationData] {
         let divisionsCount = settings.divisions.count
         var divisionEntries:ContiguousArray<Set<LeagueEntry.IDValue>> = .init(repeating: Set(), count: divisionsCount)
@@ -62,11 +48,11 @@ extension LeagueSchedule {
         var maxStartingTimes:LeagueTimeIndex = 0
         var maxLocations:LeagueLocationIndex = 0
         for setting in settings.daySettings {
-            if setting.general.timeSlots > maxStartingTimes {
-                maxStartingTimes = LeagueTimeIndex(setting.general.timeSlots)
+            if setting.timeSlots > maxStartingTimes {
+                maxStartingTimes = LeagueTimeIndex(setting.timeSlots)
             }
-            if setting.general.locations > maxLocations {
-                maxLocations = setting.general.locations
+            if setting.locations > maxLocations {
+                maxLocations = setting.locations
             }
         }
 
@@ -120,7 +106,7 @@ extension LeagueSchedule {
 
 // MARK: Timeout logic
 extension LeagueSchedule {
-    func withTimeout<T>(
+    static func withTimeout<T>(
         key: String,
         resultCount: Int,
         timeout: Duration,
@@ -157,7 +143,7 @@ extension LeagueSchedule {
 extension LeagueSchedule {
     private static func generateSchedule(
         dayOfWeek: LeagueDayOfWeek,
-        settings: LeagueRequestPayload.Runtime,
+        settings: some LeagueRequestPayload.RuntimeProtocol,
         dataSnapshot: LeagueScheduleDataSnapshot,
         divisionsCount: Int,
         maxStartingTimes: LeagueTimeIndex,
@@ -190,12 +176,8 @@ extension LeagueSchedule {
         while day < gameDays {
             if gameDaySettingValuesCount <= day {
                 gameDaySettingValuesCount += 1
-                let daySettings = settings.daySettings[unchecked: day].general
-                let availableSlots = LeagueSchedule.availableSlots(
-                    times: daySettings.timeSlots,
-                    locations: daySettings.locations,
-                    locationTimeExclusivity: daySettings.locationTimeExclusivities
-                )
+                let daySettings = settings.daySettings[unchecked: day]
+                let availableSlots = daySettings.availableSlots()
                 do throws(LeagueError) {
                     try data.newDay(
                         day: day,
@@ -292,7 +274,7 @@ extension LeagueSchedule {
     static func loadMaxAllocations(
         dataSnapshot: inout LeagueScheduleDataSnapshot,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Set<LeagueEntry.IDValue>>>,
-        settings: borrowing LeagueRequestPayload.Runtime,
+        settings: some LeagueRequestPayload.RuntimeProtocol,
         maxStartingTimes: LeagueTimeIndex,
         maxLocations: LeagueLocationIndex,
         scheduledEntries: Set<LeagueEntry.IDValue>
@@ -306,7 +288,7 @@ extension LeagueSchedule {
             //var maxPossiblePlayedForLocations = [LeagueLocationIndex](repeating: 0, count: maxLocations)
             for day in 0..<settings.gameDays {
                 guard entry.gameDays.contains(day) && !entry.byes.contains(day) else { continue }
-                let daySettings = settings.daySettings[unchecked: day].general
+                let daySettings = settings.daySettings[unchecked: day]
                 let entryMaxMatchupsForDay = entry.maxMatchupsForGameDay(
                     day: day,
                     fallback: daySettings.defaultMaxEntryMatchupsPerGameDay
@@ -380,57 +362,6 @@ extension LeagueSchedule {
             print("LeagueSchedule;loadMaxAllocations;entryIndex=\(entryIndex);dataSnapshot.assignmentState.maxTimeAllocations=\(dataSnapshot.assignmentState.maxTimeAllocations);dataSnapshot.assignmentState.maxLocationAllocations=\(dataSnapshot.assignmentState.maxLocationAllocations)")
             #endif
         }
-    }
-}
-
-// MARK: Optimal time slots
-extension LeagueSchedule {
-    static func optimalTimeSlots(
-        availableTimeSlots: LeagueTimeIndex,
-        locations: LeagueLocationIndex,
-        matchupsCount: LeagueLocationIndex
-    ) -> LeagueTimeIndex {
-        var totalMatchupsPlayed:LeagueLocationIndex = 0
-        var filledTimes:LeagueTimeIndex = 0
-        while totalMatchupsPlayed < matchupsCount {
-            filledTimes += 1
-            totalMatchupsPlayed += locations
-        }
-        #if LOG
-        print("LeagueSchedule;optimalTimeSlots;availableTimeSlots=\(availableTimeSlots);locations=\(locations);matchupsCount=\(matchupsCount);totalMatchupsPlayed=\(totalMatchupsPlayed);filledTimes=\(filledTimes)")
-        #endif
-        return min(availableTimeSlots, filledTimes)
-    }
-}
-
-// MARK: Get available slots
-extension LeagueSchedule {
-    static func availableSlots(
-        times: LeagueTimeIndex,
-        locations: LeagueLocationIndex,
-        locationTimeExclusivity: [BitSet64<LeagueTimeIndex>]?
-    ) -> Set<LeagueAvailableSlot> {
-        var slots = Set<LeagueAvailableSlot>(minimumCapacity: times * locations)
-        if let exclusivities = locationTimeExclusivity {
-            for location in 0..<locations {
-                if let timeExclusives = exclusivities[uncheckedPositive: location] {
-                    for time in 0..<times {
-                        if timeExclusives.contains(time) {
-                            let slot = LeagueAvailableSlot(time: time, location: location)
-                            slots.insert(slot)
-                        }
-                    }
-                }
-            }
-        } else {
-            for time in 0..<times {
-                for location in 0..<locations {
-                    let slot = LeagueAvailableSlot(time: time, location: location)
-                    slots.insert(slot)
-                }
-            }
-        }
-        return slots
     }
 }
 

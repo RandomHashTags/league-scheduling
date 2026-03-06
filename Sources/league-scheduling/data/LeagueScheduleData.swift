@@ -171,10 +171,10 @@ extension LeagueScheduleData {
             assignmentState.playsAt[unchecked: i].removeAll(keepingCapacity: true)
         }
         for i in 0..<assignmentState.playsAtTimes.count {
-            assignmentState.playsAtTimes[unchecked: i].removeAll(keepingCapacity: true)
+            assignmentState.playsAtTimes[unchecked: i].removeAll()
         }
         for i in 0..<assignmentState.playsAtLocations.count {
-            assignmentState.playsAtLocations[unchecked: i].removeAll(keepingCapacity: true)
+            assignmentState.playsAtLocations[unchecked: i].removeAll()
         }
         assignmentState.recalculateNewDayRemainingAllocations(entriesCount: entriesCount)
 

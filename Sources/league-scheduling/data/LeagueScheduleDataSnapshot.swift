@@ -80,8 +80,8 @@ public struct LeagueScheduleDataSnapshot: Sendable {
             prioritizedEntries: prioritizedEntries,
             availableSlots: [],
             playsAt: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtTimes: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtLocations: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
+            playsAtTimes: .init(repeating: .init(), count: entriesCount),
+            playsAtLocations: .init(repeating: .init(), count: entriesCount),
             matchups: [],
             shuffleHistory: []
         )

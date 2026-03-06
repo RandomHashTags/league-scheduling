@@ -16,12 +16,12 @@ extension LeagueGeneralSettings {
         public var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
         public var maximumPlayableMatchups:[UInt32]
         public var matchupDuration:LeagueMatchupDuration
-        public var locationTimeExclusivities:[Set<LeagueTimeIndex>]?
+        public var locationTimeExclusivities:[BitSet64<LeagueTimeIndex>]?
         public var locationTravelDurations:[[LeagueMatchupDuration]]?
         public var balanceTimeStrictness:LeagueBalanceStrictness
-        public var balancedTimes:Set<LeagueTimeIndex>
+        public var balancedTimes:BitSet64<LeagueTimeIndex>
         public var balanceLocationStrictness:LeagueBalanceStrictness
-        public var balancedLocations:Set<LeagueLocationIndex>
+        public var balancedLocations:BitSet64<LeagueLocationIndex>
         public var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
         public var flags:UInt32
 
@@ -40,7 +40,7 @@ extension LeagueGeneralSettings {
             maximumPlayableMatchups = protobuf.maximumPlayableMatchups.array
             matchupDuration = protobuf.matchupDuration
             if protobuf.hasLocationTimeExclusivities {
-                locationTimeExclusivities = protobuf.locationTimeExclusivities.locations.map({ Set($0.times) })
+                locationTimeExclusivities = protobuf.locationTimeExclusivities.locations.map({ .init($0.times) })
             } else {
                 locationTimeExclusivities = nil
             }
@@ -50,9 +50,9 @@ extension LeagueGeneralSettings {
                 locationTravelDurations = nil
             }
             balanceTimeStrictness = protobuf.balanceTimeStrictness
-            balancedTimes = Set(protobuf.balancedTimes.array)
+            balancedTimes = .init(protobuf.balancedTimes.array)
             balanceLocationStrictness = protobuf.balanceLocationStrictness
-            balancedLocations = Set(protobuf.balancedLocations.array)
+            balancedLocations = .init(protobuf.balancedLocations.array)
             if protobuf.hasRedistributionSettings {
                 redistributionSettings = protobuf.redistributionSettings
             } else {
@@ -100,12 +100,12 @@ extension LeagueGeneralSettings.Runtime {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32],
         matchupDuration: LeagueMatchupDuration,
-        locationTimeExclusivities: [Set<LeagueTimeIndex>]?,
+        locationTimeExclusivities: [BitSet64<LeagueTimeIndex>]?,
         locationTravelDurations: [[LeagueMatchupDuration]]?,
         balanceTimeStrictness: LeagueBalanceStrictness,
-        balancedTimes: Set<LeagueTimeIndex>,
+        balancedTimes: BitSet64<LeagueTimeIndex>,
         balanceLocationStrictness: LeagueBalanceStrictness,
-        balancedLocations: Set<LeagueLocationIndex>,
+        balancedLocations: BitSet64<LeagueLocationIndex>,
         redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
         flags: UInt32
     ) {

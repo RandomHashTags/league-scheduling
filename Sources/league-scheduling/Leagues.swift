@@ -80,12 +80,12 @@ typealias MaximumLocationAllocations = ContiguousArray<ContiguousArray<LeagueLoc
 /// Times where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueTimeIndex>`]
-typealias PlaysAtTimes = ContiguousArray<Set<LeagueTimeIndex>>
+typealias PlaysAtTimes = ContiguousArray<BitSet64<LeagueTimeIndex>>
 
 /// Locations where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueLocationIndex>`]
-typealias PlaysAtLocations = ContiguousArray<Set<LeagueLocationIndex>>
+typealias PlaysAtLocations = ContiguousArray<BitSet64<LeagueLocationIndex>>
 
 /// Slots where an entry has already played at for the `day`.
 /// 

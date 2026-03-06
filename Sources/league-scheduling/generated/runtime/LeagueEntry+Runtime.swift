@@ -5,8 +5,8 @@ extension LeagueEntry {
         division: LeagueDivision.IDValue,
         defaultGameDays: Set<LeagueDayIndex>,
         defaultByes: Set<LeagueDayIndex>,
-        defaultGameTimes: [Set<LeagueTimeIndex>],
-        defaultGameLocations: [Set<LeagueLocationIndex>]
+        defaultGameTimes: [BitSet64<LeagueTimeIndex>],
+        defaultGameLocations: [BitSet64<LeagueLocationIndex>]
     ) -> Runtime {
         return .init(
             id: id,
@@ -33,15 +33,15 @@ extension LeagueEntry {
         /// Times this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
-        public let gameTimes:[Set<LeagueTimeIndex>]
+        public let gameTimes:[BitSet64<LeagueTimeIndex>]
 
         /// Locations this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
-        public let gameLocations:[Set<LeagueLocationIndex>]
+        public let gameLocations:[BitSet64<LeagueLocationIndex>]
 
         /// Home locations for this entry.
-        public let homeLocations:Set<LeagueLocationIndex>
+        public let homeLocations:BitSet64<LeagueLocationIndex>
 
         /// Day indexes where this entry doesn't play due to being on a bye week.
         public let byes:Set<LeagueDayIndex>
@@ -54,15 +54,15 @@ extension LeagueEntry {
             protobuf: LeagueEntry,
             defaultGameDays: Set<LeagueDayIndex>,
             defaultByes: Set<LeagueDayIndex>,
-            defaultGameTimes: [Set<LeagueTimeIndex>],
-            defaultGameLocations: [Set<LeagueLocationIndex>]
+            defaultGameTimes: [BitSet64<LeagueTimeIndex>],
+            defaultGameLocations: [BitSet64<LeagueLocationIndex>]
         ) {
             self.id = id
             self.division = division
             gameDays = protobuf.hasGameDays ? Set(protobuf.gameDays.gameDayIndexes) : defaultGameDays
-            gameTimes = protobuf.hasGameDayTimes ? protobuf.gameDayTimes.times.map({ Set($0.times) }) : defaultGameTimes
-            gameLocations = protobuf.hasGameDayLocations ? protobuf.gameDayLocations.locations.map({ Set($0.locations) }) : defaultGameLocations
-            homeLocations = protobuf.hasHomeLocations ? Set(protobuf.homeLocations.homeLocations) : []
+            gameTimes = protobuf.hasGameDayTimes ? protobuf.gameDayTimes.times.map({ .init($0.times) }) : defaultGameTimes
+            gameLocations = protobuf.hasGameDayLocations ? protobuf.gameDayLocations.locations.map({ .init($0.locations) }) : defaultGameLocations
+            homeLocations = protobuf.hasHomeLocations ? .init(protobuf.homeLocations.homeLocations) : .init()
             byes = protobuf.hasByes ? Set(protobuf.byes.byes) : defaultByes
             matchupsPerGameDay = protobuf.hasMatchupsPerGameDay ? protobuf.matchupsPerGameDay : nil
         }
@@ -71,9 +71,9 @@ extension LeagueEntry {
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
             gameDays: Set<LeagueDayIndex>,
-            gameTimes: [Set<LeagueTimeIndex>],
-            gameLocations: [Set<LeagueLocationIndex>],
-            homeLocations: Set<LeagueLocationIndex>,
+            gameTimes: [BitSet64<LeagueTimeIndex>],
+            gameLocations: [BitSet64<LeagueLocationIndex>],
+            homeLocations: BitSet64<LeagueLocationIndex>,
             byes: Set<LeagueDayIndex>,
             matchupsPerGameDay: LitLeagues_Leagues_EntryMatchupsPerGameDay?
         ) {

@@ -33,8 +33,8 @@ struct EntryAssignmentData: Sendable {
     var maxSameOpponentMatchups:ContiguousArray<LeagueMaximumSameOpponentMatchupsCap>
 
     var playsAt:Set<LeagueAvailableSlot>
-    var playsAtTimes:Set<LeagueTimeIndex>
-    var playsAtLocations:Set<LeagueLocationIndex>
+    var playsAtTimes:BitSet64<LeagueTimeIndex>
+    var playsAtLocations:BitSet64<LeagueLocationIndex>
 
     var maxTimeAllocations:[LeagueTimeIndex]
     var maxLocationAllocations:[LeagueLocationIndex]
@@ -84,7 +84,7 @@ extension EntryAssignmentData {
 extension EntryAssignmentData {
     mutating func resetPlaysAt() {
         playsAt.removeAll(keepingCapacity: true)
-        playsAtTimes.removeAll(keepingCapacity: true)
-        playsAtLocations.removeAll(keepingCapacity: true)
+        playsAtTimes.removeAll()
+        playsAtLocations.removeAll()
     }
 }

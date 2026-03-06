@@ -9,7 +9,7 @@ struct CanPlayAtGameGap: Sendable, ~Copyable {
         gameGap: GameGap.TupleValue
     ) -> Bool {
         var closest:LeagueTimeIndex? = nil
-        for playedTime in playsAtTimes {
+        playsAtTimes.forEachBit { playedTime in
             let distance = abs(playedTime.distance(to: time))
             if closest == nil || distance < closest! {
                 closest = LeagueTimeIndex(distance)

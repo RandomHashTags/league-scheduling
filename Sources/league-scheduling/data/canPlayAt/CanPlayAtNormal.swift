@@ -7,8 +7,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     func test(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        allowedTimes: BitSet64<LeagueTimeIndex>,
+        allowedLocations: BitSet64<LeagueLocationIndex>,
         playsAt: PlaysAt.Element,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element,
@@ -37,8 +37,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     static func test(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        allowedTimes: BitSet64<LeagueTimeIndex>,
+        allowedLocations: BitSet64<LeagueLocationIndex>,
         playsAtTimes: PlaysAtTimes.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,
@@ -64,8 +64,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     static func isAllowed(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        allowedTimes: BitSet64<LeagueTimeIndex>,
+        allowedLocations: BitSet64<LeagueLocationIndex>,
         playsAtTimes: PlaysAtTimes.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,

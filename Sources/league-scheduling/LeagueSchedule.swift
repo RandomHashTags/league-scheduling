@@ -343,7 +343,7 @@ extension LeagueSchedule {
             )
             for time in 0..<maxStartingTimes {
                 let timeNumber:LeagueTimeIndex
-                if settings.general.balancedTimes.contains(LeagueTimeIndex(time)) {
+                if settings.general.balancedTimes.contains(time) {
                     timeNumber = defaultTimeNumber
                     /*timeNumber = Self.balanceNumber(
                         totalMatchupsPlayed: maxPossiblePlayedForTimes[unchecked: time],
@@ -408,7 +408,7 @@ extension LeagueSchedule {
     static func availableSlots(
         times: LeagueTimeIndex,
         locations: LeagueLocationIndex,
-        locationTimeExclusivity: [Set<LeagueTimeIndex>]?
+        locationTimeExclusivity: [BitSet64<LeagueTimeIndex>]?
     ) -> Set<LeagueAvailableSlot> {
         var slots = Set<LeagueAvailableSlot>(minimumCapacity: times * locations)
         if let exclusivities = locationTimeExclusivity {

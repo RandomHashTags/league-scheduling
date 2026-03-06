@@ -14,12 +14,12 @@ extension ScheduleTestsProtocol {
         times: LeagueTimeIndex,
         locations: LeagueLocationIndex,
         teams: Int,
-        homeLocations: ContiguousArray<Set<LeagueLocationIndex>> = [],
+        homeLocations: ContiguousArray<BitSet64<LeagueLocationIndex>> = [],
         byes: ContiguousArray<Set<LeagueDayIndex>> = []
     ) -> [LeagueEntry.Runtime] {
         let playsOn = Array(repeating: Set(0..<gameDays), count: teams)
-        let playsAtTimes = Array(repeating: Array(repeating: Set(0..<times), count: gameDays), count: teams)
-        let playsAtLocations = Array(repeating: Array(repeating: Set(0..<locations), count: gameDays), count: teams)
+        let playsAtTimes = Array(repeating: Array(repeating: BitSet64(0..<times), count: gameDays), count: teams)
+        let playsAtLocations = Array(repeating: Array(repeating: BitSet64(0..<locations), count: gameDays), count: teams)
         var entries = [LeagueEntry.Runtime]()
         entries.reserveCapacity(teams)
         for division in divisions {
@@ -29,7 +29,7 @@ extension ScheduleTestsProtocol {
                 gameDays: playsOn[entries.count],
                 gameTimes: playsAtTimes[entries.count],
                 gameLocations: playsAtLocations[entries.count],
-                homeLocations: homeLocations[uncheckedPositive: entries.count] ?? [],
+                homeLocations: homeLocations[uncheckedPositive: entries.count] ?? .init(),
                 byes: byes[uncheckedPositive: entries.count] ?? [],
                 matchupsPerGameDay: nil
             )
@@ -95,7 +95,7 @@ extension ScheduleTestsProtocol {
         )
         let times:LeagueTimeIndex = LeagueTimeIndex(startingTimes.count)
         let timeSlots:Set<LeagueTimeIndex> = Set(0..<times)
-        let matchupSlots:Set<LeagueLocationIndex> = Set(0..<locations)
+        let matchupSlots:BitSet64<LeagueLocationIndex> = .init(0..<locations)
         let generalSettings = LeagueGeneralSettings.Runtime.init(
             gameGap: gameGaps,
             timeSlots: LeagueTimeIndex(startingTimes.count),
@@ -108,7 +108,7 @@ extension ScheduleTestsProtocol {
             locationTimeExclusivities: nil,
             locationTravelDurations: nil,
             balanceTimeStrictness: balanceTimeStrictness,
-            balancedTimes: timeSlots,
+            balancedTimes: .init(timeSlots),
             balanceLocationStrictness: balanceLocationStrictness,
             balancedLocations: matchupSlots,
             redistributionSettings: redistributionSettings,

@@ -72,7 +72,7 @@ extension LeagueScheduleData {
         print("assignedEntryHomeAways=\(localAssignmentState.assignedEntryHomeAways.map { $0.map { $0.sum } })")
         #endif
         // assign initial matchups
-        var adjacentTimes = Set<LeagueTimeIndex>()
+        var adjacentTimes = BitSet64<LeagueTimeIndex>()
         var selectedEntries = Set<LeagueEntry.IDValue>(minimumCapacity: amount * entriesPerMatchup)
         
         // assign the first matchup, prioritizing the matchup's time
@@ -296,8 +296,8 @@ extension LeagueScheduleData {
     static func adjacentTimes(
         for time: LeagueTimeIndex,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
-    ) -> Set<LeagueTimeIndex> {
-        var adjacentTimes = Set<LeagueTimeIndex>()
+    ) -> BitSet64<LeagueTimeIndex> {
+        var adjacentTimes = BitSet64<LeagueTimeIndex>()
         let timeIndex = time % entryMatchupsPerGameDay
         if timeIndex == 0 {
             for i in 1..<LeagueTimeIndex(entryMatchupsPerGameDay) {

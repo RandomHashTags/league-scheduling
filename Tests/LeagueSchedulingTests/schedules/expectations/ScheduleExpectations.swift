@@ -214,7 +214,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceTimeNumber(
         assignedTimes: LeagueAssignedTimes,
-        balancedTimes: Set<LeagueTimeIndex>,
+        balancedTimes: BitSet64<LeagueTimeIndex>,
         balanceTimeNumber: LeagueTimeIndex
     ) {
         for (entryID, assignedTimes) in assignedTimes.enumerated() {
@@ -230,7 +230,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceLocationNumber(
         assignedLocations: LeagueAssignedLocations,
-        balancedLocations: Set<LeagueLocationIndex>,
+        balancedLocations: BitSet64<LeagueLocationIndex>,
         balanceLocationNumber: LeagueLocationIndex
     ) {
         for (entryID, assignedLocations) in assignedLocations.enumerated() {

@@ -68,13 +68,13 @@ extension LeagueRequestPayload {
             fallbackDayOfWeek: startingDayOfWeek,
             teamsForDivision: teamsForDivision
         )
-        let timesSet = Set<LeagueTimeIndex>(0..<settings.timeSlots)
-        let locationsSet = Set<LeagueLocationIndex>(0..<settings.locations)
+        let timesSet = BitSet64<LeagueTimeIndex>(0..<settings.timeSlots)
+        let locationsSet = BitSet64<LeagueLocationIndex>(0..<settings.locations)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
                 if !exclusivities.times.isEmpty {
-                    defaultTimeExclusivities[unchecked: location] = Set(exclusivities.times)
+                    defaultTimeExclusivities[unchecked: location] = BitSet64(exclusivities.times)
                 }
             }
         }
@@ -86,17 +86,17 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        var balancedTimes:Set<LeagueTimeIndex>
-        var balancedLocations:Set<LeagueLocationIndex>
+        var balancedTimes:BitSet64<LeagueTimeIndex>
+        var balancedLocations:BitSet64<LeagueLocationIndex>
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
-            balancedTimes = []
+            balancedTimes = .init()
         }
         if settings.balanceLocationStrictness != .lenient {
             balancedLocations = locationsSet
         } else {
-            balancedLocations = []
+            balancedLocations = .init()
         }
 
         let correctMaximumPlayableMatchups = Self.calculateMaximumPlayableMatchups(
@@ -143,8 +143,8 @@ extension LeagueRequestPayload {
     struct DivisionDefaults: Sendable, ~Copyable {
         let gameDays:[Set<LeagueDayIndex>]
         let byes:[Set<LeagueDayIndex>]
-        let gameTimes:[[Set<LeagueTimeIndex>]]
-        let gameLocations:[[Set<LeagueLocationIndex>]]
+        let gameTimes:[[BitSet64<LeagueTimeIndex>]]
+        let gameLocations:[[BitSet64<LeagueLocationIndex>]]
     }
 }
 
@@ -155,8 +155,8 @@ extension LeagueRequestPayload {
     ) -> DivisionDefaults {
         var gameDays = [Set<LeagueDayIndex>]()
         var byes = [Set<LeagueDayIndex>]()
-        var gameTimes = [[Set<LeagueTimeIndex>]]()
-        var gameLocations = [[Set<LeagueLocationIndex>]]()
+        var gameTimes = [[BitSet64<LeagueTimeIndex>]]()
+        var gameLocations = [[BitSet64<LeagueLocationIndex>]]()
         gameDays.reserveCapacity(divisionsCount)
         byes.reserveCapacity(divisionsCount)
         gameTimes.reserveCapacity(divisionsCount)
@@ -186,9 +186,9 @@ extension LeagueRequestPayload {
                     byes.append([])
                 }
                 if division.hasGameDayTimes {
-                    gameTimes.append(division.gameDayTimes.times.map({ $0.set }))
+                    gameTimes.append(division.gameDayTimes.times.map({ .init($0.times) }))
                 } else {
-                    var dgdt = [Set<LeagueTimeIndex>]()
+                    var dgdt = [BitSet64<LeagueTimeIndex>]()
                     for gameDay in 0..<self.gameDays {
                         let times = getTimesFunc(self, gameDay, settings.timeSlots)
                         dgdt.append(.init(0..<times))
@@ -196,9 +196,9 @@ extension LeagueRequestPayload {
                     gameTimes.append(dgdt)
                 }
                 if division.hasGameDayLocations {
-                    gameLocations.append(division.gameDayLocations.locations.map({ $0.set }))
+                    gameLocations.append(division.gameDayLocations.locations.map({ .init($0.locations) }))
                 } else {
-                    var dgdl = [Set<LeagueLocationIndex>]()
+                    var dgdl = [BitSet64<LeagueLocationIndex>]()
                     for gameDay in 0..<self.gameDays {
                         let locations = getLocationsFunc(self, gameDay, settings.locations)
                         dgdl.append(.init(0..<locations))
@@ -210,14 +210,14 @@ extension LeagueRequestPayload {
             gameDays.append(Set(0..<self.gameDays))
             byes.append([])
 
-            var dgdt = [Set<LeagueTimeIndex>]()
+            var dgdt = [BitSet64<LeagueTimeIndex>]()
             for gameDay in 0..<self.gameDays {
                 let times = getTimesFunc(self, gameDay, settings.timeSlots)
                 dgdt.append(.init(0..<times))
             }
             gameTimes.append(dgdt)
 
-            var dgdl = [Set<LeagueLocationIndex>]()
+            var dgdl = [BitSet64<LeagueLocationIndex>]()
             for gameDay in 0..<self.gameDays {
                 let locations = getLocationsFunc(self, gameDay, settings.locations)
                 dgdl.append(.init(0..<locations))
@@ -399,7 +399,7 @@ extension LeagueRequestPayload {
                         settings.matchupDuration = customDaySettings.matchupDuration
                     }
                     if customDaySettings.hasLocationTimeExclusivities {
-                        settings.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ Set($0.times) })
+                        settings.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ BitSet64($0.times) })
                     }
                     if customDaySettings.hasLocationTravelDurations {
                         settings.locationTravelDurations = customDaySettings.locationTravelDurations.locations.map({ $0.travelDurationTo })

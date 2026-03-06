@@ -12,7 +12,7 @@ struct CanPlayAtTests {
 
         var gameGap = GameGap.upTo(1).minMax
         var playsAt:PlaysAt.Element = []
-        var playsAtTimes:PlaysAtTimes.Element = []
+        var playsAtTimes:PlaysAtTimes.Element = .init()
         var timeNumbers:LeagueAssignedTimes.Element = .init(repeating: 0, count: times)
         var locationNumbers:LeagueAssignedLocations.Element = .init(repeating: 0, count: locations)
         let maxTimeNumbers:MaximumTimeAllocations.Element = .init(repeating: 1, count: times)
@@ -23,8 +23,8 @@ struct CanPlayAtTests {
             #expect(CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                allowedTimes: [0, 1, 2],
-                allowedLocations: [0, 1, 2],
+                allowedTimes: .init([0, 1, 2]),
+                allowedLocations: .init([0, 1, 2]),
                 playsAtTimes: playsAtTimes,
                 timeNumber: timeNumbers[unchecked: time],
                 locationNumber: locationNumbers[unchecked: location],
@@ -35,8 +35,8 @@ struct CanPlayAtTests {
             #expect(!CanPlayAtNormal.test(
                 time: time,
                 location: location,
-                allowedTimes: [],
-                allowedLocations: [],
+                allowedTimes: .init(),
+                allowedLocations: .init(),
                 playsAtTimes: playsAtTimes,
                 timeNumber: timeNumbers[unchecked: time],
                 locationNumber: locationNumbers[unchecked: location],
@@ -51,8 +51,8 @@ struct CanPlayAtTests {
         #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            allowedTimes: [0, 1, 2],
-            allowedLocations: [0, 1, 2],
+            allowedTimes: .init([0, 1, 2]),
+            allowedLocations: .init([0, 1, 2]),
             playsAtTimes: playsAtTimes,
             timeNumber: timeNumbers[unchecked: 0],
             locationNumber: locationNumbers[unchecked: location],
@@ -62,13 +62,13 @@ struct CanPlayAtTests {
         ))
 
         playsAt = []
-        playsAtTimes = []
+        playsAtTimes = .init()
         timeNumbers[0] = 1
         #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
-            allowedTimes: [0, 1, 2],
-            allowedLocations: [0, 1, 2],
+            allowedTimes: .init([0, 1, 2]),
+            allowedLocations: .init([0, 1, 2]),
             playsAtTimes: playsAtTimes,
             timeNumber: timeNumbers[0],
             locationNumber: locationNumbers[unchecked: location],

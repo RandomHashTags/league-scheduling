@@ -75,8 +75,8 @@ extension EntryAssignmentData {
         assignedTimes[unchecked: slot.time] += 1
         assignedLocations[unchecked: slot.location] += 1
         playsAt.insert(slot)
-        playsAtTimes.insert(slot.time)
-        playsAtLocations.insert(slot.location)
+        playsAtTimes.insertMember(slot.time)
+        playsAtLocations.insertMember(slot.location)
     }
 }
 

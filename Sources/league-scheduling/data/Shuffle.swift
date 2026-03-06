@@ -78,13 +78,13 @@ extension AssignmentState {
 
             var homePlaysAtTimes = playsAtTimes[unchecked: swapped.home]
             var awayPlaysAtTimes = playsAtTimes[unchecked: swapped.away]
-            homePlaysAtTimes.remove(swapped.time)
-            awayPlaysAtTimes.remove(swapped.time)
+            homePlaysAtTimes.removeMember(swapped.time)
+            awayPlaysAtTimes.removeMember(swapped.time)
 
             var homePlaysAtLocations = playsAtLocations[unchecked: swapped.home]
             var awayPlaysAtLocations = playsAtLocations[unchecked: swapped.away]
-            homePlaysAtLocations.remove(swapped.location)
-            awayPlaysAtLocations.remove(swapped.location)
+            homePlaysAtLocations.removeMember(swapped.location)
+            awayPlaysAtLocations.removeMember(swapped.location)
 
             let homeAssignedTimes = assignedTimes[unchecked: swapped.home]
             let awayAssignedTimes = assignedTimes[unchecked: swapped.away]

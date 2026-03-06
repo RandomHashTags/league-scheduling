@@ -9,8 +9,8 @@ struct CanPlayAtWithTravelDurations: CanPlayAtProtocol, ~Copyable {
     func test(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        allowedTimes: BitSet64<LeagueTimeIndex>,
-        allowedLocations: BitSet64<LeagueLocationIndex>,
+        allowedTimes: some SetOfTimeIndexes,
+        allowedLocations: some SetOfLocationIndexes,
         playsAt: PlaysAt.Element,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element,

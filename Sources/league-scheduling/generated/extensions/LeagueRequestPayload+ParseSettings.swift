@@ -74,7 +74,7 @@ extension LeagueRequestPayload {
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
                 if !exclusivities.times.isEmpty {
-                    defaultTimeExclusivities[unchecked: location] = BitSet64(exclusivities.times)
+                    defaultTimeExclusivities[unchecked: location] = .init(exclusivities.times)
                 }
             }
         }

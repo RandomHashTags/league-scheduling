@@ -138,7 +138,7 @@ extension LeagueScheduleData {
             combinationLoop: for combination in allowedDivisionCombinations {
                 var assignedSlots = Set<LeagueAvailableSlot>()
                 var combinationTimeAllocations:ContiguousArray<BitSet64<LeagueTimeIndex>> = .init(
-                    repeating: BitSet64(),
+                    repeating: .init(),
                     count: combination.first?.count ?? 10
                 )
                 for (divisionIndex, divisionCombination) in combination.enumerated() {
@@ -189,8 +189,8 @@ extension LeagueScheduleData {
                             continue combinationLoop
                         }
                         for matchup in matchups {
-                            disallowedTimes.insert(matchup.time)
-                            combinationTimeAllocations[divisionCombinationIndex].insert(matchup.time)
+                            disallowedTimes.insertMember(matchup.time)
+                            combinationTimeAllocations[divisionCombinationIndex].insertMember(matchup.time)
                             assignedSlots.insert(matchup.slot)
                         }
                         assignmentState.availableSlots = slots.filter { !disallowedTimes.contains($0.time) }

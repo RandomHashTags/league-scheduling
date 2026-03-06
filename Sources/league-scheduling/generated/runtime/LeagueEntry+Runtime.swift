@@ -20,7 +20,7 @@ extension LeagueEntry {
     }
 
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Hashable, Sendable {
+    public struct Runtime: Codable, Sendable {
         /// ID associated with this entry.
         public let id:LeagueEntry.IDValue
 

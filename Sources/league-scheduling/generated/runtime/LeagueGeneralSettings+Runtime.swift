@@ -2,10 +2,6 @@
 import StaticDateTimes
 
 extension LeagueGeneralSettings {
-    public func runtime() throws(LeagueError) -> Runtime {
-        try .init(protobuf: self)
-    }
-
     /// For optimal runtime performance
     public struct Runtime: Codable, Sendable {
         public var gameGap:GameGap

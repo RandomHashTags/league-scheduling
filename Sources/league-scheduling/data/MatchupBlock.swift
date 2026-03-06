@@ -189,7 +189,7 @@ extension LeagueScheduleData {
                         canPlayAt: canPlayAt
                     ) else { return nil }
                 }
-                adjacentTimes.remove(time)
+                adjacentTimes.removeMember(time)
                 #if LOG
                 print("assignBlockOfMatchups;j=\(j);finished time \(time)")
                 #endif
@@ -301,15 +301,15 @@ extension LeagueScheduleData {
         let timeIndex = time % entryMatchupsPerGameDay
         if timeIndex == 0 {
             for i in 1..<LeagueTimeIndex(entryMatchupsPerGameDay) {
-                adjacentTimes.insert(time + i)
+                adjacentTimes.insertMember(time + i)
             }
         } else {
             for i in 1..<timeIndex+1 {
-                adjacentTimes.insert(time - i)
+                adjacentTimes.insertMember(time - i)
             }
             if timeIndex < entryMatchupsPerGameDay-1 {
                 for i in 1..<entryMatchupsPerGameDay - timeIndex {
-                    adjacentTimes.insert(time + i)
+                    adjacentTimes.insertMember(time + i)
                 }
             }
         }

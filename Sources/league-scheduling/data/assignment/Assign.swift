@@ -135,10 +135,10 @@ extension AssignmentState {
     ) {
         playsAt[unchecked: home].insert(slot)
         playsAt[unchecked: away].insert(slot)
-        playsAtTimes[unchecked: home].insert(slot.time)
-        playsAtTimes[unchecked: away].insert(slot.time)
-        playsAtLocations[unchecked: home].insert(slot.location)
-        playsAtLocations[unchecked: away].insert(slot.location)
+        playsAtTimes[unchecked: home].insertMember(slot.time)
+        playsAtTimes[unchecked: away].insertMember(slot.time)
+        playsAtLocations[unchecked: home].insertMember(slot.location)
+        playsAtLocations[unchecked: away].insertMember(slot.location)
     }
 }
 

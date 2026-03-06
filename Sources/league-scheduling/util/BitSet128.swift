@@ -1,8 +1,8 @@
 
-/// - Warning: Only supports a maximum of 64 entries!
-/// - Warning: Only supports integers < `64`!
-public struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
-    private(set) var storage:UInt64
+/// - Warning: Only supports a maximum of 128 entries!
+/// - Warning: Only supports integers < `128`!
+public struct BitSet128<Element: FixedWidthInteger & Sendable>: Sendable {
+    private(set) var storage:UInt128
 
     public init() {
         storage = 0
@@ -24,35 +24,35 @@ public struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
 }
 
 // MARK: contains
-extension BitSet64 {
+extension BitSet128 {
     public func contains(_ member: Element) -> Bool {
         (storage & (1 << member)) != 0
     }
 }
 
 // MARK: insert
-extension BitSet64 {
+extension BitSet128 {
     public mutating func insertMember(_ member: Element) {
         storage |= (1 << member)
     }
 }
 
 // MARK: remove
-extension BitSet64 {
+extension BitSet128 {
     public mutating func removeMember(_ member: Element) {
         storage &= ~(1 << member)
     }
 }
 
 // MARK: remove all
-extension BitSet64 {
+extension BitSet128 {
     mutating func removeAll() {
         storage = 0
     }
 }
 
 // MARK: iterator
-extension BitSet64 {
+extension BitSet128 {
     func forEachBit(_ yield: (Element) -> Void) {
         var temp = storage
         while temp != 0 {
@@ -76,14 +76,14 @@ extension BitSet64 {
 }
 
 // MARK: form union
-extension BitSet64 {
+extension BitSet128 {
     mutating func formUnion(_ bitSet: Self) {
         storage |= bitSet.storage
     }
 }
 
 // MARK: Random
-extension BitSet64 {
+extension BitSet128 {
     func randomElement() -> Element? {
         let c = count
         guard c > 0 else { return nil }
@@ -92,10 +92,10 @@ extension BitSet64 {
 }
 
 // MARK: Codable
-extension BitSet64: Codable {
+extension BitSet128: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        storage = try container.decode(UInt64.self)
+        storage = try container.decode(UInt128.self)
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -104,6 +104,6 @@ extension BitSet64: Codable {
 }
 
 // MARK: AbstractSet
-extension BitSet64: AbstractSet {}
-extension BitSet64: SetOfTimeIndexes where Element == LeagueTimeIndex {}
-extension BitSet64: SetOfLocationIndexes where Element == LeagueLocationIndex {}
+extension BitSet128: AbstractSet {}
+extension BitSet128: SetOfTimeIndexes where Element == LeagueTimeIndex {}
+extension BitSet128: SetOfLocationIndexes where Element == LeagueLocationIndex {}

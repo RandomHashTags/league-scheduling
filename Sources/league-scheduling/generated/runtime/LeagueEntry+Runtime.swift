@@ -87,10 +87,6 @@ extension LeagueEntry {
             self.matchupsPerGameDay = matchupsPerGameDay
         }
 
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-
         /// - Returns: Maximum number of matchups this entry can play on the given day index.
         func maxMatchupsForGameDay(
             day: LeagueDayIndex,

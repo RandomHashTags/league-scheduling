@@ -132,7 +132,7 @@ extension LeagueRequestPayload {
         defaultTimes: Times,
         defaultLocations: Locations
     ) async throws(LeagueError) -> LeagueGenerationResult {
-        let divisionDefaults:DivisionDefaults<Times> = loadDivisionDefaults(divisionsCount: divisionsCount)
+        let divisionDefaults:DivisionDefaults<Times, Locations> = loadDivisionDefaults(divisionsCount: divisionsCount)
         var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
         let entries = try parseEntries(
             divisionsCount: divisionsCount,
@@ -234,24 +234,23 @@ extension LeagueRequestPayload {
 
 // MARK: Division defaults
 extension LeagueRequestPayload {
-    struct DivisionDefaults<Times: SetOfTimeIndexes>: Sendable, ~Copyable {
+    struct DivisionDefaults<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>: Sendable, ~Copyable {
         let gameDays:[Set<LeagueDayIndex>]
         let byes:[Set<LeagueDayIndex>]
         let gameTimes:[[Times]]
-        let gameLocations:[[BitSet64<LeagueLocationIndex>]]
+        let gameLocations:[[Locations]]
     }
 }
 
 // MARK: Load division defaults
 extension LeagueRequestPayload {
-    // TODO: fix (pass the generic times and locations)
-    private func loadDivisionDefaults<Times: SetOfTimeIndexes>(
+    private func loadDivisionDefaults<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
         divisionsCount: Int
-    ) -> DivisionDefaults<Times> {
+    ) -> DivisionDefaults<Times, Locations> {
         var gameDays = [Set<LeagueDayIndex>]()
         var byes = [Set<LeagueDayIndex>]()
         var gameTimes = [[Times]]()
-        var gameLocations = [[BitSet64<LeagueLocationIndex>]]()
+        var gameLocations = [[Locations]]()
         gameDays.reserveCapacity(divisionsCount)
         byes.reserveCapacity(divisionsCount)
         gameTimes.reserveCapacity(divisionsCount)
@@ -293,7 +292,7 @@ extension LeagueRequestPayload {
                 if division.hasGameDayLocations {
                     gameLocations.append(division.gameDayLocations.locations.map({ .init($0.locations) }))
                 } else {
-                    var dgdl = [BitSet64<LeagueLocationIndex>]()
+                    var dgdl = [Locations]()
                     for gameDay in 0..<self.gameDays {
                         let locations = getLocationsFunc(self, gameDay, settings.locations)
                         dgdl.append(.init(0..<locations))
@@ -312,7 +311,7 @@ extension LeagueRequestPayload {
             }
             gameTimes.append(dgdt)
 
-            var dgdl = [BitSet64<LeagueLocationIndex>]()
+            var dgdl = [Locations]()
             for gameDay in 0..<self.gameDays {
                 let locations = getLocationsFunc(self, gameDay, settings.locations)
                 dgdl.append(.init(0..<locations))
@@ -348,11 +347,11 @@ extension LeagueRequestPayload {
 
 // MARK: Parse teams
 extension LeagueRequestPayload {
-    private func parseEntries<Times: SetOfTimeIndexes>(
+    private func parseEntries<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
         divisionsCount: Int,
         teams: [LeagueEntry],
         teamsForDivision: inout [Int],
-        divisionDefaults: borrowing DivisionDefaults<Times>
+        divisionDefaults: borrowing DivisionDefaults<Times, Locations>
     ) throws(LeagueError) -> [LeagueEntry.Runtime] {
         var entries = [LeagueEntry.Runtime]()
         entries.reserveCapacity(teams.count)
@@ -375,6 +374,7 @@ extension LeagueRequestPayload {
             let division = min(team.division, UInt32(divisionsCount - 1))
             // TODO: fix
             let defaultGameTimes = divisionDefaults.gameTimes[unchecked: division].map { BitSet64<LeagueTimeIndex>.init($0) }
+            let defaultGameLocations = divisionDefaults.gameLocations[unchecked: division].map { BitSet64<LeagueLocationIndex>.init($0) }
             teamsForDivision[Int(division)] += 1
             entries.append(team.runtime(
                 id: LeagueEntry.IDValue(i),
@@ -382,7 +382,7 @@ extension LeagueRequestPayload {
                 defaultGameDays: divisionDefaults.gameDays[unchecked: division],
                 defaultByes: divisionDefaults.byes[unchecked: division],
                 defaultGameTimes: defaultGameTimes,
-                defaultGameLocations: divisionDefaults.gameLocations[unchecked: division]
+                defaultGameLocations: defaultGameLocations
             ))
         }
         return entries
@@ -481,83 +481,6 @@ extension LeagueRequestPayload {
             }
         }
         return daySettings
-    }
-}
-
-// MARK: Validate settings
-extension LeagueRequestPayload {
-    @discardableResult
-    private func validateSettings(
-        kind: String,
-        settings: LeagueGeneralSettings,
-        fallbackSettings: LeagueGeneralSettings
-    ) throws(LeagueError) -> GameGap? {
-        let isDefault = kind == "default"
-        if isDefault || settings.hasTimeSlots {
-            guard settings.timeSlots > 0 else {
-                throw .malformedInput(msg: "\(kind) 'timeSlots' size needs to be > 0")
-            }
-        }
-        if settings.hasStartingTimes {
-            guard settings.startingTimes.times.count > 0 else {
-                throw .malformedInput(msg: "\(kind) 'startingTimes' size needs to be > 0")
-            }
-        }
-        if settings.hasTimeSlots && settings.hasStartingTimes {
-            guard settings.timeSlots == settings.startingTimes.times.count else {
-                throw .malformedInput(msg: "\(kind) 'timeSlots' and 'startingTimes' size need to be equal")
-            }
-        }
-        if isDefault || settings.hasLocations {
-            guard settings.locations > 0 else {
-                throw .malformedInput(msg: "\(kind) 'locations' needs to be > 0")
-            }
-        }
-        if isDefault || settings.hasEntryMatchupsPerGameDay {
-            guard settings.entryMatchupsPerGameDay > 0 else {
-                throw .malformedInput(msg: "\(kind) 'entryMatchupsPerGameDay' needs to be > 0")
-            }
-        }
-        if settings.hasMaximumPlayableMatchups {
-            guard settings.maximumPlayableMatchups.array.count == entries.count else {
-                throw .malformedInput(msg: "\(kind) 'maximumPlayableMatchups' size != \(entries.count)")
-            }
-        }
-        if isDefault || settings.hasEntriesPerLocation {
-            guard settings.entriesPerLocation > 0 else {
-                throw .malformedInput(msg: "\(kind) 'entriesPerLocation' needs to be > 0")
-            }
-        }
-        let locations = settings.hasLocations ? settings.locations : fallbackSettings.locations
-        if settings.hasLocationTravelDurations {
-            guard settings.locationTravelDurations.locations.count == locations else {
-                throw .malformedInput(msg: "\(kind) 'locationTravelDurations.locations' size != \(locations)")
-            }
-        }
-        if settings.hasLocationTimeExclusivities {
-            guard settings.locationTimeExclusivities.locations.count == locations else {
-                throw .malformedInput(msg: "\(kind) 'locationTimeExclusivities.locations' size != \(locations)")
-            }
-        }
-        if settings.hasRedistributionSettings {
-            if settings.redistributionSettings.hasMinMatchupsRequired {
-                guard settings.redistributionSettings.minMatchupsRequired > 0 else {
-                    throw .malformedInput(msg: "\(kind) redistribution setting 'minMatchupsRequired' needs to be > 0")
-                }
-            }
-            if settings.redistributionSettings.hasMaxMovableMatchups {
-                guard settings.redistributionSettings.maxMovableMatchups > 0 else {
-                    throw .malformedInput(msg: "\(kind) redistribution setting 'maxMovableMatchups' needs to be > 0")
-                }
-            }
-        }
-        if isDefault || settings.hasGameGap {
-            guard let gameGap = GameGap.init(htmlInputValue: settings.gameGap) else {
-                throw .malformedInput(msg: "\(kind) invalid 'gameGap' value: \(settings.gameGap)")
-            }
-            return gameGap
-        }
-        return nil
     }
 }
 

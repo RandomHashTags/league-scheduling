@@ -1,13 +1,13 @@
 
 extension LeagueEntry {
-    func runtime<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
+    func runtime<DaySet: SetOfDayIndexes, Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
         id: IDValue,
         division: LeagueDivision.IDValue,
-        defaultGameDays: Set<LeagueDayIndex>,
-        defaultByes: Set<LeagueDayIndex>,
+        defaultGameDays: DaySet,
+        defaultByes: DaySet,
         defaultGameTimes: [Times],
         defaultGameLocations: [Locations]
-    ) -> Runtime<Times, Locations> {
+    ) -> Runtime<DaySet, Times, Locations> {
         return .init(
             id: id,
             division: division,
@@ -19,7 +19,7 @@ extension LeagueEntry {
         )
     }
 
-    struct Runtime<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: Sendable {
+    struct Runtime<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: Sendable {
         /// ID associated with this entry.
         let id:LeagueEntry.IDValue
 
@@ -27,7 +27,7 @@ extension LeagueEntry {
         let division:LeagueDivision.IDValue
 
         /// Game days this entry can play on.
-        let gameDays:Set<LeagueDayIndex>
+        let gameDays:DaySet
 
         /// Times this entry can play at for a specific day index.
         /// 
@@ -43,7 +43,7 @@ extension LeagueEntry {
         let homeLocations:LocationSet
 
         /// Day indexes where this entry doesn't play due to being on a bye week.
-        let byes:Set<LeagueDayIndex>
+        let byes:DaySet
 
         let matchupsPerGameDay:LitLeagues_Leagues_EntryMatchupsPerGameDay?
 
@@ -51,29 +51,29 @@ extension LeagueEntry {
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
             protobuf: LeagueEntry,
-            defaultGameDays: Set<LeagueDayIndex>,
-            defaultByes: Set<LeagueDayIndex>,
+            defaultGameDays: DaySet,
+            defaultByes: DaySet,
             defaultGameTimes: [TimeSet],
             defaultGameLocations: [LocationSet]
         ) {
             self.id = id
             self.division = division
-            gameDays = protobuf.hasGameDays ? Set(protobuf.gameDays.gameDayIndexes) : defaultGameDays
+            gameDays = protobuf.hasGameDays ? .init(protobuf.gameDays.gameDayIndexes) : defaultGameDays
             gameTimes = protobuf.hasGameDayTimes ? protobuf.gameDayTimes.times.map({ .init($0.times) }) : defaultGameTimes
             gameLocations = protobuf.hasGameDayLocations ? protobuf.gameDayLocations.locations.map({ .init($0.locations) }) : defaultGameLocations
             homeLocations = protobuf.hasHomeLocations ? .init(protobuf.homeLocations.homeLocations) : .init()
-            byes = protobuf.hasByes ? Set(protobuf.byes.byes) : defaultByes
+            byes = protobuf.hasByes ? .init(protobuf.byes.byes) : defaultByes
             matchupsPerGameDay = protobuf.hasMatchupsPerGameDay ? protobuf.matchupsPerGameDay : nil
         }
 
         init(
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
-            gameDays: Set<LeagueDayIndex>,
+            gameDays: DaySet,
             gameTimes: [TimeSet],
             gameLocations: [LocationSet],
             homeLocations: LocationSet,
-            byes: Set<LeagueDayIndex>,
+            byes: DaySet,
             matchupsPerGameDay: LitLeagues_Leagues_EntryMatchupsPerGameDay?
         ) {
             self.id = id

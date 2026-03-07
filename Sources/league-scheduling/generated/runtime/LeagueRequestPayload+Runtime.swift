@@ -15,7 +15,7 @@ extension LeagueRequestPayload {
         let gameDays:LeagueDayIndex
 
         /// Divisions associated with this schedule.
-        let divisions:[LeagueDivision.Runtime]
+        let divisions:[Config.DivisionRuntime]
 
         /// Entries that participate in this schedule.
         let entries:[Config.EntryRuntime]
@@ -28,11 +28,11 @@ extension LeagueRequestPayload {
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
         let daySettings:[LeagueGeneralSettings.Runtime<Config>]
 
-        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-        @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
         init(
             gameDays: LeagueDayIndex,
-            divisions: [LeagueDivision.Runtime],
+            divisions: [Config.DivisionRuntime],
             entries: [Config.EntryRuntime],
             general: LeagueGeneralSettings.Runtime<Config>,
             daySettings: [LeagueGeneralSettings.Runtime<Config>]

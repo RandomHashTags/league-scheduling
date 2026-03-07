@@ -92,5 +92,6 @@ extension BitSet64 {
 
 // MARK: AbstractSet
 extension BitSet64: AbstractSet {}
+extension BitSet64: SetOfDayIndexes where Element == LeagueTimeIndex {}
 extension BitSet64: SetOfTimeIndexes where Element == LeagueTimeIndex {}
 extension BitSet64: SetOfLocationIndexes where Element == LeagueLocationIndex {}

@@ -23,10 +23,9 @@ protocol AbstractSet: Sendable, ~Copyable {
     func forEach(_ body: (Element) throws -> Void) rethrows
 }
 
-protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {
-}
-protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LeagueLocationIndex {
-}
+protocol SetOfDayIndexes: AbstractSet, ~Copyable where Element == LeagueDayIndex {}
+protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {}
+protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LeagueLocationIndex {}
 
 extension Set: AbstractSet {
     @inline(__always)
@@ -44,5 +43,6 @@ extension Set: AbstractSet {
     }
 }
 
+extension Set<LeagueDayIndex>: SetOfDayIndexes {}
 extension Set<LeagueTimeIndex>: SetOfTimeIndexes {}
 extension Set<LeagueLocationIndex>: SetOfLocationIndexes {}

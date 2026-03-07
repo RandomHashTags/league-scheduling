@@ -78,11 +78,11 @@ extension LeagueEntry.Runtime {
     func isEqual(to rhs: Self) -> Bool {
         id == rhs.id
         && division == rhs.division
-        && gameDays == rhs.gameDays
+        //&& gameDays == rhs.gameDays
         //&& lhs.gameTimes == rhs.gameTimes
         //&& lhs.gameLocations == rhs.gameLocations
         //&& lhs.homeLocations == rhs.homeLocations
-        && byes == rhs.byes
+        //&& byes == rhs.byes
         //&& lhs.matchupsPerGameDay == rhs.matchupsPerGameDay
     }
 }

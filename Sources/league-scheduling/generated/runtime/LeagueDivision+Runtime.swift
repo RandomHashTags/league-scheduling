@@ -1,11 +1,11 @@
 
 extension LeagueDivision {
-    func runtime(
-        defaultGameDays: Set<LeagueDayIndex>,
+    func runtime<DaySet: SetOfDayIndexes>(
+        defaultGameDays: DaySet,
         defaultGameGap: GameGap,
         fallbackDayOfWeek: LeagueDayOfWeek,
         fallbackMaxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
-    ) throws(LeagueError) -> Runtime {
+    ) throws(LeagueError) -> Runtime<DaySet> {
         try .init(
             protobuf: self,
             defaultGameDays: defaultGameDays,
@@ -16,28 +16,28 @@ extension LeagueDivision {
     }
 
     /// For optimal runtime performance.
-    struct Runtime: Sendable {
+    struct Runtime<DaySet: SetOfDayIndexes>: Sendable {
         let dayOfWeek:LeagueDayOfWeek
-        let gameDays:Set<LeagueDayIndex>
+        let gameDays:DaySet
         let gameGaps:[GameGap]
         let maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchupsCap
 
         init(
             protobuf: LeagueDivision,
-            defaultGameDays: Set<LeagueDayIndex>,
+            defaultGameDays: DaySet,
             defaultGameGap: GameGap,
             fallbackDayOfWeek: LeagueDayOfWeek,
             fallbackMaxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
         ) throws(LeagueError) {
             dayOfWeek = protobuf.hasDayOfWeek ? LeagueDayOfWeek(protobuf.dayOfWeek) : fallbackDayOfWeek
-            self.gameDays = protobuf.hasGameDays ? Set(protobuf.gameDays.gameDayIndexes) : defaultGameDays
+            self.gameDays = protobuf.hasGameDays ? .init(protobuf.gameDays.gameDayIndexes) : defaultGameDays
             gameGaps = protobuf.hasGameGaps ? try Self.parseGameGaps(protobuf.gameGaps.gameGaps) : .init(repeating: defaultGameGap, count: defaultGameDays.count)
             maxSameOpponentMatchups = protobuf.hasMaxSameOpponentMatchups ? protobuf.maxSameOpponentMatchups : fallbackMaxSameOpponentMatchups
         }
 
         init(
             dayOfWeek: LeagueDayOfWeek,
-            gameDays: Set<LeagueDayIndex>,
+            gameDays: DaySet,
             gameGaps: [GameGap],
             maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
         ) {

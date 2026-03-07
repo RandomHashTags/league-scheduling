@@ -1,10 +1,12 @@
 
 protocol ScheduleConfiguration: Sendable, ~Copyable {
+    associatedtype DaySet:SetOfDayIndexes
     associatedtype TimeSet:SetOfTimeIndexes
     associatedtype LocationSet:SetOfLocationIndexes
 
-    typealias EntryRuntime = LeagueEntry.Runtime<TimeSet, LocationSet>
+    typealias DivisionRuntime = LeagueDivision.Runtime<DaySet>
+    typealias EntryRuntime = LeagueEntry.Runtime<DaySet, TimeSet, LocationSet>
 }
 
-enum ScheduleConfig<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: ScheduleConfiguration {
+enum ScheduleConfig<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: ScheduleConfiguration {
 }

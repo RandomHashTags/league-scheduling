@@ -69,8 +69,8 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 
     var shuffleHistory = [LeagueShuffleAction]()
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
             entries: entries,
@@ -188,8 +188,8 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
 
     var shuffleHistory:[LeagueShuffleAction]
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     func noncopyable() -> AssignmentState<Config> {
         return .init(
             entries: entries,

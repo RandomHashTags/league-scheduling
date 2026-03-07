@@ -27,8 +27,8 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     var executionSteps = [ExecutionStep]()
     var shuffleHistory = [LeagueShuffleAction]()
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     init(
         maxStartingTimes: LeagueTimeIndex,
         startingTimes: [StaticTime],
@@ -89,8 +89,8 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         )
     }
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     init(_ snapshot: borrowing LeagueScheduleData<Config>) {
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount

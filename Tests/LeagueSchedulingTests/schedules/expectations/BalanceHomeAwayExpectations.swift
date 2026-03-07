@@ -2,13 +2,13 @@
 @testable import LeagueScheduling
 import Testing
 
-struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
+struct BalanceHomeAwayExpectations<Config: ScheduleConfiguration>: ScheduleTestsProtocol {
     func expectations(
         cap: LeagueMaximumSameOpponentMatchupsCap,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionEntries: [LeagueEntry.Runtime]
+        divisionEntries: [Config.EntryRuntime]
     ) {
         for entry in divisionEntries {
             let entryMatchupsPlayed = matchupsPlayedPerDay.reduce(0, { $0 + $1[unchecked: entry.id] })
@@ -40,7 +40,7 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
         }
     }
     func isBalanced(
-        entry: LeagueEntry.Runtime,
+        entry: Config.EntryRuntime,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay

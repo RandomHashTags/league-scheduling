@@ -198,7 +198,7 @@ extension ScheduleMisc {
         )
     }
 
-    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> some LeagueRequestPayload.RuntimeProtocol {
+    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 5, 20)
         var entryDivisions = [LeagueDivision.IDValue]()

@@ -2,7 +2,7 @@
 // MARK: Try redistributing
 extension LeagueScheduleData {
     mutating func tryRedistributing(
-        settings: some LeagueRequestPayload.RuntimeProtocol,
+        settings: LeagueRequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         guard day > 0 else {
@@ -38,7 +38,7 @@ extension LeagueScheduleData {
 
     mutating func tryRedistributing(
         startDayIndex: LeagueDayIndex,
-        settings: some LeagueRequestPayload.RuntimeProtocol,
+        settings: LeagueRequestPayload.Runtime<Config>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {

@@ -1,7 +1,7 @@
 
 import StaticDateTimes
 
-struct LeagueScheduleDataSnapshot: Sendable {
+struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     let entriesPerMatchup:LeagueEntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<LeagueDivision.IDValue>
@@ -21,7 +21,7 @@ struct LeagueScheduleDataSnapshot: Sendable {
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
     var failedMatchupSelections:ContiguousArray<Set<LeagueMatchupPair>>
 
-    var assignmentState:AssignmentStateCopyable
+    var assignmentState:AssignmentStateCopyable<Config>
     var prioritizeEarlierTimes = false
 
     var executionSteps = [ExecutionStep]()
@@ -33,7 +33,7 @@ struct LeagueScheduleDataSnapshot: Sendable {
         maxLocations: LeagueLocationIndex,
         entriesPerMatchup: LeagueEntriesPerMatchup,
         maximumPlayableMatchups: [UInt32],
-        entries: [LeagueEntry.Runtime],
+        entries: [Config.EntryRuntime],
         divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
         matchupDuration: LeagueMatchupDuration,
         gameGap: (Int, Int),
@@ -87,7 +87,7 @@ struct LeagueScheduleDataSnapshot: Sendable {
         )
     }
     
-    init(_ snapshot: borrowing LeagueScheduleData) {
+    init(_ snapshot: borrowing LeagueScheduleData<Config>) {
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions

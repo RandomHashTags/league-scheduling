@@ -16,7 +16,7 @@ struct ScheduleSameLocationIfB2B: ScheduleTestsProtocol {
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams() throws -> some LeagueRequestPayload.RuntimeProtocol {
+    static func scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 3, 3, 9)
         let entries = getEntries(
@@ -61,7 +61,7 @@ extension ScheduleSameLocationIfB2B {
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams() throws -> some LeagueRequestPayload.RuntimeProtocol {
+    static func scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 3, 1, 5)
         let entries = getEntries(
@@ -107,7 +107,7 @@ extension ScheduleSameLocationIfB2B {
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams() throws -> some LeagueRequestPayload.RuntimeProtocol {
+    static func scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 4, 16)
         let entries = getEntries(

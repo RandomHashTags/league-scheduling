@@ -3,7 +3,7 @@ import StaticDateTimes
 
 // MARK: Data
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
-struct LeagueScheduleData: Sendable, ~Copyable {
+struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let clock = ContinuousClock()
     let entriesPerMatchup:LeagueEntriesPerMatchup
     let entriesCount:Int
@@ -30,17 +30,17 @@ struct LeagueScheduleData: Sendable, ~Copyable {
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
     var failedMatchupSelections:ContiguousArray<Set<LeagueMatchupPair>>
 
-    var assignmentState:AssignmentState
+    var assignmentState:AssignmentState<Config>
     var prioritizeEarlierTimes:Bool
 
     var executionSteps = [ExecutionStep]()
     var shuffleHistory = [LeagueShuffleAction]()
 
-    var redistributionData:RedistributionData?
+    var redistributionData:RedistributionData<Config>?
     var redistributedMatchups = false
 
     init(
-        snapshot: LeagueScheduleDataSnapshot
+        snapshot: LeagueScheduleDataSnapshot<Config>
     ) {
         //locations = snapshot.locations
         entriesPerMatchup = snapshot.entriesPerMatchup
@@ -62,7 +62,7 @@ struct LeagueScheduleData: Sendable, ~Copyable {
 
 // MARK: Snapshot
 extension LeagueScheduleData {
-    mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot) {
+    mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
         day = snapshot.day
@@ -77,7 +77,7 @@ extension LeagueScheduleData {
         shuffleHistory = snapshot.shuffleHistory
     }
 
-    func snapshot() -> LeagueScheduleDataSnapshot {
+    func snapshot() -> LeagueScheduleDataSnapshot<Config> {
         return .init(self)
     }
 }
@@ -92,10 +92,10 @@ extension LeagueScheduleData {
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
     mutating func newDay(
         day: LeagueDayIndex,
-        daySettings: some LeagueGeneralSettings.RuntimeProtocol,
+        daySettings: LeagueGeneralSettings.Runtime<Config>,
         divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
         availableSlots: Set<LeagueAvailableSlot>,
-        settings: some LeagueRequestPayload.RuntimeProtocol,
+        settings: LeagueRequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         let now = clock.now
@@ -141,7 +141,7 @@ extension LeagueScheduleData {
         expectedMatchupsCount = min(availableSlots.count, expectedMatchupsCount)
         assignmentState.availableSlots = availableSlots
         if daySettings.gameGap == .no {
-            allowedDivisionCombinations = Self.allowedDivisionMatchupCombinations(
+            allowedDivisionCombinations = allowedDivisionMatchupCombinations(
                 entriesPerMatchup: entriesPerMatchup,
                 locations: daySettings.locations,
                 entryCountsForDivision: entryCountsForDivision

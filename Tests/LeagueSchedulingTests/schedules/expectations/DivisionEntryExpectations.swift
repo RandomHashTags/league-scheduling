@@ -2,7 +2,7 @@
 @testable import LeagueScheduling
 import Testing
 
-struct DivisionEntryExpectations: ScheduleTestsProtocol {
+struct DivisionEntryExpectations<Config: ScheduleConfiguration>: ScheduleTestsProtocol {
     let cap:LeagueMaximumSameOpponentMatchupsCap
     let matchupsPlayedPerDay:ContiguousArray<ContiguousArray<Int>>
     let assignedEntryHomeAways:AssignedEntryHomeAways
@@ -10,10 +10,10 @@ struct DivisionEntryExpectations: ScheduleTestsProtocol {
 
     func expectations(
         balanceHomeAway: Bool,
-        divisionEntries: [LeagueEntry.Runtime]
+        divisionEntries: [Config.EntryRuntime]
     ) {
         if balanceHomeAway {
-            BalanceHomeAwayExpectations().expectations(
+            BalanceHomeAwayExpectations<Config>().expectations(
                 cap: cap,
                 matchupsPlayedPerDay: matchupsPlayedPerDay,
                 assignedEntryHomeAways: assignedEntryHomeAways,

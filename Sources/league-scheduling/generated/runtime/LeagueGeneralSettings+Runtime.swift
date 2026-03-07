@@ -2,10 +2,7 @@
 import StaticDateTimes
 
 extension LeagueGeneralSettings {
-    struct Runtime<
-        Times: SetOfTimeIndexes,
-        Locations: SetOfLocationIndexes
-    >: RuntimeProtocol {
+    struct Runtime<Config: ScheduleConfiguration>: Sendable {
         var gameGap:GameGap
         var timeSlots:LeagueTimeIndex
         var startingTimes:[StaticTime]
@@ -14,12 +11,12 @@ extension LeagueGeneralSettings {
         var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
         var maximumPlayableMatchups:[UInt32]
         var matchupDuration:LeagueMatchupDuration
-        var locationTimeExclusivities:[Times]?
+        var locationTimeExclusivities:[Config.TimeSet]?
         var locationTravelDurations:[[LeagueMatchupDuration]]?
         var balanceTimeStrictness:LeagueBalanceStrictness
-        var balancedTimes:Times
+        var balancedTimes:Config.TimeSet
         var balanceLocationStrictness:LeagueBalanceStrictness
-        var balancedLocations:Locations
+        var balancedLocations:Config.LocationSet
         var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
         var flags:UInt32
     }
@@ -99,7 +96,7 @@ extension LeagueGeneralSettings.Runtime {
             self.matchupDuration = customDaySettings.matchupDuration
         }
         if customDaySettings.hasLocationTimeExclusivities {
-            self.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ Times($0.times) })
+            self.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ Config.TimeSet($0.times) })
         }
         if customDaySettings.hasLocationTravelDurations {
             self.locationTravelDurations = customDaySettings.locationTravelDurations.locations.map({ $0.travelDurationTo })
@@ -166,12 +163,12 @@ extension LeagueGeneralSettings.Runtime {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32],
         matchupDuration: LeagueMatchupDuration,
-        locationTimeExclusivities: [Times]?,
+        locationTimeExclusivities: [Config.TimeSet]?,
         locationTravelDurations: [[LeagueMatchupDuration]]?,
         balanceTimeStrictness: LeagueBalanceStrictness,
-        balancedTimes: Times,
+        balancedTimes: Config.TimeSet,
         balanceLocationStrictness: LeagueBalanceStrictness,
-        balancedLocations: Locations,
+        balancedLocations: Config.LocationSet,
         redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
         flags: UInt32
     ) {

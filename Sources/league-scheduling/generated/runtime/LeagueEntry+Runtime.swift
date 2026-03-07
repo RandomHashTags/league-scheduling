@@ -1,13 +1,13 @@
 
 extension LeagueEntry {
-    func runtime(
+    func runtime<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
         id: IDValue,
         division: LeagueDivision.IDValue,
         defaultGameDays: Set<LeagueDayIndex>,
         defaultByes: Set<LeagueDayIndex>,
-        defaultGameTimes: [BitSet64<LeagueTimeIndex>],
-        defaultGameLocations: [BitSet64<LeagueLocationIndex>]
-    ) -> Runtime {
+        defaultGameTimes: [Times],
+        defaultGameLocations: [Locations]
+    ) -> Runtime<Times, Locations> {
         return .init(
             id: id,
             division: division,
@@ -19,8 +19,7 @@ extension LeagueEntry {
         )
     }
 
-    /// For optimal runtime performance.
-    struct Runtime: Sendable {
+    struct Runtime<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: Sendable {
         /// ID associated with this entry.
         let id:LeagueEntry.IDValue
 
@@ -33,15 +32,15 @@ extension LeagueEntry {
         /// Times this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
-        let gameTimes:[BitSet64<LeagueTimeIndex>]
+        let gameTimes:[TimeSet]
 
         /// Locations this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
-        let gameLocations:[BitSet64<LeagueLocationIndex>]
+        let gameLocations:[LocationSet]
 
         /// Home locations for this entry.
-        let homeLocations:BitSet64<LeagueLocationIndex>
+        let homeLocations:LocationSet
 
         /// Day indexes where this entry doesn't play due to being on a bye week.
         let byes:Set<LeagueDayIndex>
@@ -54,8 +53,8 @@ extension LeagueEntry {
             protobuf: LeagueEntry,
             defaultGameDays: Set<LeagueDayIndex>,
             defaultByes: Set<LeagueDayIndex>,
-            defaultGameTimes: [BitSet64<LeagueTimeIndex>],
-            defaultGameLocations: [BitSet64<LeagueLocationIndex>]
+            defaultGameTimes: [TimeSet],
+            defaultGameLocations: [LocationSet]
         ) {
             self.id = id
             self.division = division
@@ -71,9 +70,9 @@ extension LeagueEntry {
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
             gameDays: Set<LeagueDayIndex>,
-            gameTimes: [BitSet64<LeagueTimeIndex>],
-            gameLocations: [BitSet64<LeagueLocationIndex>],
-            homeLocations: BitSet64<LeagueLocationIndex>,
+            gameTimes: [TimeSet],
+            gameLocations: [LocationSet],
+            homeLocations: LocationSet,
             byes: Set<LeagueDayIndex>,
             matchupsPerGameDay: LitLeagues_Leagues_EntryMatchupsPerGameDay?
         ) {

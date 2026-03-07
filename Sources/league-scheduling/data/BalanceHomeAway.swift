@@ -1,8 +1,8 @@
 
 extension LeagueMatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
-    mutating func balanceHomeAway(
-        assignmentState: borrowing AssignmentState
+    mutating func balanceHomeAway<Config: ScheduleConfiguration>(
+        assignmentState: borrowing AssignmentState<Config>
     ) {
         let team1GamesPlayedAgainstTeam2 = assignmentState.assignedEntryHomeAways[unchecked: team1][unchecked: team2]
         // TODO: fix; more/less opponents than game days can make this unbalanced

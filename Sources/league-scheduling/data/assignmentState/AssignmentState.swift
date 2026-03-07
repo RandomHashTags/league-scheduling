@@ -2,8 +2,8 @@
 import StaticDateTimes
 
 // MARK: Noncopyable
-struct AssignmentState: Sendable, ~Copyable {
-    let entries:[LeagueEntry.Runtime]
+struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
+    let entries:[Config.EntryRuntime]
     var startingTimes:[StaticTime]
     var matchupDuration:LeagueMatchupDuration
     var locationTravelDurations:[[LeagueMatchupDuration]]
@@ -61,15 +61,15 @@ struct AssignmentState: Sendable, ~Copyable {
     var availableSlots:Set<LeagueAvailableSlot>
     
     var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
-    var playsAtLocations:PlaysAtLocations
+    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAtLocations:ContiguousArray<Config.LocationSet>
 
     /// Available matchups that can be scheduled.
     var matchups:Set<LeagueMatchup>
 
     var shuffleHistory = [LeagueShuffleAction]()
 
-    func copyable() -> AssignmentStateCopyable {
+    func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,
@@ -133,8 +133,8 @@ struct AssignmentState: Sendable, ~Copyable {
 }
 
 // MARK: Copyable
-struct AssignmentStateCopyable {
-    let entries:[LeagueEntry.Runtime]
+struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
+    let entries:[Config.EntryRuntime]
     let startingTimes:[StaticTime]
     let matchupDuration:LeagueMatchupDuration
     let locationTravelDurations:[[LeagueMatchupDuration]]
@@ -180,13 +180,13 @@ struct AssignmentStateCopyable {
     var availableSlots:Set<LeagueAvailableSlot>
 
     var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
-    var playsAtLocations:PlaysAtLocations
+    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAtLocations:ContiguousArray<Config.LocationSet>
     var matchups:Set<LeagueMatchup>
 
     var shuffleHistory:[LeagueShuffleAction]
 
-    func noncopyable() -> AssignmentState {
+    func noncopyable() -> AssignmentState<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,

@@ -9,29 +9,8 @@ import SwiftProtobuf
 
 // MARK: Runtime
 extension LeagueRequestPayload {
-    protocol RuntimeProtocol: Sendable, ~Copyable {
-        associatedtype ConcreteGeneralSettings:LeagueGeneralSettings.RuntimeProtocol
-
-        /// Number of days where games are played.
-        var gameDays: LeagueDayIndex { get }
-
-        /// Divisions associated with this schedule.
-        var divisions: [LeagueDivision.Runtime] { get }
-
-        /// Entries that participate in this schedule.
-        var entries: [LeagueEntry.Runtime] { get }
-
-        /// General settings for this schedule.
-        var general: ConcreteGeneralSettings { get }
-
-        /// Individual settings for the given day index.
-        /// 
-        /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
-        var daySettings: [ConcreteGeneralSettings] { get }
-    }
-
     /// For optimal runtime performance.
-    struct Runtime<T: LeagueGeneralSettings.RuntimeProtocol>: RuntimeProtocol {
+    struct Runtime<Config: ScheduleConfiguration>: Sendable {
         /// Number of days where games are played.
         let gameDays:LeagueDayIndex
 
@@ -39,22 +18,22 @@ extension LeagueRequestPayload {
         let divisions:[LeagueDivision.Runtime]
 
         /// Entries that participate in this schedule.
-        let entries:[LeagueEntry.Runtime]
+        let entries:[Config.EntryRuntime]
 
         /// General settings for this schedule.
-        let general:T
+        let general:LeagueGeneralSettings.Runtime<Config>
 
         /// Individual settings for the given day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
-        let daySettings:[T]
+        let daySettings:[LeagueGeneralSettings.Runtime<Config>]
 
         init(
             gameDays: LeagueDayIndex,
             divisions: [LeagueDivision.Runtime],
-            entries: [LeagueEntry.Runtime],
-            general: T,
-            daySettings: [T]
+            entries: [Config.EntryRuntime],
+            general: LeagueGeneralSettings.Runtime<Config>,
+            daySettings: [LeagueGeneralSettings.Runtime<Config>]
         ) {
             self.gameDays = gameDays
             self.divisions = divisions

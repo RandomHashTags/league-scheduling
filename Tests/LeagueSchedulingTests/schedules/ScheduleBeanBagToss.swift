@@ -16,7 +16,7 @@ struct ScheduleBeanBagToss: ScheduleTestsProtocol {
             data: data
         )
     }
-    static func schedule8GameDays3Times3Locations1Division9Teams() throws -> some LeagueRequestPayload.RuntimeProtocol {
+    static func schedule8GameDays3Times3Locations1Division9Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 3, 3, 9)
         let entries = getEntries(

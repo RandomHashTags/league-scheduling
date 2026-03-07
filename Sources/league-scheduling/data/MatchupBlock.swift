@@ -53,7 +53,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Set<LeagueMatchup>? {
@@ -92,7 +92,7 @@ extension LeagueScheduleData {
             selectSlot: selectSlot,
             canPlayAt: canPlayAt
         ) else { return nil }
-        adjacentTimes = Self.adjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
+        adjacentTimes = calculateAdjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
         localAssignmentState.availableSlots = localAssignmentState.availableSlots.filter { $0.time == firstMatchup.time }
         localAssignmentState.recalculateAllRemainingAllocations(
             day: day,
@@ -222,7 +222,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        localAssignmentState: inout AssignmentState,
+        localAssignmentState: inout AssignmentState<Config>,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
         selectedEntries: inout Set<LeagueEntry.IDValue>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
@@ -259,7 +259,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        localAssignmentState: inout AssignmentState,
+        localAssignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (LeagueMatchupPair) -> Bool,
         remainingPrioritizedEntries: inout Set<LeagueEntry.IDValue>,
         selectedEntries: inout Set<LeagueEntry.IDValue>,
@@ -288,31 +288,5 @@ extension LeagueScheduleData {
         selectedEntries.insert(leagueMatchup.home)
         selectedEntries.insert(leagueMatchup.away)
         return leagueMatchup
-    }
-}
-
-// MARK: Adjacent times
-extension LeagueScheduleData {
-    static func adjacentTimes(
-        for time: LeagueTimeIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
-    ) -> BitSet64<LeagueTimeIndex> {
-        var adjacentTimes = BitSet64<LeagueTimeIndex>()
-        let timeIndex = time % entryMatchupsPerGameDay
-        if timeIndex == 0 {
-            for i in 1..<LeagueTimeIndex(entryMatchupsPerGameDay) {
-                adjacentTimes.insertMember(time + i)
-            }
-        } else {
-            for i in 1..<timeIndex+1 {
-                adjacentTimes.insertMember(time - i)
-            }
-            if timeIndex < entryMatchupsPerGameDay-1 {
-                for i in 1..<entryMatchupsPerGameDay - timeIndex {
-                    adjacentTimes.insertMember(time + i)
-                }
-            }
-        }
-        return adjacentTimes
     }
 }

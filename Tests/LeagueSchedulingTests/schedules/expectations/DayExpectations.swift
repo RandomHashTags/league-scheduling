@@ -2,10 +2,10 @@
 @testable import LeagueScheduling
 import Testing
 
-struct DayExpectations: ScheduleTestsProtocol {
+struct DayExpectations<Config: ScheduleConfiguration>: ScheduleTestsProtocol {
     let b2bMatchupsAtDifferentLocations:Set<ValidLeagueMatchup>
 
-    func expectations(_ settings: some LeagueGeneralSettings.RuntimeProtocol) {
+    func expectations(_ settings: LeagueGeneralSettings.Runtime<Config>) {
         if settings.sameLocationIfB2B {
             sameLocationIfB2B()
         }

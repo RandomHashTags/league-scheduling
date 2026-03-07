@@ -7,7 +7,9 @@ import Foundation
 
 // TODO: support divisions on the same day with different times
 enum LeagueSchedule: Sendable, ~Copyable {
-    static func generate(_ settings: some LeagueRequestPayload.RuntimeProtocol) async -> LeagueGenerationResult {
+    static func generate<Config: ScheduleConfiguration>(
+        _ settings: LeagueRequestPayload.Runtime<Config>
+    ) async -> LeagueGenerationResult {
         var err:String? = nil
         var results = [LeagueGenerationData]()
         do {
@@ -33,8 +35,8 @@ enum LeagueSchedule: Sendable, ~Copyable {
 
 // MARK: Generate schedules
 extension LeagueSchedule {
-    static func generateSchedules(
-        settings: some LeagueRequestPayload.RuntimeProtocol
+    static func generateSchedules<Config: ScheduleConfiguration>(
+        settings: LeagueRequestPayload.Runtime<Config>
     ) async throws -> [LeagueGenerationData] {
         let divisionsCount = settings.divisions.count
         var divisionEntries:ContiguousArray<Set<LeagueEntry.IDValue>> = .init(repeating: Set(), count: divisionsCount)
@@ -62,7 +64,7 @@ extension LeagueSchedule {
             divisionEntries: divisionEntries,
             divisions: settings.divisions
         )
-        let dataSnapshot = LeagueScheduleDataSnapshot(
+        let dataSnapshot = LeagueScheduleDataSnapshot<Config>(
             maxStartingTimes: maxStartingTimes,
             startingTimes: settings.general.startingTimes,
             maxLocations: maxLocations,
@@ -141,10 +143,10 @@ extension LeagueSchedule {
 
 // MARK: Generate schedule
 extension LeagueSchedule {
-    private static func generateSchedule(
+    private static func generateSchedule<Config: ScheduleConfiguration>(
         dayOfWeek: LeagueDayOfWeek,
-        settings: some LeagueRequestPayload.RuntimeProtocol,
-        dataSnapshot: LeagueScheduleDataSnapshot,
+        settings: LeagueRequestPayload.Runtime<Config>,
+        dataSnapshot: LeagueScheduleDataSnapshot<Config>,
         divisionsCount: Int,
         maxStartingTimes: LeagueTimeIndex,
         maxLocations: LeagueLocationIndex,
@@ -167,7 +169,7 @@ extension LeagueSchedule {
             scheduledEntries: scheduledEntries
         )
 
-        var snapshots = [LeagueScheduleDataSnapshot]()
+        var snapshots = [LeagueScheduleDataSnapshot<Config>]()
         snapshots.reserveCapacity(gameDays)
         var gameDayRegenerationAttempt:LeagueRegenerationAttempt = 0
         var day:LeagueDayIndex = 0
@@ -251,9 +253,9 @@ extension LeagueSchedule {
         finalizeGenerationData(generationData: &generationData, data: data)
         return generationData
     }
-    private static func finalizeGenerationData(
+    private static func finalizeGenerationData<Config: ScheduleConfiguration>(
         generationData: inout LeagueGenerationData,
-        data: borrowing LeagueScheduleData
+        data: borrowing LeagueScheduleData<Config>
     ) {
         #if UnitTesting
         generationData.assignedTimes = data.assignmentState.assignedTimes
@@ -271,10 +273,10 @@ extension LeagueSchedule {
 
 // MARK: Load max allocations
 extension LeagueSchedule {
-    static func loadMaxAllocations(
-        dataSnapshot: inout LeagueScheduleDataSnapshot,
+    static func loadMaxAllocations<Config: ScheduleConfiguration>(
+        dataSnapshot: inout LeagueScheduleDataSnapshot<Config>,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Set<LeagueEntry.IDValue>>>,
-        settings: some LeagueRequestPayload.RuntimeProtocol,
+        settings: LeagueRequestPayload.Runtime<Config>,
         maxStartingTimes: LeagueTimeIndex,
         maxLocations: LeagueLocationIndex,
         scheduledEntries: Set<LeagueEntry.IDValue>

@@ -188,7 +188,7 @@ extension LeagueRequestPayload {
             divisions: divisions,
             entries: entries,
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
-            general: LeagueGeneralSettings.Runtime(
+            general: LeagueGeneralSettings.Runtime<ScheduleConfig<Times, Locations>>(
                 gameGap: defaultGameGap,
                 timeSlots: settings.timeSlots,
                 startingTimes: settings.startingTimes.times,
@@ -211,11 +211,11 @@ extension LeagueRequestPayload {
 }
 
 extension LeagueRequestPayload {
-    private func generate<T: LeagueGeneralSettings.RuntimeProtocol>(
+    private func generate<Config: ScheduleConfiguration>(
         divisions: [LeagueDivision.Runtime],
-        entries: [LeagueEntry.Runtime],
+        entries: [Config.EntryRuntime],
         correctMaximumPlayableMatchups: [UInt32],
-        general: T
+        general: LeagueGeneralSettings.Runtime<Config>
     ) async throws(LeagueError) -> LeagueGenerationResult {
         let daySettings = try parseDaySettings(
             general: general,
@@ -244,7 +244,10 @@ extension LeagueRequestPayload {
 
 // MARK: Load division defaults
 extension LeagueRequestPayload {
-    private func loadDivisionDefaults<Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
+    private func loadDivisionDefaults<
+        Times: SetOfTimeIndexes,
+        Locations: SetOfLocationIndexes
+    >(
         divisionsCount: Int
     ) -> DivisionDefaults<Times, Locations> {
         var gameDays = [Set<LeagueDayIndex>]()
@@ -352,8 +355,8 @@ extension LeagueRequestPayload {
         teams: [LeagueEntry],
         teamsForDivision: inout [Int],
         divisionDefaults: borrowing DivisionDefaults<Times, Locations>
-    ) throws(LeagueError) -> [LeagueEntry.Runtime] {
-        var entries = [LeagueEntry.Runtime]()
+    ) throws(LeagueError) -> [LeagueEntry.Runtime<Times, Locations>] {
+        var entries = [LeagueEntry.Runtime<Times, Locations>]()
         entries.reserveCapacity(teams.count)
         for (i, team) in teams.enumerated() {
             if team.hasGameDayTimes {
@@ -372,17 +375,14 @@ extension LeagueRequestPayload {
                 }
             }
             let division = min(team.division, UInt32(divisionsCount - 1))
-            // TODO: fix
-            let defaultGameTimes = divisionDefaults.gameTimes[unchecked: division].map { BitSet64<LeagueTimeIndex>.init($0) }
-            let defaultGameLocations = divisionDefaults.gameLocations[unchecked: division].map { BitSet64<LeagueLocationIndex>.init($0) }
             teamsForDivision[Int(division)] += 1
             entries.append(team.runtime(
                 id: LeagueEntry.IDValue(i),
                 division: division,
                 defaultGameDays: divisionDefaults.gameDays[unchecked: division],
                 defaultByes: divisionDefaults.byes[unchecked: division],
-                defaultGameTimes: defaultGameTimes,
-                defaultGameLocations: defaultGameLocations
+                defaultGameTimes: divisionDefaults.gameTimes[unchecked: division],
+                defaultGameLocations: divisionDefaults.gameLocations[unchecked: division]
             ))
         }
         return entries
@@ -451,12 +451,12 @@ extension LeagueRequestPayload {
 
 // MARK: Parse day settings
 extension LeagueRequestPayload {
-    private func parseDaySettings<T: LeagueGeneralSettings.RuntimeProtocol>(
-        general: T,
+    private func parseDaySettings<Config: ScheduleConfiguration>(
+        general: LeagueGeneralSettings.Runtime<Config>,
         correctMaximumPlayableMatchups: [UInt32],
-        entries: [LeagueEntry.Runtime]
-    ) throws(LeagueError) -> [T] {
-        var daySettings = [T]()
+        entries: [Config.EntryRuntime]
+    ) throws(LeagueError) -> [LeagueGeneralSettings.Runtime<Config>] {
+        var daySettings = [LeagueGeneralSettings.Runtime<Config>]()
         daySettings.reserveCapacity(gameDays)
         if hasIndividualDaySettings {
             for dayIndex in 0..<gameDays {

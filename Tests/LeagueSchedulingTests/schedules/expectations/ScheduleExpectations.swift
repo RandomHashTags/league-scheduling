@@ -7,8 +7,8 @@ protocol ScheduleExpectations: Sendable {
 
 // MARK: Expectations
 extension ScheduleExpectations {
-    func expectations(
-        settings: some LeagueRequestPayload.RuntimeProtocol,
+    func expectations<Config: ScheduleConfiguration>(
+        settings: LeagueRequestPayload.Runtime<Config>,
         matchupsCount: Int,
         data: LeagueGenerationResult
     ) throws {
@@ -92,7 +92,7 @@ extension ScheduleExpectations {
                     }
                 }
                 let settings = settings.daySettings[dayIndex]
-                let dayExpectations = DayExpectations(
+                let dayExpectations = DayExpectations<Config>(
                     b2bMatchupsAtDifferentLocations: b2bMatchupsAtDifferentLocations
                 )
                 dayExpectations.expectations(settings)
@@ -104,7 +104,7 @@ extension ScheduleExpectations {
             for (divisionIndex, division) in settings.divisions.enumerated() {
                 let cap = division.maxSameOpponentMatchups
                 let divisionEntries = settings.entries.filter { $0.division == divisionIndex }
-                let divisionEntryExpectations = DivisionEntryExpectations(
+                let divisionEntryExpectations = DivisionEntryExpectations<Config>(
                     cap: cap,
                     matchupsPlayedPerDay: matchupsPlayedPerDay,
                     assignedEntryHomeAways: assignedEntryHomeAways,
@@ -213,7 +213,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceTimeNumber(
         assignedTimes: LeagueAssignedTimes,
-        balancedTimes: some SetOfTimeIndexes,
+        balancedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         balanceTimeNumber: LeagueTimeIndex
     ) {
         for (entryID, assignedTimes) in assignedTimes.enumerated() {
@@ -229,7 +229,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceLocationNumber(
         assignedLocations: LeagueAssignedLocations,
-        balancedLocations: some SetOfLocationIndexes,
+        balancedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         balanceLocationNumber: LeagueLocationIndex
     ) {
         for (entryID, assignedLocations) in assignedLocations.enumerated() {

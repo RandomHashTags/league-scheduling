@@ -137,7 +137,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (LeagueMatchupPair) -> Bool,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
@@ -187,7 +187,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         allAvailableMatchups: Set<LeagueMatchupPair>,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {

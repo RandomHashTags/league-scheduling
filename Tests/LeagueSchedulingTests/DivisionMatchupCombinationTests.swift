@@ -7,14 +7,14 @@ import Testing
 @Suite
 struct DivisionMatchupCombinationTests {
     @Test(.timeLimit(.minutes(1)))
-    func allDivisionMatchupCombinations() {
+    func testAllDivisionMatchupCombinations() {
         var expected:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = [
             [
                 [0, 6], [2, 4], [3, 3], [4, 2], [6, 0]
             ]
         ]
         expected += expected
-        var combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        var combos = allDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [12, 12]
@@ -29,7 +29,7 @@ struct DivisionMatchupCombinationTests {
                 [0, 5], [2, 3], [3, 2], [5, 0]
             ]
         ]
-        combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        combos = allDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 10]
@@ -45,7 +45,7 @@ struct DivisionMatchupCombinationTests {
                 [0, 5], [2, 3], [3, 2], [5, 0]
             ]
         ]
-        combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        combos = allDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 0, 10]
@@ -57,7 +57,7 @@ struct DivisionMatchupCombinationTests {
 // MARK: Allowed
 extension DivisionMatchupCombinationTests {
     @Test(.timeLimit(.minutes(1)))
-    func allowedDivisionMatchupCombinations() {
+    func testAllowedDivisionMatchupCombinations() {
         var expected:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = [
             [
                 [0, 6], [6, 0]
@@ -75,7 +75,7 @@ extension DivisionMatchupCombinationTests {
                 [6, 0], [0, 6]
             ]
         ]
-        var combos = LeagueScheduleData.allowedDivisionMatchupCombinations(
+        var combos = allowedDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [12, 12]
@@ -90,7 +90,7 @@ extension DivisionMatchupCombinationTests {
                 [4, 3], [2, 3]
             ]
         ]
-        combos = LeagueScheduleData.allowedDivisionMatchupCombinations(
+        combos = allowedDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 10]

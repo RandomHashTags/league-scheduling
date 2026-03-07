@@ -17,6 +17,10 @@ protocol AbstractSet: Sendable, ~Copyable {
 
     /// Removes the specified element from the set.
     mutating func removeMember(_ member: Element)
+
+    mutating func removeAll()
+
+    func forEach(_ body: (Element) throws -> Void) rethrows
 }
 
 protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {
@@ -28,6 +32,10 @@ extension Set: AbstractSet {
     @inline(__always)
     mutating func removeMember(_ member: Element) {
         self.remove(member)
+    }
+
+    mutating func removeAll() {
+        self.removeAll(keepingCapacity: true)
     }
 
     @inline(__always)

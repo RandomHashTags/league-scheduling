@@ -5,14 +5,14 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         team2: LeagueEntry.IDValue,
         assignedTimes: LeagueAssignedTimes,
         assignedLocations: LeagueAssignedLocations,
-        playsAtTimes: PlaysAtTimes,
-        playsAtLocations: PlaysAtLocations,
+        team1PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        team1PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
+        team2PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        team2PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playableSlots: inout Set<LeagueAvailableSlot>
     ) -> LeagueAvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
-        let homePlaysAtTimes = playsAtTimes[unchecked: team1]
-        let awayPlaysAtTimes = playsAtTimes[unchecked: team2]
-        guard !(homePlaysAtTimes.isEmpty || awayPlaysAtTimes.isEmpty) else {
+        guard !(team1PlaysAtTimes.isEmpty || team2PlaysAtTimes.isEmpty) else {
             return SelectSlotEarliestTime.select(
                 team1: team1,
                 team2: team2,
@@ -24,10 +24,8 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         // at least one of the teams already plays
         let team1Times = assignedTimes[unchecked: team1]
         let team1Locations = assignedLocations[unchecked: team1]
-        let team1PlaysAtLocations = playsAtLocations[unchecked: team1]
         let team2Times = assignedTimes[unchecked: team2]
         let team2Locations = assignedLocations[unchecked: team2]
-        let team2PlaysAtLocations = playsAtLocations[unchecked: team2]
 
         var nonBackToBackSlots = [LeagueAvailableSlot]()
         nonBackToBackSlots.reserveCapacity(playableSlots.count)
@@ -40,9 +38,9 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
             team2Locations: team2Locations,
             playableSlots: playableSlots
         ) {
-            if targetSlot.time > 0 && (homePlaysAtTimes.contains(targetSlot.time-1) || awayPlaysAtTimes.contains(targetSlot.time-1))
-                    || homePlaysAtTimes.contains(targetSlot.time+1)
-                    || awayPlaysAtTimes.contains(targetSlot.time+1) {
+            if targetSlot.time > 0 && (team1PlaysAtTimes.contains(targetSlot.time-1) || team2PlaysAtTimes.contains(targetSlot.time-1))
+                    || team1PlaysAtTimes.contains(targetSlot.time+1)
+                    || team2PlaysAtTimes.contains(targetSlot.time+1) {
                 // is back-to-back
                 if team1PlaysAtLocations.contains(targetSlot.location) || team2PlaysAtLocations.contains(targetSlot.location) {
                     // make them play b2b on the same location

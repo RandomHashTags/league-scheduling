@@ -1,3 +1,0 @@
-
-protocol AssignmentStateProtocol: Sendable, ~Copyable {
-}

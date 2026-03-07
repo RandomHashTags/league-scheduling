@@ -26,7 +26,7 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
                 }
             }
             for opponentEntry in divisionEntries {
-                if entry != opponentEntry {
+                if !entry.isEqual(to: opponentEntry) {
                     let value = assignedEntryHomeAways[unchecked: entry.id][unchecked: opponentEntry.id]
                     let sum = value.sum
                     #expect(sum <= cap)
@@ -74,15 +74,15 @@ extension BalanceHomeAwayExpectations {
     }
 }
 
-extension LeagueEntry.Runtime: Hashable {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-        && lhs.division == rhs.division
-        && lhs.gameDays == rhs.gameDays
-        && lhs.gameTimes == rhs.gameTimes
-        && lhs.gameLocations == rhs.gameLocations
-        && lhs.homeLocations == rhs.homeLocations
-        && lhs.byes == rhs.byes
-        && lhs.matchupsPerGameDay == rhs.matchupsPerGameDay
+extension LeagueEntry.Runtime {
+    func isEqual(to rhs: Self) -> Bool {
+        id == rhs.id
+        && division == rhs.division
+        && gameDays == rhs.gameDays
+        //&& lhs.gameTimes == rhs.gameTimes
+        //&& lhs.gameLocations == rhs.gameLocations
+        //&& lhs.homeLocations == rhs.homeLocations
+        && byes == rhs.byes
+        //&& lhs.matchupsPerGameDay == rhs.matchupsPerGameDay
     }
 }

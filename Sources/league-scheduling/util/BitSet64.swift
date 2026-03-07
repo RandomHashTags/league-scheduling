@@ -14,6 +14,12 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
             insertMember(e)
         }
     }
+    init<T: AbstractSet>(_ set: T) where T.Element == Element {
+        storage = 0
+        set.forEach {
+            insertMember($0)
+        }
+    }
 
     var count: Int {
         storage.nonzeroBitCount
@@ -53,11 +59,11 @@ extension BitSet64 {
 
 // MARK: iterator
 extension BitSet64 {
-    func forEachBit(_ yield: (Element) -> Void) {
+    func forEach(_ body: (Element) throws -> Void) rethrows {
         var temp = storage
         while temp != 0 {
             let index = temp.trailingZeroBitCount
-            yield(Element(index))
+            try body(Element(index))
             temp &= (temp - 1)
         }
     }
@@ -92,18 +98,6 @@ extension BitSet64 {
             temp &= temp - 1
         }
         return Element(temp.trailingZeroBitCount)
-    }
-}
-
-// MARK: Codable
-extension BitSet64: Codable {
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        storage = try container.decode(UInt64.self)
-    }
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(storage)
     }
 }
 

@@ -108,11 +108,11 @@ extension ScheduleExpectations {
                     cap: cap,
                     matchupsPlayedPerDay: matchupsPlayedPerDay,
                     assignedEntryHomeAways: assignedEntryHomeAways,
-                    entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-                    divisionEntries: divisionEntries
+                    entryMatchupsPerGameDay: entryMatchupsPerGameDay
                 )
                 divisionEntryExpectations.expectations(
-                    balanceHomeAway: settings.general.balanceHomeAway
+                    balanceHomeAway: settings.general.balanceHomeAway,
+                    divisionEntries: divisionEntries
                 )
             }
 

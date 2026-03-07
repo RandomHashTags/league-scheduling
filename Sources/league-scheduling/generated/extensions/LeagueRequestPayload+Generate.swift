@@ -132,7 +132,7 @@ extension LeagueRequestPayload {
         defaultTimes: Times,
         defaultLocations: Locations
     ) async throws(LeagueError) -> LeagueGenerationResult {
-        let divisionDefaults = loadDivisionDefaults(divisionsCount: divisionsCount)
+        let divisionDefaults:DivisionDefaults<Times> = loadDivisionDefaults(divisionsCount: divisionsCount)
         var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
         let entries = try parseEntries(
             divisionsCount: divisionsCount,
@@ -234,10 +234,10 @@ extension LeagueRequestPayload {
 
 // MARK: Division defaults
 extension LeagueRequestPayload {
-    struct DivisionDefaults: Sendable, ~Copyable {
+    struct DivisionDefaults<Times: SetOfTimeIndexes>: Sendable, ~Copyable {
         let gameDays:[Set<LeagueDayIndex>]
         let byes:[Set<LeagueDayIndex>]
-        let gameTimes:[[BitSet64<LeagueTimeIndex>]]
+        let gameTimes:[[Times]]
         let gameLocations:[[BitSet64<LeagueLocationIndex>]]
     }
 }
@@ -245,12 +245,12 @@ extension LeagueRequestPayload {
 // MARK: Load division defaults
 extension LeagueRequestPayload {
     // TODO: fix (pass the generic times and locations)
-    private func loadDivisionDefaults(
+    private func loadDivisionDefaults<Times: SetOfTimeIndexes>(
         divisionsCount: Int
-    ) -> DivisionDefaults {
+    ) -> DivisionDefaults<Times> {
         var gameDays = [Set<LeagueDayIndex>]()
         var byes = [Set<LeagueDayIndex>]()
-        var gameTimes = [[BitSet64<LeagueTimeIndex>]]()
+        var gameTimes = [[Times]]()
         var gameLocations = [[BitSet64<LeagueLocationIndex>]]()
         gameDays.reserveCapacity(divisionsCount)
         byes.reserveCapacity(divisionsCount)
@@ -283,7 +283,7 @@ extension LeagueRequestPayload {
                 if division.hasGameDayTimes {
                     gameTimes.append(division.gameDayTimes.times.map({ .init($0.times) }))
                 } else {
-                    var dgdt = [BitSet64<LeagueTimeIndex>]()
+                    var dgdt = [Times]()
                     for gameDay in 0..<self.gameDays {
                         let times = getTimesFunc(self, gameDay, settings.timeSlots)
                         dgdt.append(.init(0..<times))
@@ -305,7 +305,7 @@ extension LeagueRequestPayload {
             gameDays.append(Set(0..<self.gameDays))
             byes.append([])
 
-            var dgdt = [BitSet64<LeagueTimeIndex>]()
+            var dgdt = [Times]()
             for gameDay in 0..<self.gameDays {
                 let times = getTimesFunc(self, gameDay, settings.timeSlots)
                 dgdt.append(.init(0..<times))
@@ -348,11 +348,11 @@ extension LeagueRequestPayload {
 
 // MARK: Parse teams
 extension LeagueRequestPayload {
-    private func parseEntries(
+    private func parseEntries<Times: SetOfTimeIndexes>(
         divisionsCount: Int,
         teams: [LeagueEntry],
         teamsForDivision: inout [Int],
-        divisionDefaults: borrowing DivisionDefaults
+        divisionDefaults: borrowing DivisionDefaults<Times>
     ) throws(LeagueError) -> [LeagueEntry.Runtime] {
         var entries = [LeagueEntry.Runtime]()
         entries.reserveCapacity(teams.count)
@@ -373,13 +373,15 @@ extension LeagueRequestPayload {
                 }
             }
             let division = min(team.division, UInt32(divisionsCount - 1))
+            // TODO: fix
+            let defaultGameTimes = divisionDefaults.gameTimes[unchecked: division].map { BitSet64<LeagueTimeIndex>.init($0) }
             teamsForDivision[Int(division)] += 1
             entries.append(team.runtime(
                 id: LeagueEntry.IDValue(i),
                 division: division,
                 defaultGameDays: divisionDefaults.gameDays[unchecked: division],
                 defaultByes: divisionDefaults.byes[unchecked: division],
-                defaultGameTimes: divisionDefaults.gameTimes[unchecked: division],
+                defaultGameTimes: defaultGameTimes,
                 defaultGameLocations: divisionDefaults.gameLocations[unchecked: division]
             ))
         }

@@ -7,10 +7,10 @@ struct DivisionEntryExpectations: ScheduleTestsProtocol {
     let matchupsPlayedPerDay:ContiguousArray<ContiguousArray<Int>>
     let assignedEntryHomeAways:AssignedEntryHomeAways
     let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
-    let divisionEntries:[LeagueEntry.Runtime]
 
     func expectations(
-        balanceHomeAway: Bool
+        balanceHomeAway: Bool,
+        divisionEntries: [LeagueEntry.Runtime]
     ) {
         if balanceHomeAway {
             BalanceHomeAwayExpectations().expectations(

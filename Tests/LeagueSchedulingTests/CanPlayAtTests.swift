@@ -12,7 +12,7 @@ struct CanPlayAtTests {
 
         var gameGap = GameGap.upTo(1).minMax
         var playsAt:PlaysAt.Element = []
-        var playsAtTimes:PlaysAtTimes.Element = .init()
+        var playsAtTimes:BitSet64<LeagueTimeIndex> = .init()
         var timeNumbers:LeagueAssignedTimes.Element = .init(repeating: 0, count: times)
         var locationNumbers:LeagueAssignedLocations.Element = .init(repeating: 0, count: locations)
         let maxTimeNumbers:MaximumTimeAllocations.Element = .init(repeating: 1, count: times)

@@ -5,8 +5,10 @@ struct SelectSlotEarliestTime: SelectSlotProtocol, ~Copyable {
         team2: LeagueEntry.IDValue,
         assignedTimes: LeagueAssignedTimes,
         assignedLocations: LeagueAssignedLocations,
-        playsAtTimes: PlaysAtTimes,
-        playsAtLocations: PlaysAtLocations,
+        team1PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        team1PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
+        team2PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        team2PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playableSlots: inout Set<LeagueAvailableSlot>
     ) -> LeagueAvailableSlot? {
         return Self.select(

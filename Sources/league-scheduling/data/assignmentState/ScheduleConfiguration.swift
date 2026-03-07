@@ -6,6 +6,5 @@ protocol ScheduleConfiguration: Sendable, ~Copyable {
     typealias EntryRuntime = LeagueEntry.Runtime<TimeSet, LocationSet>
 }
 
-struct ScheduleConfig<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: ScheduleConfiguration {
-    let entries:[EntryRuntime]
+enum ScheduleConfig<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>: ScheduleConfiguration {
 }

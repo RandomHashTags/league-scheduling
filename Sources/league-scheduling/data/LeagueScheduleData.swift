@@ -39,6 +39,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var redistributionData:RedistributionData<Config>?
     var redistributedMatchups = false
 
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     init(
         snapshot: LeagueScheduleDataSnapshot<Config>
     ) {
@@ -62,6 +64,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 
 // MARK: Snapshot
 extension LeagueScheduleData {
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
@@ -77,6 +81,8 @@ extension LeagueScheduleData {
         shuffleHistory = snapshot.shuffleHistory
     }
 
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     func snapshot() -> LeagueScheduleDataSnapshot<Config> {
         return .init(self)
     }
@@ -90,12 +96,14 @@ extension LeagueScheduleData {
     ///   - day: Day index that will be scheduled.
     ///   - divisionEntries: Division entries that play on the `day`. (`LeagueDivision.IDValue`: `Set<LeagueEntry.IDValue>`)
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     mutating func newDay(
         day: LeagueDayIndex,
         daySettings: LeagueGeneralSettings.Runtime<Config>,
         divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
         availableSlots: Set<LeagueAvailableSlot>,
-        settings: LeagueRequestPayload.Runtime<Config>,
+        settings: borrowing LeagueRequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         let now = clock.now

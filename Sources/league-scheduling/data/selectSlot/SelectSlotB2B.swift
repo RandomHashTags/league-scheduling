@@ -2,20 +2,18 @@
 struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
     let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
 
-    func select(
+    func select<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>(
         team1: LeagueEntry.IDValue,
         team2: LeagueEntry.IDValue,
         assignedTimes: LeagueAssignedTimes,
         assignedLocations: LeagueAssignedLocations,
-        team1PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
-        team1PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
-        team2PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
-        team2PlaysAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
+        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtLocations: ContiguousArray<LocationSet>,
         playableSlots: inout Set<LeagueAvailableSlot>
     ) -> LeagueAvailableSlot? {
         filter(
-            team1PlaysAtTimes: team1PlaysAtTimes,
-            team2PlaysAtTimes: team2PlaysAtTimes,
+            team1PlaysAtTimes: playsAtTimes[unchecked: team1],
+            team2PlaysAtTimes: playsAtTimes[unchecked: team2],
             playableSlots: &playableSlots
         )
         return SelectSlotNormal.select(
@@ -30,9 +28,9 @@ struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
 
 extension SelectSlotB2B {
     /// Mutates `playableSlots`, if `team1` AND `team2` haven't played already, so it only contains the first slots applicable for a matchup block.
-    private func filter(
-        team1PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
-        team2PlaysAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+    private func filter<TimeSet: SetOfTimeIndexes>(
+        team1PlaysAtTimes: TimeSet,
+        team2PlaysAtTimes: TimeSet,
         playableSlots: inout Set<LeagueAvailableSlot>
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")

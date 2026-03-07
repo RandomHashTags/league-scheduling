@@ -10,7 +10,7 @@ import SwiftProtobuf
 // MARK: Runtime
 extension LeagueRequestPayload {
     /// For optimal runtime performance.
-    struct Runtime<Config: ScheduleConfiguration>: Sendable {
+    struct Runtime<Config: ScheduleConfiguration>: Sendable, ~Copyable {
         /// Number of days where games are played.
         let gameDays:LeagueDayIndex
 
@@ -28,6 +28,8 @@ extension LeagueRequestPayload {
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
         let daySettings:[LeagueGeneralSettings.Runtime<Config>]
 
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+        @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
         init(
             gameDays: LeagueDayIndex,
             divisions: [LeagueDivision.Runtime],
@@ -40,6 +42,14 @@ extension LeagueRequestPayload {
             self.entries = entries
             self.general = general
             self.daySettings = daySettings
+        }
+
+        func copy() -> Self {
+            .init(gameDays: gameDays, divisions: divisions, entries: entries, general: general, daySettings: daySettings)
+        }
+
+        func redistributionSettings(for day: LeagueDayIndex) -> LitLeagues_Leagues_RedistributionSettings? {
+            daySettings[unchecked: day].redistributionSettings ?? general.redistributionSettings
         }
     }
 }

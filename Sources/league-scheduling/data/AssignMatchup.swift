@@ -48,10 +48,8 @@ extension AssignmentState {
             team2: pair.team2,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,
-            team1PlaysAtTimes: playsAtTimes[unchecked: pair.team1],
-            team1PlaysAtLocations: playsAtLocations[unchecked: pair.team1],
-            team2PlaysAtTimes: playsAtTimes[unchecked: pair.team2],
-            team2PlaysAtLocations: playsAtLocations[unchecked: pair.team2],
+            playsAtTimes: playsAtTimes,
+            playsAtLocations: playsAtLocations,
             playableSlots: &slots
         )
         #if LOG

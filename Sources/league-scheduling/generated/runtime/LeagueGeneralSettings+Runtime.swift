@@ -154,6 +154,8 @@ extension LeagueGeneralSettings.Runtime {
         balancedLocations.contains(location)
     }
 
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     init(
         gameGap: GameGap,
         timeSlots: LeagueTimeIndex,

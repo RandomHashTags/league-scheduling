@@ -8,7 +8,7 @@ protocol ScheduleExpectations: Sendable {
 // MARK: Expectations
 extension ScheduleExpectations {
     func expectations<Config: ScheduleConfiguration>(
-        settings: LeagueRequestPayload.Runtime<Config>,
+        settings: borrowing LeagueRequestPayload.Runtime<Config>,
         matchupsCount: Int,
         data: LeagueGenerationResult
     ) throws {

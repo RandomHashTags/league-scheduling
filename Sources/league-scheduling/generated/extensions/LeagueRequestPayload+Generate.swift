@@ -211,6 +211,8 @@ extension LeagueRequestPayload {
 }
 
 extension LeagueRequestPayload {
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     private func generate<Config: ScheduleConfiguration>(
         divisions: [LeagueDivision.Runtime],
         entries: [Config.EntryRuntime],
@@ -451,6 +453,8 @@ extension LeagueRequestPayload {
 
 // MARK: Parse day settings
 extension LeagueRequestPayload {
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
     private func parseDaySettings<Config: ScheduleConfiguration>(
         general: LeagueGeneralSettings.Runtime<Config>,
         correctMaximumPlayableMatchups: [UInt32],

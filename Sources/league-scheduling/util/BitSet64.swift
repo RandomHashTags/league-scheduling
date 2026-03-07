@@ -24,6 +24,7 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
     var count: Int {
         storage.nonzeroBitCount
     }
+
     var isEmpty: Bool {
         storage == 0
     }
@@ -66,18 +67,6 @@ extension BitSet64 {
             try body(Element(index))
             temp &= (temp - 1)
         }
-    }
-
-    func forEachBitWithReturn<Result>(_ yield: (Element) -> Result?) -> Result? {
-        var temp = storage
-        while temp != 0 {
-            let index = temp.trailingZeroBitCount
-            if let r = yield(Element(index)) {
-                return r
-            }
-            temp &= (temp - 1)
-        }
-        return nil
     }
 }
 

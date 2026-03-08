@@ -39,8 +39,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var redistributionData:RedistributionData<Config>?
     var redistributedMatchups = false
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     init(
         snapshot: LeagueScheduleDataSnapshot<Config>
     ) {
@@ -64,8 +64,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 
 // MARK: Snapshot
 extension LeagueScheduleData {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
@@ -81,8 +81,8 @@ extension LeagueScheduleData {
         shuffleHistory = snapshot.shuffleHistory
     }
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     func snapshot() -> LeagueScheduleDataSnapshot<Config> {
         return .init(self)
     }
@@ -96,12 +96,12 @@ extension LeagueScheduleData {
     ///   - day: Day index that will be scheduled.
     ///   - divisionEntries: Division entries that play on the `day`. (`LeagueDivision.IDValue`: `Set<LeagueEntry.IDValue>`)
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     mutating func newDay(
         day: LeagueDayIndex,
         daySettings: LeagueGeneralSettings.Runtime<Config>,
-        divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
         availableSlots: Set<LeagueAvailableSlot>,
         settings: borrowing LeagueRequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
@@ -117,7 +117,8 @@ extension LeagueScheduleData {
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
         var availableMatchups = Set<LeagueMatchupPair>()
-        var prioritizedEntries = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
+        var prioritizedEntries = Config.EntryIDSet()
+        prioritizedEntries.reserveCapacity(entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
         expectedMatchupsCount = 0
         assignmentState.allDivisionMatchups = .init(repeating: [], count: divisionEntries.count)
@@ -128,12 +129,9 @@ extension LeagueScheduleData {
                     entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay
                 )
 
-                var iterator = entriesInDivision.makeIterator()
-                while let entryID = iterator.next() {
-                    if assignmentState.numberOfAssignedMatchups[unchecked: entryID] >= daySettings.maximumPlayableMatchups[unchecked: entryID] {
-                        entriesInDivision.remove(entryID)
-                    }
-                }
+                entriesInDivision.removeAll(where: {
+                    assignmentState.numberOfAssignedMatchups[unchecked: $0] >= daySettings.maximumPlayableMatchups[unchecked: $0]
+                })
 
                 entryCountsForDivision[divisionIndex] = entriesInDivision.count
                 expectedMatchupsCount += (entriesInDivision.count * defaultMaxEntryMatchupsPerGameDay) / entriesPerMatchup
@@ -141,7 +139,10 @@ extension LeagueScheduleData {
                 #if LOG
                 print("LeagueScheduleData;newDay;day=\(day);expectedMatchupsCount=\(expectedMatchupsCount);divisionIndex=\(divisionIndex);entryCountsForDivision=\(entriesInDivision.count);divisionRecurringDayLimitInterval=\(divisionRecurringDayLimitInterval[divisionIndex])")
                 #endif
-                let availableDivisionMatchups = availableMatchupPairs(for: entriesInDivision)
+                let availableDivisionMatchups = entriesInDivision.availableMatchupPairs(
+                    assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
+                    maxSameOpponentMatchups: assignmentState.maxSameOpponentMatchups
+                )
                 self.assignmentState.allDivisionMatchups[divisionIndex] = availableDivisionMatchups
                 availableMatchups.formUnion(availableDivisionMatchups)
             }
@@ -164,10 +165,10 @@ extension LeagueScheduleData {
             assignmentState.playsAt[unchecked: i].removeAll(keepingCapacity: true)
         }
         for i in 0..<assignmentState.playsAtTimes.count {
-            assignmentState.playsAtTimes[unchecked: i].removeAll()
+            assignmentState.playsAtTimes[unchecked: i].removeAllKeepingCapacity()
         }
         for i in 0..<assignmentState.playsAtLocations.count {
-            assignmentState.playsAtLocations[unchecked: i].removeAll()
+            assignmentState.playsAtLocations[unchecked: i].removeAllKeepingCapacity()
         }
         assignmentState.recalculateNewDayRemainingAllocations(entriesCount: entriesCount)
 
@@ -190,48 +191,6 @@ extension LeagueScheduleData {
                 throw .failedZeroExpectedMatchupsForDay(day)
             }
         }
-    }
-}
-
-// MARK: Available matchup pairs
-extension LeagueScheduleData {
-    /// - Parameters:
-    ///   - entries: The entries that play for the `day`.
-    /// - Returns: The available matchup pairs that can play for the `day`.
-    func availableMatchupPairs(
-        for entries: Set<LeagueEntry.IDValue>
-    ) -> Set<LeagueMatchupPair> {
-        return Self.availableMatchupPairs(
-            for: entries,
-            assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
-            maxSameOpponentMatchups: assignmentState.maxSameOpponentMatchups
-        )
-    }
-
-    /// - Parameters:
-    ///   - entries: Entries that will participate in matchup scheduling.
-    /// - Returns: The available matchup pairs that can play for the `day`.
-    static func availableMatchupPairs(
-        for entries: Set<LeagueEntry.IDValue>,
-        assignedEntryHomeAways: AssignedEntryHomeAways,
-        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
-    ) -> Set<LeagueMatchupPair> {
-        var pairs = Set<LeagueMatchupPair>(minimumCapacity: (entries.count-1) * 2)
-        let sortedEntries = entries.sorted()
-
-        var index = 0
-        while index < sortedEntries.count - 1 {
-            let home = sortedEntries[index]
-            index += 1
-            let assignedHome = assignedEntryHomeAways[unchecked: home]
-            let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
-            for away in sortedEntries[index...] {
-                if assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
-                    pairs.insert(.init(team1: home, team2: away))
-                }
-            }
-        }
-        return pairs
     }
 }
 

@@ -28,8 +28,8 @@ extension LeagueRequestPayload {
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
         let daySettings:[LeagueGeneralSettings.Runtime<Config>]
 
-        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
         init(
             gameDays: LeagueDayIndex,
             divisions: [Config.DivisionRuntime],

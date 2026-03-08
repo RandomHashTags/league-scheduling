@@ -1,11 +1,11 @@
 
-struct PrioritizedMatchups: Sendable, ~Copyable {
+struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     private(set) var matchups:Set<LeagueMatchupPair>
     private(set) var availableMatchupCountForEntry:ContiguousArray<Int>
 
     init(
         entriesCount: Int,
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
+        prioritizedEntries: Config.EntryIDSet,
         availableMatchups: Set<LeagueMatchupPair>
     ) {
         let matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
@@ -19,7 +19,7 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
     }
 
     mutating func update(
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
+        prioritizedEntries: Config.EntryIDSet,
         availableMatchups: Set<LeagueMatchupPair>
     ) {
         matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
@@ -38,7 +38,7 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
     }
 
     private static func filterMatchups(
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
+        prioritizedEntries: Config.EntryIDSet,
         availableMatchups: Set<LeagueMatchupPair>
     ) -> Set<LeagueMatchupPair> {
         if prioritizedEntries.isEmpty {

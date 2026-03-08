@@ -28,6 +28,9 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
     var isEmpty: Bool {
         storage == 0
     }
+
+    func reserveCapacity(_ minimumCapacity: Int) {
+    }
 }
 
 // MARK: contains
@@ -56,6 +59,16 @@ extension BitSet64 {
     mutating func removeAll() {
         storage = 0
     }
+    mutating func removeAllKeepingCapacity() {
+        storage = 0
+    }
+    mutating func removeAll(where condition: (Element) throws -> Bool) rethrows {
+        try forEach {
+            if try condition($0) {
+                removeMember($0)
+            }
+        }
+    }
 }
 
 // MARK: iterator
@@ -67,6 +80,17 @@ extension BitSet64 {
             try body(Element(index))
             temp &= (temp - 1)
         }
+    }
+    func forEachWithReturn<Result>(_ body: (Element) throws -> Result?) rethrows -> Result? {
+        var temp = storage
+        while temp != 0 {
+            let index = temp.trailingZeroBitCount
+            if let r = try body(Element(index)) {
+                return r
+            }
+            temp &= (temp - 1)
+        }
+        return nil
     }
 }
 
@@ -95,3 +119,24 @@ extension BitSet64: AbstractSet {}
 extension BitSet64: SetOfDayIndexes where Element == LeagueTimeIndex {}
 extension BitSet64: SetOfTimeIndexes where Element == LeagueTimeIndex {}
 extension BitSet64: SetOfLocationIndexes where Element == LeagueLocationIndex {}
+
+extension BitSet64: SetOfEntryIDs where Element == LeagueEntry.IDValue {
+    func availableMatchupPairs(
+        assignedEntryHomeAways: AssignedEntryHomeAways,
+        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
+    ) -> Set<LeagueMatchupPair> {
+        var pairs = Set<LeagueMatchupPair>(minimumCapacity: (count-1) * 2)
+        var index = 0
+        forEach { home in
+            let assignedHome = assignedEntryHomeAways[unchecked: home]
+            let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
+            index += 1
+            forEach { away in
+                if away >= index, assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
+                    pairs.insert(.init(team1: home, team2: away))
+                }
+            }
+        }
+        return pairs
+    }
+}

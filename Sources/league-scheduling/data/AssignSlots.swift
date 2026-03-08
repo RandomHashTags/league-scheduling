@@ -53,7 +53,7 @@ extension LeagueScheduleData {
         var assignmentIndex = 0
         var fms = failedMatchupSelections[unchecked: assignmentIndex]
         var optimalAvailableMatchups = assignmentState.availableMatchups.filter { !fms.contains($0) }
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: optimalAvailableMatchups
@@ -143,7 +143,7 @@ extension LeagueScheduleData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: assignmentState.availableMatchups
@@ -192,7 +192,7 @@ extension LeagueScheduleData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup? {
         var pair:LeagueMatchupPair? = nil
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: assignmentState.availableMatchups

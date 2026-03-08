@@ -122,12 +122,12 @@ extension LeagueRequestPayload {
             )
         }
     }
-    private func generate<DaySet: SetOfDayIndexes, Times: SetOfTimeIndexes>(
+    private func generate<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes>(
         defaultGameGap: GameGap,
         divisionsCount: Int,
         startingDayOfWeek: LeagueDayOfWeek,
         d: DaySet,
-        t: Times,
+        t: TimeSet
     ) async throws(LeagueError) -> LeagueGenerationResult {
         switch settings.locations {
         case 1...64:
@@ -135,42 +135,84 @@ extension LeagueRequestPayload {
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                defaultGameDays: d,
-                defaultTimes: t,
-                defaultLocations: BitSet64<LeagueLocationIndex>()
+                d: d,
+                t: t,
+                l: BitSet64<LeagueLocationIndex>()
             )
         case 65...128:
             return try await generate(
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                defaultGameDays: d,
-                defaultTimes: t,
-                defaultLocations: BitSet128<LeagueLocationIndex>()
+                d: d,
+                t: t,
+                l: BitSet128<LeagueLocationIndex>()
             )
         default:
             return try await generate(
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                defaultGameDays: d,
-                defaultTimes: t,
-                defaultLocations: Set<LeagueLocationIndex>()
+                d: d,
+                t: t,
+                l: Set<LeagueLocationIndex>()
+            )
+        }
+    }
+    private func generate<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>(
+        defaultGameGap: GameGap,
+        divisionsCount: Int,
+        startingDayOfWeek: LeagueDayOfWeek,
+        d: DaySet,
+        t: TimeSet,
+        l: LocationSet
+    ) async throws(LeagueError) -> LeagueGenerationResult {
+        switch entries.count {
+        case 1...64:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                d: d,
+                t: t,
+                l: l,
+                e: BitSet64<LeagueEntry.IDValue>()
+            )
+        case 65...128:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                d: d,
+                t: t,
+                l: l,
+                e: BitSet128<LeagueEntry.IDValue>()
+            )
+        default:
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                divisionsCount: divisionsCount,
+                startingDayOfWeek: startingDayOfWeek,
+                d: d,
+                t: t,
+                l: l,
+                e: Set<LeagueEntry.IDValue>()
             )
         }
     }
 }
 
 extension LeagueRequestPayload {
-    private func generate<DaySet: SetOfDayIndexes, Times: SetOfTimeIndexes, Locations: SetOfLocationIndexes>(
+    private func generate<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes, EntryIDSet: SetOfEntryIDs>(
         defaultGameGap: GameGap,
         divisionsCount: Int,
         startingDayOfWeek: LeagueDayOfWeek,
-        defaultGameDays: DaySet,
-        defaultTimes: Times,
-        defaultLocations: Locations
+        d: DaySet,
+        t: TimeSet,
+        l: LocationSet,
+        e: EntryIDSet
     ) async throws(LeagueError) -> LeagueGenerationResult {
-        let divisionDefaults:DivisionDefaults<DaySet, Times, Locations> = loadDivisionDefaults(divisionsCount: divisionsCount)
+        let divisionDefaults:DivisionDefaults<DaySet, TimeSet, LocationSet> = loadDivisionDefaults(divisionsCount: divisionsCount)
         var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
         let entries = try parseEntries(
             divisionsCount: divisionsCount,
@@ -193,7 +235,7 @@ extension LeagueRequestPayload {
             maximumPlayableMatchups: settings.maximumPlayableMatchups.array
         )
 
-        let timesSet = Times(0..<settings.timeSlots)
+        let timesSet = TimeSet(0..<settings.timeSlots)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
@@ -210,23 +252,23 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        var balancedTimes:Times
-        var balancedLocations:Locations
+        var balancedTimes:TimeSet
+        var balancedLocations:LocationSet
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
-            balancedTimes = defaultTimes
+            balancedTimes = .init()
         }
         if settings.balanceLocationStrictness != .lenient {
-            balancedLocations = Locations(0..<settings.locations)
+            balancedLocations = LocationSet(0..<settings.locations)
         } else {
-            balancedLocations = defaultLocations
+            balancedLocations = .init()
         }
         return try await generate(
             divisions: divisions,
             entries: entries,
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
-            general: LeagueGeneralSettings.Runtime<ScheduleConfig<DaySet, Times, Locations>>(
+            general: LeagueGeneralSettings.Runtime<ScheduleConfig<DaySet, TimeSet, LocationSet, EntryIDSet>>(
                 gameGap: defaultGameGap,
                 timeSlots: settings.timeSlots,
                 startingTimes: settings.startingTimes.times,
@@ -249,8 +291,8 @@ extension LeagueRequestPayload {
 }
 
 extension LeagueRequestPayload {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     private func generate<Config: ScheduleConfiguration>(
         divisions: [Config.DivisionRuntime],
         entries: [Config.EntryRuntime],
@@ -492,8 +534,8 @@ extension LeagueRequestPayload {
 
 // MARK: Parse day settings
 extension LeagueRequestPayload {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     private func parseDaySettings<Config: ScheduleConfiguration>(
         general: LeagueGeneralSettings.Runtime<Config>,
         correctMaximumPlayableMatchups: [UInt32],

@@ -7,8 +7,8 @@ import Foundation
 
 // TODO: support divisions on the same day with different times
 enum LeagueSchedule: Sendable, ~Copyable {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     static func generate<Config: ScheduleConfiguration>(
         _ settings: borrowing LeagueRequestPayload.Runtime<Config>
     ) async -> LeagueGenerationResult {
@@ -37,18 +37,18 @@ enum LeagueSchedule: Sendable, ~Copyable {
 
 // MARK: Generate schedules
 extension LeagueSchedule {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     static func generateSchedules<Config: ScheduleConfiguration>(
         settings: borrowing LeagueRequestPayload.Runtime<Config>
     ) async throws -> [LeagueGenerationData] {
         let divisionsCount = settings.divisions.count
-        var divisionEntries:ContiguousArray<Set<LeagueEntry.IDValue>> = .init(repeating: Set(), count: divisionsCount)
+        var divisionEntries:ContiguousArray<Config.EntryIDSet> = .init(repeating: .init(), count: divisionsCount)
         #if LOG
         print("LeagueSchedule;generateSchedules;divisionsCount=\(divisionsCount);settings.entries.count=\(settings.entries.count)")
         #endif
         for entryIndex in 0..<settings.entries.count {
-            divisionEntries[unchecked: settings.entries[entryIndex].division].insert(settings.entries[entryIndex].id)
+            divisionEntries[unchecked: settings.entries[entryIndex].division].insertMember(settings.entries[entryIndex].id)
         }
 
         var maxStartingTimes:LeagueTimeIndex = 0
@@ -82,9 +82,9 @@ extension LeagueSchedule {
             locationTravelDurations: settings.general.locationTravelDurations ?? .init(repeating: .init(repeating: 0, count: maxLocations), count: maxLocations),
             maxSameOpponentMatchups: maxSameOpponentMatchups
         )
-        var grouped = [LeagueDayOfWeek:Set<LeagueEntry.IDValue>]()
+        var grouped = [LeagueDayOfWeek:Config.EntryIDSet]()
         for (divisionID, division) in settings.divisions.enumerated() {
-            grouped[LeagueDayOfWeek(division.dayOfWeek), default: []].formUnion(divisionEntries[divisionID])
+            grouped[LeagueDayOfWeek(division.dayOfWeek), default: .init()].formUnion(divisionEntries[divisionID])
         }
         let finalMaxStartingTimes = maxStartingTimes
         let finalMaxLocations = maxLocations
@@ -148,8 +148,8 @@ extension LeagueSchedule {
 
 // MARK: Generate schedule
 extension LeagueSchedule {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     private static func generateSchedule<Config: ScheduleConfiguration>(
         dayOfWeek: LeagueDayOfWeek,
         settings: borrowing LeagueRequestPayload.Runtime<Config>,
@@ -157,7 +157,7 @@ extension LeagueSchedule {
         divisionsCount: Int,
         maxStartingTimes: LeagueTimeIndex,
         maxLocations: LeagueLocationIndex,
-        scheduledEntries: Set<LeagueEntry.IDValue>
+        scheduledEntries: Config.EntryIDSet
     ) -> LeagueGenerationData {
         let gameDays = settings.gameDays
         var generationData = LeagueGenerationData()
@@ -166,7 +166,7 @@ extension LeagueSchedule {
         generationData.schedule = .init(repeating: Set(), count: gameDays)
 
         var dataSnapshot = copy dataSnapshot
-        var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Set<LeagueEntry.IDValue>>> = .init(repeating: .init(repeating: Set(), count: divisionsCount), count: gameDays)
+        var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Config.EntryIDSet>> = .init(repeating: .init(repeating: .init(), count: divisionsCount), count: gameDays)
         loadMaxAllocations(
             dataSnapshot: &dataSnapshot,
             gameDayDivisionEntries: &gameDayDivisionEntries,
@@ -261,8 +261,8 @@ extension LeagueSchedule {
         return generationData
     }
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     private static func finalizeGenerationData<Config: ScheduleConfiguration>(
         generationData: inout LeagueGenerationData,
         data: borrowing LeagueScheduleData<Config>
@@ -283,17 +283,17 @@ extension LeagueSchedule {
 
 // MARK: Load max allocations
 extension LeagueSchedule {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     static func loadMaxAllocations<Config: ScheduleConfiguration>(
         dataSnapshot: inout LeagueScheduleDataSnapshot<Config>,
-        gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Set<LeagueEntry.IDValue>>>,
+        gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Config.EntryIDSet>>,
         settings: borrowing LeagueRequestPayload.Runtime<Config>,
         maxStartingTimes: LeagueTimeIndex,
         maxLocations: LeagueLocationIndex,
-        scheduledEntries: Set<LeagueEntry.IDValue>
+        scheduledEntries: Config.EntryIDSet
     ) {
-        for entryIndex in scheduledEntries {
+        scheduledEntries.forEach { entryIndex in
             let entry = settings.entries[unchecked: entryIndex]
             var maxPossiblePlayed:LeagueEntryMatchupsPerGameDay = 0
             var maxStartingTimesPlayedAt = 0
@@ -327,7 +327,7 @@ extension LeagueSchedule {
                     }
                 }
                 maxLocationsPlayedAt = max(maxLocationsPlayedAt, playable)
-                gameDayDivisionEntries[unchecked: day][unchecked: entry.division].insert(entry.id)
+                gameDayDivisionEntries[unchecked: day][unchecked: entry.division].insertMember(entry.id)
             }
             maxStartingTimesPlayedAt = max(maxStartingTimesPlayedAt, 1)
             maxLocationsPlayedAt = max(maxLocationsPlayedAt, 1)
@@ -401,20 +401,20 @@ extension LeagueSchedule {
 
 // MARK: Maximum same opponent matchups
 extension LeagueSchedule {
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     static func maximumSameOpponentMatchups<Config: ScheduleConfiguration>(
         gameDays: LeagueDayIndex,
         entriesCount: Int,
-        divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
         divisions: [Config.DivisionRuntime]
     ) -> (LeagueMaximumSameOpponentMatchups, Config?) {
         var maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchups = .init(repeating: .init(repeating: .max, count: entriesCount), count: entriesCount)
         for (divisionIndex, division) in divisions.enumerated() {
             let divisionEntries = divisionEntries[divisionIndex]
             let cap = division.maxSameOpponentMatchups
-            for entryID in divisionEntries {
-                for opponentEntryID in divisionEntries {
+            divisionEntries.forEach { entryID in
+                divisionEntries.forEach { opponentEntryID in
                     maxSameOpponentMatchups[unchecked: entryID][unchecked: opponentEntryID] = cap
                 }
             }

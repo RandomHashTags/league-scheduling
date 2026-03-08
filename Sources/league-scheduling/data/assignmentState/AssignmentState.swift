@@ -55,7 +55,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     /// Remaining available matchup pairs that can be assigned for the `day`.
     var availableMatchups:Set<LeagueMatchupPair>
 
-    var prioritizedEntries:Set<LeagueEntry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
     var availableSlots:Set<LeagueAvailableSlot>
@@ -69,8 +69,8 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 
     var shuffleHistory = [LeagueShuffleAction]()
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
             entries: entries,
@@ -176,7 +176,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     /// Remaining available matchup pairs that can be assigned for the `day`.
     var availableMatchups:Set<LeagueMatchupPair>
 
-    var prioritizedEntries:Set<LeagueEntry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
     var availableSlots:Set<LeagueAvailableSlot>
@@ -188,8 +188,8 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
 
     var shuffleHistory:[LeagueShuffleAction]
 
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
     func noncopyable() -> AssignmentState<Config> {
         return .init(
             entries: entries,

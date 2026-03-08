@@ -20,10 +20,10 @@ extension LeagueScheduleData {
                     let division = LeagueDivision.IDValue(divisionIndex)
                     let divisionMatchups = assignmentState.allDivisionMatchups[unchecked: division]
                     assignmentState.availableMatchups = divisionMatchups
-                    assignmentState.prioritizedEntries.removeAll(keepingCapacity: true)
+                    assignmentState.prioritizedEntries.removeAllKeepingCapacity()
                     for matchup in assignmentState.availableMatchups {
-                        assignmentState.prioritizedEntries.insert(matchup.team1)
-                        assignmentState.prioritizedEntries.insert(matchup.team2)
+                        assignmentState.prioritizedEntries.insertMember(matchup.team1)
+                        assignmentState.prioritizedEntries.insertMember(matchup.team2)
                     }
                     assignmentState.recalculateAllRemainingAllocations(
                         day: day,

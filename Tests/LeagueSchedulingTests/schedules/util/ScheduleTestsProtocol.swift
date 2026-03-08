@@ -4,7 +4,7 @@ import struct FoundationEssentials.Date
 import StaticDateTimes
 
 protocol ScheduleTestsProtocol: ScheduleExpectations {
-    typealias UnitTestScheduleConfig = ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>>
+    typealias UnitTestScheduleConfig = ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>
     typealias UnitTestRuntimeSchedule = LeagueRequestPayload.Runtime<UnitTestScheduleConfig>
 }
 

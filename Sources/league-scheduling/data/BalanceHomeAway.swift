@@ -1,8 +1,10 @@
 
 extension LeagueMatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     mutating func balanceHomeAway<Config: ScheduleConfiguration>(
         assignmentState: borrowing AssignmentState<Config>
     ) {

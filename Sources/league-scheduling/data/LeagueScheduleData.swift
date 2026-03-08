@@ -39,8 +39,10 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var redistributionData:RedistributionData<Config>?
     var redistributedMatchups = false
 
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     init(
         snapshot: LeagueScheduleDataSnapshot<Config>
     ) {
@@ -64,8 +66,10 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 
 // MARK: Snapshot
 extension LeagueScheduleData {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
@@ -81,8 +85,10 @@ extension LeagueScheduleData {
         shuffleHistory = snapshot.shuffleHistory
     }
 
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     func snapshot() -> LeagueScheduleDataSnapshot<Config> {
         return .init(self)
     }
@@ -96,8 +102,10 @@ extension LeagueScheduleData {
     ///   - day: Day index that will be scheduled.
     ///   - divisionEntries: Division entries that play on the `day`. (`LeagueDivision.IDValue`: `Set<LeagueEntry.IDValue>`)
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     mutating func newDay(
         day: LeagueDayIndex,
         daySettings: LeagueGeneralSettings.Runtime<Config>,

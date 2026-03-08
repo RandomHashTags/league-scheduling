@@ -7,8 +7,10 @@ import Foundation
 
 // TODO: support divisions on the same day with different times
 enum LeagueSchedule: Sendable, ~Copyable {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     static func generate<Config: ScheduleConfiguration>(
         _ settings: borrowing LeagueRequestPayload.Runtime<Config>
     ) async -> LeagueGenerationResult {
@@ -37,8 +39,10 @@ enum LeagueSchedule: Sendable, ~Copyable {
 
 // MARK: Generate schedules
 extension LeagueSchedule {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     static func generateSchedules<Config: ScheduleConfiguration>(
         settings: borrowing LeagueRequestPayload.Runtime<Config>
     ) async throws -> [LeagueGenerationData] {
@@ -148,8 +152,10 @@ extension LeagueSchedule {
 
 // MARK: Generate schedule
 extension LeagueSchedule {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     private static func generateSchedule<Config: ScheduleConfiguration>(
         dayOfWeek: LeagueDayOfWeek,
         settings: borrowing LeagueRequestPayload.Runtime<Config>,
@@ -261,8 +267,10 @@ extension LeagueSchedule {
         return generationData
     }
 
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     private static func finalizeGenerationData<Config: ScheduleConfiguration>(
         generationData: inout LeagueGenerationData,
         data: borrowing LeagueScheduleData<Config>
@@ -283,8 +291,10 @@ extension LeagueSchedule {
 
 // MARK: Load max allocations
 extension LeagueSchedule {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     static func loadMaxAllocations<Config: ScheduleConfiguration>(
         dataSnapshot: inout LeagueScheduleDataSnapshot<Config>,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Config.EntryIDSet>>,
@@ -401,8 +411,10 @@ extension LeagueSchedule {
 
 // MARK: Maximum same opponent matchups
 extension LeagueSchedule {
+    #if SpecializeScheduleConfiguration
     @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     static func maximumSameOpponentMatchups<Config: ScheduleConfiguration>(
         gameDays: LeagueDayIndex,
         entriesCount: Int,

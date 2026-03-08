@@ -11,7 +11,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
     ) -> LeagueAvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]
-        let awayPlaysAtTimes = playsAtTimes[unchecked: team1]
+        let awayPlaysAtTimes = playsAtTimes[unchecked: team2]
         guard !(homePlaysAtTimes.isEmpty || awayPlaysAtTimes.isEmpty) else {
             return SelectSlotEarliestTime.select(
                 team1: team1,

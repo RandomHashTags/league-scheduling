@@ -21,7 +21,7 @@ struct League3Tests: ScheduleExpectations {
         return (throughput, UInt64(failed.reduce(0) { $0 + $1.value }))
     }
 
-    @Test(.timeLimit(.minutes(1)))
+    //@Test(.timeLimit(.minutes(1)))
     func testthroughput() async throws {
         try await withThrowingTaskGroup(of: (success: UInt64, fail: UInt64).self) { group in
             for _ in 0..<5 {

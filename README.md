@@ -36,7 +36,9 @@ A high-performance, feature-rich league scheduling library.
 
 ## Getting Started
 
-_assuming you're using the Swift Package Manager_
+<details>
+
+<summary>Swift Package Manager</summary>
 
 1. Add the dependency to your project:
 
@@ -55,6 +57,8 @@ _assuming you're using the Swift Package Manager_
 4. Call [`generate()`](https://github.com/RandomHashTags/league-scheduling/blob/d7bec9d9422427899fc6e53370a84133c437689e/Sources/league-scheduling/generated/extensions/LeagueRequestPayload%2BExtensions.swift#L76) on the request payload
 
 5. Hook up the response to your server/front-end
+
+</details>
 
 ## Contributing
 

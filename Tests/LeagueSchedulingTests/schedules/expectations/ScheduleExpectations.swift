@@ -7,8 +7,8 @@ protocol ScheduleExpectations: Sendable {
 
 // MARK: Expectations
 extension ScheduleExpectations {
-    func expectations(
-        settings: LeagueRequestPayload.Runtime,
+    func expectations<Config: ScheduleConfiguration>(
+        settings: borrowing LeagueRequestPayload.Runtime<Config>,
         matchupsCount: Int,
         data: LeagueGenerationResult
     ) throws {
@@ -32,11 +32,11 @@ extension ScheduleExpectations {
         var maxStartingTimes:LeagueTimeIndex = 0
         var maxLocations:LeagueLocationIndex = 0
         for setting in settings.daySettings {
-            if setting.general.startingTimes.count > maxStartingTimes {
-                maxStartingTimes = LeagueTimeIndex(setting.general.startingTimes.count)
+            if setting.startingTimes.count > maxStartingTimes {
+                maxStartingTimes = LeagueTimeIndex(setting.startingTimes.count)
             }
-            if setting.general.locations > maxLocations {
-                maxLocations = setting.general.locations
+            if setting.locations > maxLocations {
+                maxLocations = setting.locations
             }
         }
 
@@ -91,12 +91,11 @@ extension ScheduleExpectations {
                         )
                     }
                 }
-                let settings = data.settings.daySettings[dayIndex].general
-                let dayExpectations = DayExpectations(
-                    settings: settings,
+                let settings = settings.daySettings[dayIndex]
+                let dayExpectations = DayExpectations<Config>(
                     b2bMatchupsAtDifferentLocations: b2bMatchupsAtDifferentLocations
                 )
-                dayExpectations.expectations()
+                dayExpectations.expectations(settings)
 
                 if true {
                     printMatchups(day: dayIndex, matchups)
@@ -105,15 +104,15 @@ extension ScheduleExpectations {
             for (divisionIndex, division) in settings.divisions.enumerated() {
                 let cap = division.maxSameOpponentMatchups
                 let divisionEntries = settings.entries.filter { $0.division == divisionIndex }
-                let divisionEntryExpectations = DivisionEntryExpectations(
+                let divisionEntryExpectations = DivisionEntryExpectations<Config>(
                     cap: cap,
                     matchupsPlayedPerDay: matchupsPlayedPerDay,
                     assignedEntryHomeAways: assignedEntryHomeAways,
-                    entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-                    divisionEntries: divisionEntries
+                    entryMatchupsPerGameDay: entryMatchupsPerGameDay
                 )
                 divisionEntryExpectations.expectations(
-                    balanceHomeAway: settings.general.balanceHomeAway
+                    balanceHomeAway: settings.general.balanceHomeAway,
+                    divisionEntries: divisionEntries
                 )
             }
 
@@ -214,7 +213,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceTimeNumber(
         assignedTimes: LeagueAssignedTimes,
-        balancedTimes: Set<LeagueTimeIndex>,
+        balancedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         balanceTimeNumber: LeagueTimeIndex
     ) {
         for (entryID, assignedTimes) in assignedTimes.enumerated() {
@@ -230,7 +229,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceLocationNumber(
         assignedLocations: LeagueAssignedLocations,
-        balancedLocations: Set<LeagueLocationIndex>,
+        balancedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         balanceLocationNumber: LeagueLocationIndex
     ) {
         for (entryID, assignedLocations) in assignedLocations.enumerated() {

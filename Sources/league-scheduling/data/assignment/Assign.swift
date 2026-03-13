@@ -41,8 +41,8 @@ extension AssignmentState {
         divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> LeagueMatchup {
-        prioritizedEntries.remove(matchup.team1)
-        prioritizedEntries.remove(matchup.team2)
+        prioritizedEntries.removeMember(matchup.team1)
+        prioritizedEntries.removeMember(matchup.team2)
         let home:LeagueEntry.IDValue = matchup.team1
         let away:LeagueEntry.IDValue = matchup.team2
         incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval)
@@ -63,13 +63,13 @@ extension AssignmentState {
         availableMatchups.remove(.init(team1: matchup.team2, team2: matchup.team1))
         if playsAtTimes[unchecked: home].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: home].removeAll()
+            remainingAllocations[unchecked: home].removeAllKeepingCapacity()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != home && $0.team2 != home })
         }
         if playsAtTimes[unchecked: away].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: away].removeAll()
+            remainingAllocations[unchecked: away].removeAllKeepingCapacity()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != away && $0.team2 != away })
         }
@@ -135,10 +135,10 @@ extension AssignmentState {
     ) {
         playsAt[unchecked: home].insert(slot)
         playsAt[unchecked: away].insert(slot)
-        playsAtTimes[unchecked: home].insert(slot.time)
-        playsAtTimes[unchecked: away].insert(slot.time)
-        playsAtLocations[unchecked: home].insert(slot.location)
-        playsAtLocations[unchecked: away].insert(slot.location)
+        playsAtTimes[unchecked: home].insertMember(slot.time)
+        playsAtTimes[unchecked: away].insertMember(slot.time)
+        playsAtLocations[unchecked: home].insertMember(slot.location)
+        playsAtLocations[unchecked: away].insertMember(slot.location)
     }
 }
 

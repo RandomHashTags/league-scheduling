@@ -1,5 +1,5 @@
 
-struct RedistributionData: Sendable {
+struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
     /// The latest `LeagueDayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:LeagueDayIndex
     let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
@@ -10,11 +10,15 @@ struct RedistributionData: Sendable {
     private var redistributedEntries:[UInt16]
     private(set) var redistributed:Set<LeagueMatchup>
 
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     init(
         dayIndex: LeagueDayIndex,
         startDayIndex: LeagueDayIndex,
-        settings: LeagueRequestPayload.Runtime,
-        data: borrowing LeagueScheduleData
+        settings: LitLeagues_Leagues_RedistributionSettings?,
+        data: borrowing LeagueScheduleData<Config>
     ) {
         self.startDayIndex = startDayIndex
         self.entryMatchupsPerGameDay = data.defaultMaxEntryMatchupsPerGameDay
@@ -24,7 +28,7 @@ struct RedistributionData: Sendable {
         let threshold = (data.entriesCount / data.entriesPerMatchup)// * entryMatchupsPerGameDay
         var minMatchupsRequired = threshold
         var maxMovableMatchups = threshold
-        if let r = settings.daySettings[unchecked: dayIndex].general.redistributionSettings ?? settings.general.redistributionSettings {
+        if let r = settings {
             minMatchupsRequired = r.hasMinMatchupsRequired ? Int(r.minMatchupsRequired) : threshold
             maxMovableMatchups =  r.hasMaxMovableMatchups  ? Int(r.maxMovableMatchups)  : threshold
         }
@@ -42,7 +46,7 @@ extension RedistributionData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         day: LeagueDayIndex,
         gameGap: GameGap.TupleValue,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         executionSteps: inout [ExecutionStep],
         generationData: inout LeagueGenerationData
     ) -> Bool {
@@ -134,7 +138,7 @@ extension RedistributionData {
 extension RedistributionData {
     private func selectRedistributable(
         from redistributables: Set<Redistributable>,
-        assignmentState: borrowing AssignmentState,
+        assignmentState: borrowing AssignmentState<Config>,
         generationData: LeagueGenerationData
     ) -> Redistributable? {
         var redistributable:Redistributable? = nil
@@ -179,7 +183,7 @@ extension RedistributionData {
 extension RedistributionData {
     private mutating func redistribute(
         redistributable: inout Redistributable,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
         generationData.schedule[unchecked: redistributable.fromDay].remove(redistributable.matchup)

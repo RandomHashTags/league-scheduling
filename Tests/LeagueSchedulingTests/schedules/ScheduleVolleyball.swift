@@ -40,8 +40,8 @@ struct ScheduleVolleyball: ScheduleTestsProtocol {
             divisions: divisions,
             entries: entries
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 36, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 36, data: data)
     }
 }
 
@@ -81,8 +81,8 @@ extension ScheduleVolleyball {
             divisions: divisions,
             entries: entries
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 24, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 24, data: data)
     }
 }
 
@@ -122,8 +122,8 @@ extension ScheduleVolleyball {
             divisions: divisions,
             entries: entries
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 36, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 36, data: data)
     }
 }
 
@@ -164,8 +164,8 @@ extension ScheduleVolleyball {
             divisions: divisions,
             entries: entries
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 48, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 48, data: data)
     }
 }
 
@@ -205,7 +205,7 @@ extension ScheduleVolleyball {
             divisions: divisions,
             entries: entries
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 72, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 72, data: data)
     }
 }

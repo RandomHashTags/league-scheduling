@@ -25,7 +25,7 @@ struct EntryAssignmentData: Sendable {
     /// Number of times an entry was assigned to play at home or away against another entry.
     /// 
     /// - Usage: [opponent `LeagueEntry.IDValue`: [`LeagueSchedule.HomeAwayValue`]]
-    var assignedEntryHomeAways:[LeagueSchedule.HomeAwayValue]
+    var assignedEntryHomeAways:[HomeAwayValue]
 
     /// Maximum number of times an entry can play against another entry.
     ///
@@ -33,8 +33,8 @@ struct EntryAssignmentData: Sendable {
     var maxSameOpponentMatchups:ContiguousArray<LeagueMaximumSameOpponentMatchupsCap>
 
     var playsAt:Set<LeagueAvailableSlot>
-    var playsAtTimes:Set<LeagueTimeIndex>
-    var playsAtLocations:Set<LeagueLocationIndex>
+    var playsAtTimes:BitSet64<LeagueTimeIndex>
+    var playsAtLocations:BitSet64<LeagueLocationIndex>
 
     var maxTimeAllocations:[LeagueTimeIndex]
     var maxLocationAllocations:[LeagueLocationIndex]
@@ -75,8 +75,8 @@ extension EntryAssignmentData {
         assignedTimes[unchecked: slot.time] += 1
         assignedLocations[unchecked: slot.location] += 1
         playsAt.insert(slot)
-        playsAtTimes.insert(slot.time)
-        playsAtLocations.insert(slot.location)
+        playsAtTimes.insertMember(slot.time)
+        playsAtLocations.insertMember(slot.location)
     }
 }
 
@@ -84,7 +84,7 @@ extension EntryAssignmentData {
 extension EntryAssignmentData {
     mutating func resetPlaysAt() {
         playsAt.removeAll(keepingCapacity: true)
-        playsAtTimes.removeAll(keepingCapacity: true)
-        playsAtLocations.removeAll(keepingCapacity: true)
+        playsAtTimes.removeAll()
+        playsAtLocations.removeAll()
     }
 }

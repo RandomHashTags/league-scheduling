@@ -12,9 +12,11 @@ let package = Package(
     ],
     traits: [
         .default(enabledTraits: [
-            "UncheckedArraySubscript"
+            "UncheckedArraySubscript",
+            "SpecializeScheduleConfiguration"
         ]),
-        .trait(name: "UncheckedArraySubscript")
+        .trait(name: "UncheckedArraySubscript"),
+        .trait(name: "SpecializeScheduleConfiguration")
     ],
     dependencies: [
         .package(url: "https://github.com/RandomHashTags/swift-staticdatetime", from: "0.3.5"),
@@ -30,7 +32,9 @@ let package = Package(
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ],
             path: "Sources/league-scheduling",
-            swiftSettings: [.enableUpcomingFeature("ExistentialAny")]
+            swiftSettings: [
+                .enableUpcomingFeature("ExistentialAny")
+            ]
         ),
         .testTarget(
             name: "LeagueSchedulingTests",

@@ -38,7 +38,7 @@ public typealias LeagueMatchupPair = LitLeagues_Leagues_MatchupPair
 /// Number of times an entry was assigned to play at home or away against another entry.
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: [opponent `LeagueEntry.IDValue`: [`home (0) or away (1)`: `total played`]]]
-typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<LeagueSchedule.HomeAwayValue>>
+typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<HomeAwayValue>>
 
 /// Maximum number of times an entry can play against another entry.
 ///
@@ -76,16 +76,6 @@ typealias MaximumTimeAllocations = ContiguousArray<ContiguousArray<LeagueTimeInd
 /// - Usage: [`LeagueEntry.IDValue`: [`LeagueLocationIndex`: `maximum allowed at LeagueLocationIndex`]]
 typealias MaximumLocationAllocations = ContiguousArray<ContiguousArray<LeagueLocationIndex>>
 
-/// Times where an entry has already played at for the `day`.
-/// 
-/// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueTimeIndex>`]
-typealias PlaysAtTimes = ContiguousArray<Set<LeagueTimeIndex>>
-
-/// Locations where an entry has already played at for the `day`.
-/// 
-/// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueLocationIndex>`]
-typealias PlaysAtLocations = ContiguousArray<Set<LeagueLocationIndex>>
-
 /// Slots where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueAvailableSlot>`]
@@ -103,4 +93,45 @@ public struct Leagues3 {
     public static let maximumAllowedRegenerationAttemptsForANegativeDayIndex:LeagueRegenerationAttempt = 100
     public static let maximumAllowedRegenerationAttemptsForASingleDay:LeagueRegenerationAttempt = 100
     public static let failedRegenerationAttemptsThreshold:LeagueRegenerationAttempt = 10_000
+}
+
+// MARK: global
+func optimalTimeSlots(
+    availableTimeSlots: LeagueTimeIndex,
+    locations: LeagueLocationIndex,
+    matchupsCount: LeagueLocationIndex
+) -> LeagueTimeIndex {
+    var totalMatchupsPlayed:LeagueLocationIndex = 0
+    var filledTimes:LeagueTimeIndex = 0
+    while totalMatchupsPlayed < matchupsCount {
+        filledTimes += 1
+        totalMatchupsPlayed += locations
+    }
+    #if LOG
+    print("LeagueSchedule;optimalTimeSlots;availableTimeSlots=\(availableTimeSlots);locations=\(locations);matchupsCount=\(matchupsCount);totalMatchupsPlayed=\(totalMatchupsPlayed);filledTimes=\(filledTimes)")
+    #endif
+    return min(availableTimeSlots, filledTimes)
+}
+
+func calculateAdjacentTimes<TimeSet: SetOfTimeIndexes>(
+    for time: LeagueTimeIndex,
+    entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
+) -> TimeSet {
+    var adjacentTimes = TimeSet()
+    let timeIndex = time % entryMatchupsPerGameDay
+    if timeIndex == 0 {
+        for i in 1..<LeagueTimeIndex(entryMatchupsPerGameDay) {
+            adjacentTimes.insertMember(time + i)
+        }
+    } else {
+        for i in 1..<timeIndex+1 {
+            adjacentTimes.insertMember(time - i)
+        }
+        if timeIndex < entryMatchupsPerGameDay-1 {
+            for i in 1..<entryMatchupsPerGameDay - timeIndex {
+                adjacentTimes.insertMember(time + i)
+            }
+        }
+    }
+    return adjacentTimes
 }

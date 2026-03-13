@@ -5,11 +5,11 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
     func test(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playsAt: PlaysAt.Element,
-        playsAtTimes: PlaysAtTimes.Element,
-        playsAtLocations: PlaysAtLocations.Element,
+        playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        playsAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         timeNumber: UInt8,
         locationNumber: UInt8,
         maxTimeNumber: UInt8,
@@ -40,8 +40,8 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
     static func test(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
-        playsAtTimes: PlaysAtTimes.Element,
-        playsAtLocations: PlaysAtLocations.Element
+        playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
+        playsAtLocations: borrowing some SetOfLocationIndexes & ~Copyable
     ) -> Bool {
         if time > 0 && playsAtTimes.contains(time-1) || playsAtTimes.contains(time+1) {
             // is back-to-back

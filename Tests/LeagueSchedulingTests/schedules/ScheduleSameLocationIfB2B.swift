@@ -9,14 +9,14 @@ struct ScheduleSameLocationIfB2B: ScheduleTestsProtocol {
     @Test
     func scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams() async throws {
         let schedule = try Self.scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams()
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 72,
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams() throws -> LeagueSchedule {
+    static func scheduleSameLocationIfB2B_8GameDays3Times3Locations1Division9Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 3, 3, 9)
         let entries = getEntries(
@@ -54,14 +54,14 @@ extension ScheduleSameLocationIfB2B {
     @Test
     func scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams() async throws {
         let schedule = try Self.scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams()
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 30,
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams() throws -> LeagueSchedule {
+    static func scheduleSameLocationIfB2B_12GameDays3Times1Locations1Division5Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 3, 1, 5)
         let entries = getEntries(
@@ -100,14 +100,14 @@ extension ScheduleSameLocationIfB2B {
     @Test
     func scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams() async throws {
         let schedule = try Self.scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams()
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 160,
             data: data
         )
     }
-    static func scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams() throws -> LeagueSchedule {
+    static func scheduleSameLocationIfB2B_10GameDays4Times4Locations1Division16Teams() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 4, 16)
         let entries = getEntries(

@@ -2,96 +2,163 @@
 import StaticDateTimes
 
 extension LeagueGeneralSettings {
-    public func runtime() throws(LeagueError) -> Runtime {
-        try .init(protobuf: self)
+    struct Runtime<Config: ScheduleConfiguration>: Sendable {
+        var gameGap:GameGap
+        var timeSlots:LeagueTimeIndex
+        var startingTimes:[StaticTime]
+        var entriesPerLocation:LeagueEntriesPerMatchup
+        var locations:LeagueLocationIndex
+        var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+        var maximumPlayableMatchups:[UInt32]
+        var matchupDuration:LeagueMatchupDuration
+        var locationTimeExclusivities:[Config.TimeSet]?
+        var locationTravelDurations:[[LeagueMatchupDuration]]?
+        var balanceTimeStrictness:LeagueBalanceStrictness
+        var balancedTimes:Config.TimeSet
+        var balanceLocationStrictness:LeagueBalanceStrictness
+        var balancedLocations:Config.LocationSet
+        var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
+        var flags:UInt32
+    }
+}
+
+extension LeagueGeneralSettings.Runtime {
+    init(
+        gameGap: GameGap,
+        protobuf: LeagueGeneralSettings
+    ) {
+        self.gameGap = gameGap
+        timeSlots = protobuf.timeSlots
+        startingTimes = protobuf.startingTimes.times
+        entriesPerLocation = protobuf.entriesPerLocation
+        locations = protobuf.locations
+        defaultMaxEntryMatchupsPerGameDay = protobuf.entryMatchupsPerGameDay
+        maximumPlayableMatchups = protobuf.maximumPlayableMatchups.array
+        matchupDuration = protobuf.matchupDuration
+        if protobuf.hasLocationTimeExclusivities {
+            locationTimeExclusivities = protobuf.locationTimeExclusivities.locations.map({ .init($0.times) })
+        } else {
+            locationTimeExclusivities = nil
+        }
+        if protobuf.hasLocationTravelDurations {
+            locationTravelDurations = protobuf.locationTravelDurations.locations.map({ $0.travelDurationTo })
+        } else {
+            locationTravelDurations = nil
+        }
+        balanceTimeStrictness = protobuf.balanceTimeStrictness
+        balancedTimes = .init(protobuf.balancedTimes.array)
+        balanceLocationStrictness = protobuf.balanceLocationStrictness
+        balancedLocations = .init(protobuf.balancedLocations.array)
+        if protobuf.hasRedistributionSettings {
+            redistributionSettings = protobuf.redistributionSettings
+        } else {
+            redistributionSettings = nil
+        }
+        flags = protobuf.flags
     }
 
-    /// For optimal runtime performance
-    public struct Runtime: Codable, Sendable {
-        public var gameGap:GameGap
-        public var timeSlots:LeagueTimeIndex
-        public var startingTimes:[StaticTime]
-        public var entriesPerLocation:LeagueEntriesPerMatchup
-        public var locations:LeagueLocationIndex
-        public var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
-        public var maximumPlayableMatchups:[UInt32]
-        public var matchupDuration:LeagueMatchupDuration
-        public var locationTimeExclusivities:[Set<LeagueTimeIndex>]?
-        public var locationTravelDurations:[[LeagueMatchupDuration]]?
-        public var balanceTimeStrictness:LeagueBalanceStrictness
-        public var balancedTimes:Set<LeagueTimeIndex>
-        public var balanceLocationStrictness:LeagueBalanceStrictness
-        public var balancedLocations:Set<LeagueLocationIndex>
-        public var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
-        public var flags:UInt32
-
-        public init(
-            protobuf: LeagueGeneralSettings
-        ) throws(LeagueError) {
-            guard let gameGap = GameGap(htmlInputValue: protobuf.gameGap) else {
-                throw .malformedInput(msg: "invalid GameGap htmlInputValue: \(protobuf.gameGap)")
+    mutating func apply(
+        gameDays: LeagueDayIndex,
+        entriesCount: Int,
+        correctMaximumPlayableMatchups: [UInt32],
+        general: Self,
+        customDaySettings: LeagueGeneralSettings
+    ) {
+        if customDaySettings.hasGameGap, let gg = GameGap(htmlInputValue: customDaySettings.gameGap) {
+            self.gameGap = gg
+        }
+        if customDaySettings.hasTimeSlots {
+            self.timeSlots = customDaySettings.timeSlots
+        }
+        if customDaySettings.hasStartingTimes {
+            self.startingTimes = customDaySettings.startingTimes.times
+        }
+        if customDaySettings.hasEntriesPerLocation {
+            self.entriesPerLocation = customDaySettings.entriesPerLocation
+        }
+        if customDaySettings.hasLocations {
+            self.locations = customDaySettings.locations
+        }
+        if customDaySettings.hasEntryMatchupsPerGameDay {
+            self.defaultMaxEntryMatchupsPerGameDay = customDaySettings.entryMatchupsPerGameDay
+        }
+        if customDaySettings.hasMaximumPlayableMatchups {
+            self.maximumPlayableMatchups = LeagueRequestPayload.calculateMaximumPlayableMatchups(
+                gameDays: gameDays,
+                entryMatchupsPerGameDay: self.defaultMaxEntryMatchupsPerGameDay,
+                teamsCount: entriesCount,
+                maximumPlayableMatchups: customDaySettings.maximumPlayableMatchups.array
+            )
+        } else {
+            self.maximumPlayableMatchups = correctMaximumPlayableMatchups
+        }
+        if customDaySettings.hasMatchupDuration {
+            self.matchupDuration = customDaySettings.matchupDuration
+        }
+        if customDaySettings.hasLocationTimeExclusivities {
+            self.locationTimeExclusivities = customDaySettings.locationTimeExclusivities.locations.map({ Config.TimeSet($0.times) })
+        }
+        if customDaySettings.hasLocationTravelDurations {
+            self.locationTravelDurations = customDaySettings.locationTravelDurations.locations.map({ $0.travelDurationTo })
+        }
+        if customDaySettings.hasBalanceTimeStrictness {
+            self.balanceTimeStrictness = customDaySettings.balanceTimeStrictness
+        }
+        if customDaySettings.hasBalanceLocationStrictness {
+            self.balanceLocationStrictness = customDaySettings.balanceLocationStrictness
+        }
+        if customDaySettings.hasRedistributionSettings {
+            self.redistributionSettings = customDaySettings.redistributionSettings
+            if let defaultSettings = general.redistributionSettings {
+                if !customDaySettings.redistributionSettings.hasMinMatchupsRequired, defaultSettings.hasMinMatchupsRequired {
+                    self.redistributionSettings!.minMatchupsRequired = defaultSettings.minMatchupsRequired
+                }
+                if !customDaySettings.redistributionSettings.hasMaxMovableMatchups, defaultSettings.hasMaxMovableMatchups {
+                    self.redistributionSettings!.maxMovableMatchups = defaultSettings.maxMovableMatchups
+                }
             }
-            self.gameGap = gameGap
-            timeSlots = protobuf.timeSlots
-            startingTimes = protobuf.startingTimes.times
-            entriesPerLocation = protobuf.entriesPerLocation
-            locations = protobuf.locations
-            defaultMaxEntryMatchupsPerGameDay = protobuf.entryMatchupsPerGameDay
-            maximumPlayableMatchups = protobuf.maximumPlayableMatchups.array
-            matchupDuration = protobuf.matchupDuration
-            if protobuf.hasLocationTimeExclusivities {
-                locationTimeExclusivities = protobuf.locationTimeExclusivities.locations.map({ Set($0.times) })
-            } else {
-                locationTimeExclusivities = nil
-            }
-            if protobuf.hasLocationTravelDurations {
-                locationTravelDurations = protobuf.locationTravelDurations.locations.map({ $0.travelDurationTo })
-            } else {
-                locationTravelDurations = nil
-            }
-            balanceTimeStrictness = protobuf.balanceTimeStrictness
-            balancedTimes = Set(protobuf.balancedTimes.array)
-            balanceLocationStrictness = protobuf.balanceLocationStrictness
-            balancedLocations = Set(protobuf.balancedLocations.array)
-            if protobuf.hasRedistributionSettings {
-                redistributionSettings = protobuf.redistributionSettings
-            } else {
-                redistributionSettings = nil
-            }
-            flags = protobuf.flags
+        }
+        if customDaySettings.hasFlags {
+            self.flags = customDaySettings.flags
         }
     }
-}
 
-// MARK: Flags
-extension LeagueGeneralSettings.Runtime {
-    func isFlag(_ flag: LeagueSettingFlags) -> Bool {
-        flags & UInt32(1 << flag.rawValue) != 0
+    func availableSlots() -> Set<LeagueAvailableSlot> {
+        var slots = Set<LeagueAvailableSlot>(minimumCapacity: timeSlots * locations)
+        if let exclusivities = locationTimeExclusivities {
+            for location in 0..<locations {
+                if let timeExclusives = exclusivities[uncheckedPositive: location] {
+                    for time in 0..<timeSlots {
+                        if timeExclusives.contains(time) {
+                            let slot = LeagueAvailableSlot(time: time, location: location)
+                            slots.insert(slot)
+                        }
+                    }
+                }
+            }
+        } else {
+            for time in 0..<timeSlots {
+                for location in 0..<locations {
+                    let slot = LeagueAvailableSlot(time: time, location: location)
+                    slots.insert(slot)
+                }
+            }
+        }
+        return slots
     }
 
-    public var optimizeTimes: Bool {
-        isFlag(.optimizeTimes)
+    func containsBalancedTime(_ timeSlot: LeagueTimeIndex) -> Bool {
+        balancedTimes.contains(timeSlot)
+    }
+    func containsBalancedLocation(_ location: LeagueLocationIndex) -> Bool {
+        balancedLocations.contains(location)
     }
 
-    public var prioritizeEarlierTimes: Bool {
-        isFlag(.prioritizeEarlierTimes)
-    }
-
-    public var prioritizeHomeAway: Bool {
-        isFlag(.prioritizeHomeAway)
-    }
-
-    public var balanceHomeAway: Bool {
-        isFlag(.balanceHomeAway)
-    }
-
-    public var sameLocationIfB2B: Bool {
-        isFlag(.sameLocationIfBackToBack)
-    }
-}
-
-extension LeagueGeneralSettings.Runtime {
-    public init(
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
+    init(
         gameGap: GameGap,
         timeSlots: LeagueTimeIndex,
         startingTimes: [StaticTime],
@@ -100,12 +167,12 @@ extension LeagueGeneralSettings.Runtime {
         entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32],
         matchupDuration: LeagueMatchupDuration,
-        locationTimeExclusivities: [Set<LeagueTimeIndex>]?,
+        locationTimeExclusivities: [Config.TimeSet]?,
         locationTravelDurations: [[LeagueMatchupDuration]]?,
         balanceTimeStrictness: LeagueBalanceStrictness,
-        balancedTimes: Set<LeagueTimeIndex>,
+        balancedTimes: Config.TimeSet,
         balanceLocationStrictness: LeagueBalanceStrictness,
-        balancedLocations: Set<LeagueLocationIndex>,
+        balancedLocations: Config.LocationSet,
         redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
         flags: UInt32
     ) {
@@ -125,35 +192,5 @@ extension LeagueGeneralSettings.Runtime {
         self.balancedLocations = balancedLocations
         self.redistributionSettings = redistributionSettings
         self.flags = flags
-    }
-}
-
-// MARK: Compute settings
-extension LeagueGeneralSettings.Runtime {
-    /// Modifies `timeSlots` and `startingTimes` taking into account current settings.
-    public mutating func computeSettings(
-        day: LeagueDayIndex,
-        entries: [LeagueEntry.Runtime]
-    ) {
-        if optimizeTimes {
-            var maxMatchupsPlayedToday:LeagueLocationIndex = 0
-            for entry in entries {
-                if entry.gameDays.contains(day) && !entry.byes.contains(day) {
-                    maxMatchupsPlayedToday += entry.maxMatchupsForGameDay(day: day, fallback: defaultMaxEntryMatchupsPerGameDay)
-                }
-            }
-            maxMatchupsPlayedToday /= entriesPerLocation
-            let filledTimeSlots = LeagueSchedule.optimalTimeSlots(
-                availableTimeSlots: timeSlots,
-                locations: locations,
-                matchupsCount: maxMatchupsPlayedToday
-            )
-            while filledTimeSlots < timeSlots {
-                timeSlots -= 1
-            }
-            while filledTimeSlots < startingTimes.count {
-                startingTimes.removeLast()
-            }
-        }
     }
 }

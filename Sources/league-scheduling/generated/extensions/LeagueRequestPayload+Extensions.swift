@@ -70,11 +70,3 @@ extension LeagueRequestPayload {
         self.entries = teams
     }
 }
-
-// MARK: Generate
-extension LeagueRequestPayload {
-    public func generate() async throws(LeagueError) -> LeagueGenerationResult {
-        let settings = try parseSettings()
-        return await LeagueSchedule.init(settings: settings).generate()
-    }
-}

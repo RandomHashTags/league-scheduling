@@ -40,8 +40,8 @@ extension ScheduleBaseball {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 28, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 28, data: data)
     }
 }
 
@@ -78,7 +78,7 @@ extension ScheduleBaseball {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 32, data: data)
+        let data = await LeagueSchedule.generate(schedule)
+        try expectations(settings: schedule, matchupsCount: 32, data: data)
     }
 }

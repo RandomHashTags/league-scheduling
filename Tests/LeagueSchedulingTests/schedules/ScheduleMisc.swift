@@ -38,9 +38,9 @@ struct ScheduleMisc: ScheduleTestsProtocol {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 20,
             data: data
         )
@@ -86,9 +86,9 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 40,
             data: data
         )
@@ -128,9 +128,9 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 18,
             data: data
         )
@@ -176,9 +176,9 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 144,
             data: data
         )
@@ -190,15 +190,15 @@ extension ScheduleMisc {
     @Test(.timeLimit(.minutes(1)))
     func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() async throws {
         let schedule = try Self.schedule10GameDays4Times5Locations2Divisions20Teams2Matchups()
-        let data = await schedule.generate()
+        let data = await LeagueSchedule.generate(schedule)
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 200,
             data: data
         )
     }
 
-    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> LeagueSchedule {
+    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 5, 20)
         var entryDivisions = [LeagueDivision.IDValue]()

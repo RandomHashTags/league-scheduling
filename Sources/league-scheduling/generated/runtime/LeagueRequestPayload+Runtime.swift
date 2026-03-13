@@ -10,36 +10,48 @@ import SwiftProtobuf
 // MARK: Runtime
 extension LeagueRequestPayload {
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Sendable {
+    struct Runtime<Config: ScheduleConfiguration>: Sendable, ~Copyable {
         /// Number of days where games are played.
-        public let gameDays:LeagueDayIndex
+        let gameDays:LeagueDayIndex
 
         /// Divisions associated with this schedule.
-        public let divisions:[LeagueDivision.Runtime]
+        let divisions:[Config.DivisionRuntime]
 
         /// Entries that participate in this schedule.
-        public let entries:[LeagueEntry.Runtime]
+        let entries:[Config.EntryRuntime]
 
         /// General settings for this schedule.
-        public let general:LeagueGeneralSettings.Runtime
+        let general:LeagueGeneralSettings.Runtime<Config>
 
         /// Individual settings for the given day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
-        public let daySettings:[LeagueDaySettings.Runtime]
+        let daySettings:[LeagueGeneralSettings.Runtime<Config>]
 
-        public init(
+        #if SpecializeScheduleConfiguration
+        @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+        @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+        #endif
+        init(
             gameDays: LeagueDayIndex,
-            divisions: [LeagueDivision.Runtime],
-            entries: [LeagueEntry.Runtime],
-            general: LeagueGeneralSettings.Runtime,
-            daySettings: [LeagueDaySettings.Runtime]
+            divisions: [Config.DivisionRuntime],
+            entries: [Config.EntryRuntime],
+            general: LeagueGeneralSettings.Runtime<Config>,
+            daySettings: [LeagueGeneralSettings.Runtime<Config>]
         ) {
             self.gameDays = gameDays
             self.divisions = divisions
             self.entries = entries
             self.general = general
             self.daySettings = daySettings
+        }
+
+        func copy() -> Self {
+            .init(gameDays: gameDays, divisions: divisions, entries: entries, general: general, daySettings: daySettings)
+        }
+
+        func redistributionSettings(for day: LeagueDayIndex) -> LitLeagues_Leagues_RedistributionSettings? {
+            daySettings[unchecked: day].redistributionSettings ?? general.redistributionSettings
         }
     }
 }

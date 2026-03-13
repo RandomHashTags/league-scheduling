@@ -1,7 +1,7 @@
 
 import StaticDateTimes
 
-public struct LeagueScheduleDataSnapshot: Sendable {
+struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     let entriesPerMatchup:LeagueEntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<LeagueDivision.IDValue>
@@ -21,20 +21,24 @@ public struct LeagueScheduleDataSnapshot: Sendable {
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
     var failedMatchupSelections:ContiguousArray<Set<LeagueMatchupPair>>
 
-    var assignmentState:AssignmentStateCopyable
+    var assignmentState:AssignmentStateCopyable<Config>
     var prioritizeEarlierTimes = false
 
     var executionSteps = [ExecutionStep]()
     var shuffleHistory = [LeagueShuffleAction]()
 
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
     init(
         maxStartingTimes: LeagueTimeIndex,
         startingTimes: [StaticTime],
         maxLocations: LeagueLocationIndex,
         entriesPerMatchup: LeagueEntriesPerMatchup,
         maximumPlayableMatchups: [UInt32],
-        entries: [LeagueEntry.Runtime],
-        divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
+        entries: [Config.EntryRuntime],
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
         matchupDuration: LeagueMatchupDuration,
         gameGap: (Int, Int),
         sameLocationIfB2B: Bool,
@@ -46,11 +50,12 @@ public struct LeagueScheduleDataSnapshot: Sendable {
         self.gameGap = gameGap
         self.sameLocationIfB2B = sameLocationIfB2B
 
-        var prioritizedEntries = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
+        var prioritizedEntries = Config.EntryIDSet()
+        prioritizedEntries.reserveCapacity(entriesCount)
         var entryDivisions = ContiguousArray<LeagueDivision.IDValue>(repeating: 0, count: entriesCount)
         for (index, entries) in divisionEntries.enumerated() {
             prioritizedEntries.formUnion(entries)
-            for entry in entries {
+            entries.forEach { entry in
                 entryDivisions[unchecked: entry] = LeagueDivision.IDValue(index)
             }
         }
@@ -80,14 +85,18 @@ public struct LeagueScheduleDataSnapshot: Sendable {
             prioritizedEntries: prioritizedEntries,
             availableSlots: [],
             playsAt: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtTimes: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtLocations: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
+            playsAtTimes: .init(repeating: .init(), count: entriesCount),
+            playsAtLocations: .init(repeating: .init(), count: entriesCount),
             matchups: [],
             shuffleHistory: []
         )
     }
-    
-    init(_ snapshot: borrowing LeagueScheduleData) {
+
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    #endif
+    init(_ snapshot: borrowing LeagueScheduleData<Config>) {
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions

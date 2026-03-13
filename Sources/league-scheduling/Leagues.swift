@@ -26,7 +26,6 @@ public typealias LeagueGameLocations = LitLeagues_Leagues_GameLocations
 //public typealias LeagueEntryMatchupsPerGameDay = LitLeagues_Leagues_EntryMatchupsPerGameDay
 public typealias LeagueGeneralSettings = LitLeagues_Leagues_GeneralSettings
 public typealias LeagueMatchup = LitLeagues_Leagues_Matchup
-public typealias LeagueMatchupOccurrence = LitLeagues_Leagues_MatchupOccurrence
 public typealias LeagueRequestPayload = LitLeagues_Leagues_RequestPayload
 public typealias LeagueSettingFlags = LitLeagues_Leagues_SettingFlags
 public typealias LeagueLocationTimeExclusivities = LitLeagues_Leagues_LocationTimeExclusivities

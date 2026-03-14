@@ -15,7 +15,7 @@ extension LeagueAvailableSlot: Codable {
         try container.encode(location, forKey: .location)
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case time
         case location
     }
@@ -38,7 +38,7 @@ extension LeagueAvailableSlot: Hashable {
 
 // MARK: General
 extension LeagueAvailableSlot {
-    public init(time: LeagueTimeIndex, location: LeagueLocationIndex) {
+    init(time: LeagueTimeIndex, location: LeagueLocationIndex) {
         self.time = time
         self.location = location
     }

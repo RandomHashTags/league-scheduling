@@ -7,7 +7,7 @@ public enum LeagueError: CustomStringConvertible, Error, Sendable {
     case failedZeroExpectedMatchupsForDay(LeagueDayIndex)
     case failedRedistributionRequiresPreviouslyScheduledMatchups
     case failedRedistributingMatchupsForDay(LeagueDayIndex)
-    case failedAssignment(regenerationAttemptsThreshold: LeagueRegenerationAttempt, balanceTimeStrictness: LeagueBalanceStrictness)
+    case failedAssignment(regenerationAttemptsThreshold: UInt32, balanceTimeStrictness: LeagueBalanceStrictness)
 
     case timedOut(function: String)
 

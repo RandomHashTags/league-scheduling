@@ -84,14 +84,14 @@ extension LeagueScheduleData {
 
 // MARK: HomeAwayValue
 extension LeagueSchedule {
-    public struct HomeAwayValue: Codable, Sendable {
+    struct HomeAwayValue: Sendable {
         /// Number of matchups played at 'home'.
-        public var home:UInt8
+        var home:UInt8
 
         /// Number of matchups played at 'away'.
-        public var away:UInt8
+        var away:UInt8
 
-        public var sum: UInt16 {
+        var sum: UInt16 {
             UInt16(home) + UInt16(away)
         }
     }
@@ -155,12 +155,15 @@ extension LeagueScheduleData {
         }
         expectedMatchupsCount = min(availableSlots.count, expectedMatchupsCount)
         assignmentState.availableSlots = availableSlots
-        if daySettings.gameGap == .no {
+        switch daySettings.gameGap {
+        case .no:
             allowedDivisionCombinations = Self.allowedDivisionMatchupCombinations(
                 entriesPerMatchup: entriesPerMatchup,
                 locations: daySettings.locations,
                 entryCountsForDivision: entryCountsForDivision
             )
+        default:
+            break
         }
         failedMatchupSelections = .init(repeating: Set(), count: expectedMatchupsCount)
         assignmentState.allMatchups = availableMatchups

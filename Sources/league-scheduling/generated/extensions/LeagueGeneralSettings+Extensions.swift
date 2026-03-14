@@ -106,7 +106,7 @@ extension LeagueGeneralSettings: Codable {
         }
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case gameGap
         case entriesPerLocation
         case timeSlots
@@ -128,7 +128,7 @@ extension LeagueGeneralSettings: Codable {
 
 // MARK: Initialization
 extension LeagueGeneralSettings {
-    package init(
+    init(
         gameGap: String,
         timeSlots: LeagueTimeIndex,
         startingTimes: [StaticTime],
@@ -171,32 +171,32 @@ extension LeagueGeneralSettings {
 
 // MARK: General
 extension LeagueGeneralSettings {
-    public func isFlag(_ flag: LeagueSettingFlags) -> Bool {
+    func isFlag(_ flag: LeagueSettingFlags) -> Bool {
         flags & UInt32(1 << flag.rawValue) != 0
     }
 
     /// If we should try arranging matchups so they fit in less time slots than provided.
-    public var optimizeTimes: Bool {
+    var optimizeTimes: Bool {
         isFlag(.optimizeTimes)
     }
 
     /// If we should try arranging matchups so they fill earlier time slots first.
-    public var prioritizeEarlierTimes: Bool {
+    var prioritizeEarlierTimes: Bool {
         isFlag(.prioritizeEarlierTimes)
     }
 
     /// If we should try keeping matchups that play at "home" to play at "home" for later matchups (and the same for "away" matchups).
-    public var prioritizeHomeAway: Bool {
+    var prioritizeHomeAway: Bool {
         isFlag(.prioritizeHomeAway)
     }
 
     /// If we should try balancing the number each entry plays each other at "home" and "away".
-    public var balanceHomeAway: Bool {
+    var balanceHomeAway: Bool {
         isFlag(.balanceHomeAway)
     }
 
     /// If we should try keeping teams on the same location if they play back-to-back matchups.
-    public var sameLocationIfB2B: Bool {
+    var sameLocationIfB2B: Bool {
         isFlag(.sameLocationIfBackToBack)
     }
 }

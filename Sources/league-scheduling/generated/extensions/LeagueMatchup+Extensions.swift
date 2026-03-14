@@ -18,7 +18,7 @@ extension LeagueMatchup: Codable {
         try container.encode(away, forKey: .away)
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case time
         case location
         case home
@@ -35,7 +35,7 @@ extension LeagueMatchup: CustomStringConvertible {
 
 // MARK: General
 extension LeagueMatchup {
-    public init(
+    init(
         time: LeagueTimeIndex,
         location: LeagueLocationIndex,
         home: LeagueEntry.IDValue,
@@ -47,11 +47,11 @@ extension LeagueMatchup {
         self.away = away
     }
 
-    public var pair: LeagueMatchupPair {
+    var pair: LeagueMatchupPair {
         LeagueMatchupPair(team1: home, team2: away)
     }
 
-    public var slot: LeagueAvailableSlot {
+    var slot: LeagueAvailableSlot {
        LeagueAvailableSlot(time: time, location: location)
     }
 }

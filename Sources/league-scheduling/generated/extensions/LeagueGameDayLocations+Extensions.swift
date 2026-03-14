@@ -14,7 +14,7 @@ extension LitLeagues_Leagues_GameDayLocations: Codable {
 
 // MARK: Init
 extension LitLeagues_Leagues_GameDayLocations {
-    public init(
+    init(
         locations: [LeagueGameLocations]
     ) {
         self.locations = locations

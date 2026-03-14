@@ -1,5 +1,5 @@
 
-import LeagueScheduling
+@testable import LeagueScheduling
 
 struct ValidLeagueMatchup: Hashable {
     let day:LeagueDayIndex

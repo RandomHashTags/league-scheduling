@@ -1,6 +1,6 @@
 
 extension LeagueEntry {
-    public func runtime(
+    func runtime(
         id: IDValue,
         division: LeagueDivision.IDValue,
         defaultGameDays: Set<LeagueDayIndex>,
@@ -20,35 +20,35 @@ extension LeagueEntry {
     }
 
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Hashable, Sendable {
+    struct Runtime: Sendable {
         /// ID associated with this entry.
-        public let id:LeagueEntry.IDValue
+        let id:LeagueEntry.IDValue
 
         /// Division id this entry is in.
-        public let division:LeagueDivision.IDValue
+        let division:LeagueDivision.IDValue
 
         /// Game days this entry can play on.
-        public let gameDays:Set<LeagueDayIndex>
+        let gameDays:Set<LeagueDayIndex>
 
         /// Times this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
-        public let gameTimes:[Set<LeagueTimeIndex>]
+        let gameTimes:[Set<LeagueTimeIndex>]
 
         /// Locations this entry can play at for a specific day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
-        public let gameLocations:[Set<LeagueLocationIndex>]
+        let gameLocations:[Set<LeagueLocationIndex>]
 
         /// Home locations for this entry.
-        public let homeLocations:Set<LeagueLocationIndex>
+        let homeLocations:Set<LeagueLocationIndex>
 
         /// Day indexes where this entry doesn't play due to being on a bye week.
-        public let byes:Set<LeagueDayIndex>
+        let byes:Set<LeagueDayIndex>
 
-        public let matchupsPerGameDay:LitLeagues_Leagues_EntryMatchupsPerGameDay?
+        let matchupsPerGameDay:LitLeagues_Leagues_EntryMatchupsPerGameDay?
 
-        public init(
+        init(
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
             protobuf: LeagueEntry,
@@ -67,7 +67,7 @@ extension LeagueEntry {
             matchupsPerGameDay = protobuf.hasMatchupsPerGameDay ? protobuf.matchupsPerGameDay : nil
         }
 
-        public init(
+        init(
             id: LeagueEntry.IDValue,
             division: LeagueDivision.IDValue,
             gameDays: Set<LeagueDayIndex>,
@@ -87,12 +87,8 @@ extension LeagueEntry {
             self.matchupsPerGameDay = matchupsPerGameDay
         }
 
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-
         /// - Returns: Maximum number of matchups this entry can play on the given day index.
-        public func maxMatchupsForGameDay(
+        func maxMatchupsForGameDay(
             day: LeagueDayIndex,
             fallback: LeagueEntryMatchupsPerGameDay
         ) -> LeagueEntryMatchupsPerGameDay {

@@ -73,3 +73,9 @@ extension BalanceHomeAwayExpectations {
         return (home, away)
     }
 }
+
+extension LeagueEntry.Runtime: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+    }
+}

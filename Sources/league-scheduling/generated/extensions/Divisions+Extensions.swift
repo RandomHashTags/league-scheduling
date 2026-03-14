@@ -14,7 +14,7 @@ extension LitLeagues_Leagues_Divisions: Codable {
 
 // MARK: Init
 extension LitLeagues_Leagues_Divisions {
-    public init(
+    init(
         divisions: [LeagueDivision]
     ) {
         self.divisions = divisions

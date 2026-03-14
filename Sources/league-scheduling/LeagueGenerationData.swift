@@ -1,9 +1,9 @@
 
 public struct LeagueGenerationData: Sendable {
     public var error:LeagueError? = nil
-    public var assignLocationTimeRegenerationAttempts:LeagueRegenerationAttempt = 0
-    public var negativeDayIndexRegenerationAttempts:LeagueRegenerationAttempt = 0
-    public var schedule:ContiguousArray<Set<LeagueMatchup>> = []
+    public var assignLocationTimeRegenerationAttempts:UInt32 = 0
+    public var negativeDayIndexRegenerationAttempts:UInt32 = 0
+    public var schedule:ContiguousArray<Set<LitLeagues_Leagues_Matchup>> = []
 
     #if UnitTesting
     /// Number of times an entry was assigned to a given time.
@@ -76,7 +76,7 @@ extension LeagueGenerationData: Codable {
 
 // MARK: CodingKeys
 extension LeagueGenerationData {
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case assignLocationTimeRegenerationAttempts
         case negativeDayIndexRegenerationAttempts
         case schedule

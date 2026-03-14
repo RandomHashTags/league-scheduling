@@ -1,18 +1,18 @@
 
 extension LeagueDaySettings {
-    public func runtime() throws(LeagueError) -> Runtime {
+    func runtime() throws(LeagueError) -> Runtime {
         try .init(protobuf: self)
     }
 
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Sendable {
-        public let general:LeagueGeneralSettings.Runtime
+    struct Runtime: Sendable {
+        let general:LeagueGeneralSettings.Runtime
 
-        public init(protobuf: LeagueDaySettings) throws(LeagueError) {
+        init(protobuf: LeagueDaySettings) throws(LeagueError) {
             general = try protobuf.settings.runtime()
         }
 
-        public init(
+        init(
             general: LeagueGeneralSettings.Runtime
         ) {
             self.general = general

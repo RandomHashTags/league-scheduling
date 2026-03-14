@@ -10,27 +10,27 @@ import SwiftProtobuf
 // MARK: Runtime
 extension LeagueRequestPayload {
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Sendable {
+    struct Runtime: Sendable {
         let constraints:GenerationConstraints
 
         /// Number of days where games are played.
-        public let gameDays:LeagueDayIndex
+        let gameDays:LeagueDayIndex
 
         /// Divisions associated with this schedule.
-        public let divisions:[LeagueDivision.Runtime]
+        let divisions:[LeagueDivision.Runtime]
 
         /// Entries that participate in this schedule.
-        public let entries:[LeagueEntry.Runtime]
+        let entries:[LeagueEntry.Runtime]
 
         /// General settings for this schedule.
-        public let general:LeagueGeneralSettings.Runtime
+        let general:LeagueGeneralSettings.Runtime
 
         /// Individual settings for the given day index.
         /// 
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
-        public let daySettings:[LeagueDaySettings.Runtime]
+        let daySettings:[LeagueDaySettings.Runtime]
 
-        public init(
+        init(
             constraints: GenerationConstraints,
             gameDays: LeagueDayIndex,
             divisions: [LeagueDivision.Runtime],

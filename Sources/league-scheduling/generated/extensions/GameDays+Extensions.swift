@@ -14,7 +14,7 @@ extension LitLeagues_Leagues_GameDays: Codable {
 
 // MARK: Init
 extension LitLeagues_Leagues_GameDays {
-    public init(
+    init(
         gameDayIndexes: [LeagueDayIndex]
     ) {
         self.gameDayIndexes = gameDayIndexes

@@ -23,13 +23,13 @@ extension GenerationConstraints: Codable {
             try container.encode(timeoutDelay, forKey: .timeoutDelay)
         }
         if hasRegenerationAttemptsForFirstDay {
-            try container.encode(regenerationAttemptsForFirstDay, forKey: .timeoutDelay)
+            try container.encode(regenerationAttemptsForFirstDay, forKey: .regenerationAttemptsForFirstDay)
         }
         if hasRegenerationAttemptsForConsecutiveDay {
-            try container.encode(regenerationAttemptsForConsecutiveDay, forKey: .timeoutDelay)
+            try container.encode(regenerationAttemptsForConsecutiveDay, forKey: .regenerationAttemptsForConsecutiveDay)
         }
         if hasRegenerationAttemptsThreshold {
-            try container.encode(regenerationAttemptsThreshold, forKey: .timeoutDelay)
+            try container.encode(regenerationAttemptsThreshold, forKey: .regenerationAttemptsThreshold)
         }
     }
 

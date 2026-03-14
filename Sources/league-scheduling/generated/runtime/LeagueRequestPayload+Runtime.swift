@@ -11,6 +11,8 @@ import SwiftProtobuf
 extension LeagueRequestPayload {
     /// For optimal runtime performance.
     public struct Runtime: Codable, Sendable {
+        let constraints:GenerationConstraints
+
         /// Number of days where games are played.
         public let gameDays:LeagueDayIndex
 
@@ -29,12 +31,14 @@ extension LeagueRequestPayload {
         public let daySettings:[LeagueDaySettings.Runtime]
 
         public init(
+            constraints: GenerationConstraints,
             gameDays: LeagueDayIndex,
             divisions: [LeagueDivision.Runtime],
             entries: [LeagueEntry.Runtime],
             general: LeagueGeneralSettings.Runtime,
             daySettings: [LeagueDaySettings.Runtime]
         ) {
+            self.constraints = constraints
             self.gameDays = gameDays
             self.divisions = divisions
             self.entries = entries

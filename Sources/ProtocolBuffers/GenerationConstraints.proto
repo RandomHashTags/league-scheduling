@@ -30,32 +30,18 @@ syntax = "proto3";
 
 package lit_leagues.leagues;
 
-import "DaySettingsArray.proto";
-import "Divisions.proto";
-import "Entry.proto";
-import "GeneralSettings.proto";
-import "GenerationConstraints.proto";
+// Constraints that influence the schedule generation process.
+message GenerationConstraints {
+    // Maximum number of seconds the schedule can take to generate. Default value is 60; 0=infinite (will continue until the regeneration attempt threshold is met).
+    optional uint32 timeoutDelay = 1;
 
-// The payload sent by clients to the server requesting to generate a schedule with the given settings.
-message RequestPayload {
-    // A string in the html date format representing the first date to schedule matchups.
-    optional string starts = 1;
+    // Maximum number of regeneration attempts when failing to generate the first game day. Default value is 100.
+    optional uint32 regenerationAttemptsForFirstDay = 2;
 
-    // Number of days where matchups are played.
-    uint32 gameDays = 2;
+    // Maximum number of regeneration attempts when failing to generate a game day other than the first. Default value is 100.
+    optional uint32 regenerationAttemptsForConsecutiveDay = 3;
 
-    // Default schedule settings.
-    GeneralSettings settings = 3;
-
-    // Game day schedule settings.
-    optional DaySettingsArray individualDaySettings = 4;
-
-    // The divisions being scheduled, including their settings. If `nil`: divisions == 1.
-    optional Divisions divisions = 5;
-
-    // The entries/teams being scheduled, including their settings.
-    repeated Entry entries = 6;
-
-    // Constraints that influence the schedule generation process.
-    optional GenerationConstraints generationConstraints = 7;
+    // Maximum number of total regeneration attempts before stopping execution and marking the schedule generation as a failure.
+    // Default value is 10,000.
+    optional uint32 regenerationAttemptsThreshold = 4;
 }

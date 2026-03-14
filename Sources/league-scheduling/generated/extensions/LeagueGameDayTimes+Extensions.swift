@@ -14,7 +14,7 @@ extension LitLeagues_Leagues_GameDayTimes: Codable {
 
 // MARK: Init
 extension LitLeagues_Leagues_GameDayTimes {
-    public init(
+    init(
         times: [LeagueGameTimes]
     ) {
         self.times = times

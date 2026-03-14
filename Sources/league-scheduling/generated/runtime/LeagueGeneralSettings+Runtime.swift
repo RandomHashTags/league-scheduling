@@ -2,30 +2,30 @@
 import StaticDateTimes
 
 extension LeagueGeneralSettings {
-    public func runtime() throws(LeagueError) -> Runtime {
+    func runtime() throws(LeagueError) -> Runtime {
         try .init(protobuf: self)
     }
 
     /// For optimal runtime performance
-    public struct Runtime: Codable, Sendable {
-        public var gameGap:GameGap
-        public var timeSlots:LeagueTimeIndex
-        public var startingTimes:[StaticTime]
-        public var entriesPerLocation:LeagueEntriesPerMatchup
-        public var locations:LeagueLocationIndex
-        public var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
-        public var maximumPlayableMatchups:[UInt32]
-        public var matchupDuration:LeagueMatchupDuration
-        public var locationTimeExclusivities:[Set<LeagueTimeIndex>]?
-        public var locationTravelDurations:[[LeagueMatchupDuration]]?
-        public var balanceTimeStrictness:LeagueBalanceStrictness
-        public var balancedTimes:Set<LeagueTimeIndex>
-        public var balanceLocationStrictness:LeagueBalanceStrictness
-        public var balancedLocations:Set<LeagueLocationIndex>
-        public var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
-        public var flags:UInt32
+    struct Runtime: Sendable {
+        var gameGap:GameGap
+        var timeSlots:LeagueTimeIndex
+        var startingTimes:[StaticTime]
+        var entriesPerLocation:LeagueEntriesPerMatchup
+        var locations:LeagueLocationIndex
+        var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+        var maximumPlayableMatchups:[UInt32]
+        var matchupDuration:LeagueMatchupDuration
+        var locationTimeExclusivities:[Set<LeagueTimeIndex>]?
+        var locationTravelDurations:[[LeagueMatchupDuration]]?
+        var balanceTimeStrictness:LeagueBalanceStrictness
+        var balancedTimes:Set<LeagueTimeIndex>
+        var balanceLocationStrictness:LeagueBalanceStrictness
+        var balancedLocations:Set<LeagueLocationIndex>
+        var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
+        var flags:UInt32
 
-        public init(
+        init(
             protobuf: LeagueGeneralSettings
         ) throws(LeagueError) {
             guard let gameGap = GameGap(htmlInputValue: protobuf.gameGap) else {
@@ -69,29 +69,29 @@ extension LeagueGeneralSettings.Runtime {
         flags & UInt32(1 << flag.rawValue) != 0
     }
 
-    public var optimizeTimes: Bool {
+    var optimizeTimes: Bool {
         isFlag(.optimizeTimes)
     }
 
-    public var prioritizeEarlierTimes: Bool {
+    var prioritizeEarlierTimes: Bool {
         isFlag(.prioritizeEarlierTimes)
     }
 
-    public var prioritizeHomeAway: Bool {
+    var prioritizeHomeAway: Bool {
         isFlag(.prioritizeHomeAway)
     }
 
-    public var balanceHomeAway: Bool {
+    var balanceHomeAway: Bool {
         isFlag(.balanceHomeAway)
     }
 
-    public var sameLocationIfB2B: Bool {
+    var sameLocationIfB2B: Bool {
         isFlag(.sameLocationIfBackToBack)
     }
 }
 
 extension LeagueGeneralSettings.Runtime {
-    public init(
+    init(
         gameGap: GameGap,
         timeSlots: LeagueTimeIndex,
         startingTimes: [StaticTime],
@@ -131,7 +131,7 @@ extension LeagueGeneralSettings.Runtime {
 // MARK: Compute settings
 extension LeagueGeneralSettings.Runtime {
     /// Modifies `timeSlots` and `startingTimes` taking into account current settings.
-    public mutating func computeSettings(
+    mutating func computeSettings(
         day: LeagueDayIndex,
         entries: [LeagueEntry.Runtime]
     ) {

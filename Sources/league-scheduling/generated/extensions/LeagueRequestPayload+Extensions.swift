@@ -45,7 +45,7 @@ extension LeagueRequestPayload: Codable {
 
 // MARK: Init
 extension LeagueRequestPayload {
-    public init(
+    init(
         starts: String? = nil,
         gameDays: LeagueDayIndex,
 

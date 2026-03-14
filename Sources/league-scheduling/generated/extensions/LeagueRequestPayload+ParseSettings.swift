@@ -1,5 +1,4 @@
 
-import struct FoundationEssentials.Date
 import StaticDateTimes
 
 #if canImport(SwiftGlibc)

@@ -55,7 +55,7 @@ extension LeagueEntry: Codable {
         }
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case name
         case division
         case gameDays
@@ -69,9 +69,9 @@ extension LeagueEntry: Codable {
 
 // MARK: General
 extension LeagueEntry {
-    public typealias IDValue = UInt32
+    typealias IDValue = UInt32
 
-    public init(
+    init(
         division: LeagueDivision.IDValue,
         gameDays: LitLeagues_Leagues_GameDays?,
         gameDayTimes: LitLeagues_Leagues_GameDayTimes?,

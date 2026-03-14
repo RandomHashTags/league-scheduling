@@ -13,7 +13,7 @@ extension LeagueMatchupPair: Codable {
         try container.encode(team2, forKey: .team2)
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case team1
         case team2
     }
@@ -36,7 +36,7 @@ extension LeagueMatchupPair: Hashable {
 
 // MARK: Initializer
 extension LeagueMatchupPair {
-    public init(team1: LeagueEntry.IDValue, team2: LeagueEntry.IDValue) {
+    init(team1: LeagueEntry.IDValue, team2: LeagueEntry.IDValue) {
         self.team1 = team1
         self.team2 = team2
     }

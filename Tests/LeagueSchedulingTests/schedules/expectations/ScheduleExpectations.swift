@@ -91,7 +91,7 @@ extension ScheduleExpectations {
                         )
                     }
                 }
-                let settings = data.settings.daySettings[dayIndex].general
+                let settings = settings.daySettings[dayIndex].general
                 let dayExpectations = DayExpectations(
                     settings: settings,
                     b2bMatchupsAtDifferentLocations: b2bMatchupsAtDifferentLocations

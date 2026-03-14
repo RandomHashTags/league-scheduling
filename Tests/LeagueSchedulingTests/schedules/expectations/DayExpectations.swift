@@ -1,5 +1,5 @@
 
-import LeagueScheduling
+@testable import LeagueScheduling
 import Testing
 
 struct DayExpectations: ScheduleTestsProtocol {

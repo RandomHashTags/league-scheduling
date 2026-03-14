@@ -1,7 +1,7 @@
 
 // MARK: General
 extension LeagueSettingFlags {
-    public static func get(
+    static func get(
         optimizeTimes: Bool,
         prioritizeEarlierTimes: Bool,
         prioritizeHomeAway: Bool,

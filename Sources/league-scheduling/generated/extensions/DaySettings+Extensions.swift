@@ -15,7 +15,7 @@ extension LeagueDaySettings: Codable {
         }
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case settings
     }
 }

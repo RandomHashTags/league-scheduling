@@ -1,6 +1,4 @@
 
-import struct FoundationEssentials.UUID
-
 #if canImport(SwiftGlibc)
 import SwiftGlibc
 #elseif canImport(Foundation)
@@ -8,18 +6,12 @@ import Foundation
 #endif
 
 // TODO: support divisions on the same day with different times
-public struct LeagueSchedule: Sendable, ~Copyable {
+struct LeagueSchedule: Sendable, ~Copyable {
     /// Settings for this schedule.
-    public let settings:LeagueRequestPayload.Runtime
-
-    public init(
-        settings: LeagueRequestPayload.Runtime
-    ) {
-        self.settings = settings
-    }
+    let settings:LeagueRequestPayload.Runtime
 
     // MARK: Generate
-    public func generate() async -> LeagueGenerationResult {
+    func generate() async -> LeagueGenerationResult {
         var err:String? = nil
         var results = [LeagueGenerationData]()
         do {
@@ -37,10 +29,8 @@ public struct LeagueSchedule: Sendable, ~Copyable {
             err = "\(error)"
         }
         return .init(
-            id: UUID(),
             results: results,
-            error: err,
-            settings: settings
+            error: err
         )
     }
 }
@@ -211,7 +201,7 @@ extension LeagueSchedule {
 
         var snapshots = [LeagueScheduleDataSnapshot]()
         snapshots.reserveCapacity(gameDays)
-        var gameDayRegenerationAttempt:LeagueRegenerationAttempt = 0
+        var gameDayRegenerationAttempt:UInt32 = 0
         var day:LeagueDayIndex = 0
         var gameDaySettingValuesCount = 0
         var data = LeagueScheduleData(snapshot: dataSnapshot)

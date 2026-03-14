@@ -1,6 +1,6 @@
 
 extension LeagueDivision {
-    public func runtime(
+    func runtime(
         defaultGameDays: Set<LeagueDayIndex>,
         defaultGameGap: GameGap,
         fallbackDayOfWeek: LeagueDayOfWeek,
@@ -16,13 +16,13 @@ extension LeagueDivision {
     }
 
     /// For optimal runtime performance.
-    public struct Runtime: Codable, Sendable {
-        public let dayOfWeek:LeagueDayOfWeek
-        public let gameDays:Set<LeagueDayIndex>
-        public let gameGaps:[GameGap]
-        public let maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchupsCap
+    struct Runtime: Sendable {
+        let dayOfWeek:LeagueDayOfWeek
+        let gameDays:Set<LeagueDayIndex>
+        let gameGaps:[GameGap]
+        let maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchupsCap
 
-        public init(
+        init(
             protobuf: LeagueDivision,
             defaultGameDays: Set<LeagueDayIndex>,
             defaultGameGap: GameGap,
@@ -35,7 +35,7 @@ extension LeagueDivision {
             maxSameOpponentMatchups = protobuf.hasMaxSameOpponentMatchups ? protobuf.maxSameOpponentMatchups : fallbackMaxSameOpponentMatchups
         }
 
-        public init(
+        init(
             dayOfWeek: LeagueDayOfWeek,
             gameDays: Set<LeagueDayIndex>,
             gameGaps: [GameGap],

@@ -16,7 +16,9 @@ struct ScheduleBeanBagToss: ScheduleTestsProtocol {
             data: data
         )
     }
-    static func schedule8GameDays3Times3Locations1Division9Teams() throws -> LeagueSchedule {
+    static func schedule8GameDays3Times3Locations1Division9Teams(
+        constraints: GenerationConstraints = .default
+    ) throws -> LeagueSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 3, 3, 9)
         let entries = getEntries(
@@ -44,7 +46,8 @@ struct ScheduleBeanBagToss: ScheduleTestsProtocol {
             divisions: [
                 try getDivision(dayOfWeek: .thursday, values: (gameDays, maxEntryMatchupsPerGameDay, teams))
             ],
-            entries: entries
+            entries: entries,
+            constraints: constraints
         )
     }
 }
@@ -389,9 +392,16 @@ extension ScheduleBeanBagToss {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=Mjc0OTM3Ng==&arg3=Mzg4NjQ=
     @Test(.timeLimit(.minutes(1)))
     func scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams() async throws {
+        let schedule = try Self.scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams()
+        let data = await schedule.generate()
+        try expectations(settings: schedule.settings, matchupsCount: 210, data: data)
+    }
+    static func scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams(
+        constraints: GenerationConstraints = .default
+    ) throws -> LeagueSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 8, 21)
-        let schedule = Self.getSchedule(
+        return Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
             entriesPerLocation: 2,
@@ -417,10 +427,9 @@ extension ScheduleBeanBagToss {
                 times: times,
                 locations: locations,
                 teams: teams
-            )
+            ),
+            constraints: constraints
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 210, data: data)
     }
 }
 
@@ -429,9 +438,16 @@ extension ScheduleBeanBagToss {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MjMwMTU4Nw==&arg3=MzEwMjQ=
     @Test(.timeLimit(.minutes(1)))
     func scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams() async throws {
+        let schedule = try Self.scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams()
+        let data = await schedule.generate()
+        try expectations(settings: schedule.settings, matchupsCount: 230, data: data)
+    }
+    static func scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams(
+        constraints: GenerationConstraints = .default
+    ) throws -> LeagueSchedule {
         let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 6, 23)
-        let schedule = Self.getSchedule(
+        return Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
             entriesPerLocation: 2,
@@ -458,9 +474,8 @@ extension ScheduleBeanBagToss {
                 times: times,
                 locations: locations,
                 teams: teams
-            )
+            ),
+            constraints: constraints
         )
-        let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 230, data: data)
     }
 }

@@ -7,7 +7,7 @@ public typealias LeagueTimeIndex = UInt32                // WARNING: do not chan
 public typealias LeagueLocationIndex = UInt32            // WARNING: do not change value type!
 public typealias LeagueEntryMatchupsPerGameDay = UInt32  // WARNING: do not change value type!
 public typealias LeagueEntriesPerMatchup = UInt32        // WARNING: do not change value type!
-public typealias LeagueRegenerationAttempt = UInt16      // WARNING: do not change value type!
+public typealias LeagueRegenerationAttempt = UInt32      // WARNING: do not change value type!
 public typealias LeagueRecurringDayLimitInterval = UInt8 // WARNING: do not change value type!
 
 /// Measured in seconds.
@@ -23,6 +23,7 @@ public typealias LeagueDivision = LitLeagues_Leagues_Division
 public typealias LeagueEntry = LitLeagues_Leagues_Entry
 public typealias LeagueGameTimes = LitLeagues_Leagues_GameTimes
 public typealias LeagueGameLocations = LitLeagues_Leagues_GameLocations
+public typealias GenerationConstraints = LitLeagues_Leagues_GenerationConstraints
 //public typealias LeagueEntryMatchupsPerGameDay = LitLeagues_Leagues_EntryMatchupsPerGameDay
 public typealias LeagueGeneralSettings = LitLeagues_Leagues_GeneralSettings
 public typealias LeagueMatchup = LitLeagues_Leagues_Matchup
@@ -99,8 +100,4 @@ public struct Leagues3 {
         options.alwaysPrintInt64sAsNumbers = true
         return options
     }()
-
-    public static let maximumAllowedRegenerationAttemptsForANegativeDayIndex:LeagueRegenerationAttempt = 100
-    public static let maximumAllowedRegenerationAttemptsForASingleDay:LeagueRegenerationAttempt = 100
-    public static let failedRegenerationAttemptsThreshold:LeagueRegenerationAttempt = 10_000
 }

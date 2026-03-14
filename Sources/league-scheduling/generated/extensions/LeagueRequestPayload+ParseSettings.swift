@@ -128,7 +128,24 @@ extension LeagueRequestPayload {
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
             entries: entries
         )
+        // always fallback to the defaults since computation can be expensive; handle with care
+        var constraints = GenerationConstraints.default
+        if hasGenerationConstraints {
+            if generationConstraints.hasTimeoutDelay {
+                constraints.timeoutDelay = generationConstraints.timeoutDelay
+            }
+            if generationConstraints.hasRegenerationAttemptsForFirstDay {
+                constraints.regenerationAttemptsForFirstDay = generationConstraints.regenerationAttemptsForFirstDay
+            }
+            if generationConstraints.hasRegenerationAttemptsForConsecutiveDay {
+                constraints.regenerationAttemptsForConsecutiveDay = generationConstraints.regenerationAttemptsForConsecutiveDay
+            }
+            if generationConstraints.hasRegenerationAttemptsThreshold {
+                constraints.regenerationAttemptsThreshold = generationConstraints.regenerationAttemptsThreshold
+            }
+        }
         return .init(
+            constraints: constraints,
             gameDays: gameDays,
             divisions: runtimeDivisions,
             entries: entries,

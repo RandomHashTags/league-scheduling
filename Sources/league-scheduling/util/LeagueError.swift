@@ -7,7 +7,7 @@ public enum LeagueError: CustomStringConvertible, Error, Sendable {
     case failedZeroExpectedMatchupsForDay(LeagueDayIndex)
     case failedRedistributionRequiresPreviouslyScheduledMatchups
     case failedRedistributingMatchupsForDay(LeagueDayIndex)
-    case failedAssignment(balanceTimeStrictness: LeagueBalanceStrictness)
+    case failedAssignment(regenerationAttemptsThreshold: LeagueRegenerationAttempt, balanceTimeStrictness: LeagueBalanceStrictness)
 
     case timedOut(function: String)
 
@@ -31,8 +31,8 @@ public enum LeagueError: CustomStringConvertible, Error, Sendable {
         case .failedRedistributingMatchupsForDay(let dayIndex):
             return "Failed trying to redistribute matchups for dayIndex \(dayIndex); something is misconfigured"
 
-        case .failedAssignment(let balanceTimeStrictness):
-            var string = "Failed location/time assignment in \(Leagues3.failedRegenerationAttemptsThreshold) attempts; something may be misconfigured; try regenerating"
+        case .failedAssignment(let regenerationAttemptsThreshold, let balanceTimeStrictness):
+            var string = "Failed location/time assignment in \(regenerationAttemptsThreshold) attempts; something may be misconfigured; try regenerating"
             if balanceTimeStrictness != .relaxed {
                 string += " or using 'relaxed' time strictness"
             }

@@ -96,10 +96,33 @@ extension LeagueSchedule {
         }
         let finalMaxStartingTimes = maxStartingTimes
         let finalMaxLocations = maxLocations
+        guard settings.constraints.timeoutDelay > 0 else {
+            return await withTaskGroup { group in
+                for (dow, scheduledEntries) in grouped {
+                    group.addTask {
+                        return Self.generateSchedule(
+                            dayOfWeek: dow,
+                            settings: settings,
+                            dataSnapshot: dataSnapshot,
+                            divisionsCount: divisionsCount,
+                            maxStartingTimes: finalMaxStartingTimes,
+                            maxLocations: finalMaxLocations,
+                            scheduledEntries: scheduledEntries
+                        )
+                    }
+                }
+                var results = [LeagueGenerationData]()
+                results.reserveCapacity(grouped.count)
+                for await r in group {
+                    results.append(r)
+                }
+                return results
+            }
+        }
         return try await withTimeout(
             key: "generateSchedules",
             resultCount: grouped.count,
-            timeout: .seconds(60)
+            timeout: .seconds(settings.constraints.timeoutDelay)
         ) { group in
             for (dow, scheduledEntries) in grouped {
                 group.addTask {
@@ -136,13 +159,18 @@ extension LeagueSchedule {
                 var completed = 0
                 var results = [T]()
                 results.reserveCapacity(resultCount)
-                for try await result in group {
-                    completed += 1
-                    results.append(result)
-                    if completed == resultCount {
-                        group.cancelAll()
-                        break
+                do {
+                    for try await result in group {
+                        completed += 1
+                        results.append(result)
+                        if completed == resultCount {
+                            group.cancelAll()
+                            break
+                        }
                     }
+                } catch {
+                    group.cancelAll()
+                    throw error
                 }
                 return results
             })
@@ -225,17 +253,20 @@ extension LeagueSchedule {
                 return generationData
             }
             if !assignedSlots {
-                guard generationData.assignLocationTimeRegenerationAttempts != Leagues3.failedRegenerationAttemptsThreshold else {
-                    generationData.error = LeagueError.failedAssignment(balanceTimeStrictness: settings.general.balanceTimeStrictness)
+                guard generationData.assignLocationTimeRegenerationAttempts != settings.constraints.regenerationAttemptsThreshold else {
+                    generationData.error = LeagueError.failedAssignment(
+                        regenerationAttemptsThreshold: settings.constraints.regenerationAttemptsThreshold,
+                        balanceTimeStrictness: settings.general.balanceTimeStrictness
+                    )
                     finalizeGenerationData(generationData: &generationData, data: data)
                     return generationData
                 }
                 generationData.assignLocationTimeRegenerationAttempts += 1
                 generationData.schedule[unchecked: day].removeAll(keepingCapacity: true)
                 gameDayRegenerationAttempt += 1
-                if gameDayRegenerationAttempt == Leagues3.maximumAllowedRegenerationAttemptsForASingleDay {
+                if gameDayRegenerationAttempt == settings.constraints.regenerationAttemptsForConsecutiveDay {
                     if day == 0 {
-                        guard generationData.negativeDayIndexRegenerationAttempts != Leagues3.maximumAllowedRegenerationAttemptsForANegativeDayIndex else {
+                        guard generationData.negativeDayIndexRegenerationAttempts != settings.constraints.regenerationAttemptsForFirstDay else {
                             generationData.error = LeagueError.failedNegativeDayIndex
                             finalizeGenerationData(generationData: &generationData, data: data)
                             return generationData

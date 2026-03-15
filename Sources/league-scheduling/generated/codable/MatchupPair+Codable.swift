@@ -1,10 +1,10 @@
 
 #if ProtobufCodable
-extension LeagueMatchupPair: Codable {
+extension MatchupPair: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        team1 = try container.decode(LeagueEntry.IDValue.self, forKey: .team1)
-        team2 = try container.decode(LeagueEntry.IDValue.self, forKey: .team2)
+        team1 = try container.decode(Entry.IDValue.self, forKey: .team1)
+        team2 = try container.decode(Entry.IDValue.self, forKey: .team2)
     }
 
     public func encode(to encoder: any Encoder) throws {

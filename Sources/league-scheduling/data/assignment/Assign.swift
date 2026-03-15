@@ -8,10 +8,10 @@ extension LeagueScheduleData {
     ///   - slot: The slot to assign the `matchup`.
     /// - Returns: The final matchup data that was assigned.
     mutating func assign(
-        matchup: LeagueMatchupPair,
-        to slot: LeagueAvailableSlot,
+        matchup: MatchupPair,
+        to slot: AvailableSlot,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup {
+    ) -> Matchup {
         return assignmentState.assign(
             matchup: matchup,
             to: slot,
@@ -31,26 +31,26 @@ extension AssignmentState {
     /// - Warning: Assigns the literal pair. **DOES NOT** balance home/away.
     @discardableResult
     mutating func assign(
-        matchup: LeagueMatchupPair,
-        to slot: LeagueAvailableSlot,
-        day: LeagueDayIndex,
+        matchup: MatchupPair,
+        to slot: AvailableSlot,
+        day: DayIndex,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup {
+    ) -> Matchup {
         prioritizedEntries.remove(matchup.team1)
         prioritizedEntries.remove(matchup.team2)
-        let home:LeagueEntry.IDValue = matchup.team1
-        let away:LeagueEntry.IDValue = matchup.team2
+        let home:Entry.IDValue = matchup.team1
+        let away:Entry.IDValue = matchup.team2
         incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval)
 
         incrementAssignData(home: home, away: away, slot: slot)
         insertPlaysAt(home: home, away: away, slot: slot)
         availableSlots.remove(slot)
-        let leagueMatchup = LeagueMatchup(
+        let leagueMatchup = Matchup(
             time: slot.time,
             location: slot.location,
             home: home,
@@ -113,9 +113,9 @@ extension AssignmentState {
 // MARK: Increment assigned data
 extension AssignmentState {
     mutating func incrementAssignData(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        slot: LeagueAvailableSlot
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        slot: AvailableSlot
     ) {
         numberOfAssignedMatchups[unchecked: home] += 1
         numberOfAssignedMatchups[unchecked: away] += 1
@@ -129,9 +129,9 @@ extension AssignmentState {
         awayMatchups[unchecked: away] += 1
     }
     mutating func insertPlaysAt(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        slot: LeagueAvailableSlot
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        slot: AvailableSlot
     ) {
         playsAt[unchecked: home].insert(slot)
         playsAt[unchecked: away].insert(slot)
@@ -145,19 +145,19 @@ extension AssignmentState {
 // MARK: Increment RDL
 extension AssignmentState {
     mutating func incrementRecurringDayLimits(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        entryDivisions: ContiguousArray<Division.IDValue>,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>
     ) {
         Self.incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval, recurringDayLimits: &recurringDayLimits)
     }
 
     static func incrementRecurringDayLimits(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        entryDivisions: ContiguousArray<Division.IDValue>,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         recurringDayLimits: inout RecurringDayLimits
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: home]]

@@ -1,7 +1,7 @@
 
 import StaticDateTimes
 
-extension LeagueGeneralSettings {
+extension GeneralSettings {
     func runtime() throws(LeagueError) -> Runtime {
         try .init(protobuf: self)
     }
@@ -9,24 +9,24 @@ extension LeagueGeneralSettings {
     /// For optimal runtime performance
     struct Runtime: Sendable {
         var gameGap:GameGap
-        var timeSlots:LeagueTimeIndex
+        var timeSlots:TimeIndex
         var startingTimes:[StaticTime]
-        var entriesPerLocation:LeagueEntriesPerMatchup
-        var locations:LeagueLocationIndex
-        var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+        var entriesPerLocation:EntriesPerMatchup
+        var locations:LocationIndex
+        var defaultMaxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay
         var maximumPlayableMatchups:[UInt32]
-        var matchupDuration:LeagueMatchupDuration
-        var locationTimeExclusivities:[Set<LeagueTimeIndex>]?
-        var locationTravelDurations:[[LeagueMatchupDuration]]?
-        var balanceTimeStrictness:LeagueBalanceStrictness
-        var balancedTimes:Set<LeagueTimeIndex>
-        var balanceLocationStrictness:LeagueBalanceStrictness
-        var balancedLocations:Set<LeagueLocationIndex>
+        var matchupDuration:MatchupDuration
+        var locationTimeExclusivities:[Set<TimeIndex>]?
+        var locationTravelDurations:[[MatchupDuration]]?
+        var balanceTimeStrictness:BalanceStrictness
+        var balancedTimes:Set<TimeIndex>
+        var balanceLocationStrictness:BalanceStrictness
+        var balancedLocations:Set<LocationIndex>
         var redistributionSettings:LitLeagues_Leagues_RedistributionSettings?
         var flags:UInt32
 
         init(
-            protobuf: LeagueGeneralSettings
+            protobuf: GeneralSettings
         ) throws(LeagueError) {
             guard let gameGap = GameGap(htmlInputValue: protobuf.gameGap) else {
                 throw .malformedInput(msg: "invalid GameGap htmlInputValue: \(protobuf.gameGap)")
@@ -64,8 +64,8 @@ extension LeagueGeneralSettings {
 }
 
 // MARK: Flags
-extension LeagueGeneralSettings.Runtime {
-    func isFlag(_ flag: LeagueSettingFlags) -> Bool {
+extension GeneralSettings.Runtime {
+    func isFlag(_ flag: SettingFlags) -> Bool {
         flags & UInt32(1 << flag.rawValue) != 0
     }
 
@@ -90,22 +90,22 @@ extension LeagueGeneralSettings.Runtime {
     }
 }
 
-extension LeagueGeneralSettings.Runtime {
+extension GeneralSettings.Runtime {
     init(
         gameGap: GameGap,
-        timeSlots: LeagueTimeIndex,
+        timeSlots: TimeIndex,
         startingTimes: [StaticTime],
-        entriesPerLocation: LeagueEntriesPerMatchup,
-        locations: LeagueLocationIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        entriesPerLocation: EntriesPerMatchup,
+        locations: LocationIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32],
-        matchupDuration: LeagueMatchupDuration,
-        locationTimeExclusivities: [Set<LeagueTimeIndex>]?,
-        locationTravelDurations: [[LeagueMatchupDuration]]?,
-        balanceTimeStrictness: LeagueBalanceStrictness,
-        balancedTimes: Set<LeagueTimeIndex>,
-        balanceLocationStrictness: LeagueBalanceStrictness,
-        balancedLocations: Set<LeagueLocationIndex>,
+        matchupDuration: MatchupDuration,
+        locationTimeExclusivities: [Set<TimeIndex>]?,
+        locationTravelDurations: [[MatchupDuration]]?,
+        balanceTimeStrictness: BalanceStrictness,
+        balancedTimes: Set<TimeIndex>,
+        balanceLocationStrictness: BalanceStrictness,
+        balancedLocations: Set<LocationIndex>,
         redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
         flags: UInt32
     ) {
@@ -129,14 +129,14 @@ extension LeagueGeneralSettings.Runtime {
 }
 
 // MARK: Compute settings
-extension LeagueGeneralSettings.Runtime {
+extension GeneralSettings.Runtime {
     /// Modifies `timeSlots` and `startingTimes` taking into account current settings.
     mutating func computeSettings(
-        day: LeagueDayIndex,
-        entries: [LeagueEntry.Runtime]
+        day: DayIndex,
+        entries: [Entry.Runtime]
     ) {
         if optimizeTimes {
-            var maxMatchupsPlayedToday:LeagueLocationIndex = 0
+            var maxMatchupsPlayedToday:LocationIndex = 0
             for entry in entries {
                 if entry.gameDays.contains(day) && !entry.byes.contains(day) {
                     maxMatchupsPlayedToday += entry.maxMatchupsForGameDay(day: day, fallback: defaultMaxEntryMatchupsPerGameDay)

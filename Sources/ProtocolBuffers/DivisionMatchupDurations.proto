@@ -31,6 +31,6 @@ syntax = "proto3";
 package lit_leagues.leagues;
 
 message DivisionMatchupDurations {
-    // - Usage: [`LeagueDayIndex`: `matchup duration for day`]
+    // - Usage: [`DayIndex`: `matchup duration for day`]
     repeated double durations = 1;
 }

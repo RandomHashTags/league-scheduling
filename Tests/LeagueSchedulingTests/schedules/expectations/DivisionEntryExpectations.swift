@@ -3,11 +3,11 @@
 import Testing
 
 struct DivisionEntryExpectations: ScheduleTestsProtocol {
-    let cap:LeagueMaximumSameOpponentMatchupsCap
+    let cap:MaximumSameOpponentMatchupsCap
     let matchupsPlayedPerDay:ContiguousArray<ContiguousArray<Int>>
     let assignedEntryHomeAways:AssignedEntryHomeAways
-    let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
-    let divisionEntries:[LeagueEntry.Runtime]
+    let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
+    let divisionEntries:[Entry.Runtime]
 
     func expectations(
         balanceHomeAway: Bool

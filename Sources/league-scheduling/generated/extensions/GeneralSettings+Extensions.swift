@@ -2,22 +2,22 @@
 import StaticDateTimes
 
 // MARK: Initialization
-extension LeagueGeneralSettings {
+extension GeneralSettings {
     init(
         gameGap: String,
-        timeSlots: LeagueTimeIndex,
+        timeSlots: TimeIndex,
         startingTimes: [StaticTime],
-        entriesPerLocation: LeagueEntriesPerMatchup,
-        locations: LeagueLocationIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        entriesPerLocation: EntriesPerMatchup,
+        locations: LocationIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32],
         matchupDuration: Double? = nil,
-        locationTimeExclusivities: LeagueLocationTimeExclusivities? = nil,
-        locationTravelDurations: LeagueLocationTravelDurations? = nil,
-        balanceTimeStrictness: LeagueBalanceStrictness,
-        balancedTimes: [LeagueTimeIndex],
-        balanceLocationStrictness: LeagueBalanceStrictness,
-        balancedLocations: [LeagueLocationIndex],
+        locationTimeExclusivities: LocationTimeExclusivities? = nil,
+        locationTravelDurations: LocationTravelDurations? = nil,
+        balanceTimeStrictness: BalanceStrictness,
+        balancedTimes: [TimeIndex],
+        balanceLocationStrictness: BalanceStrictness,
+        balancedLocations: [LocationIndex],
         flags: UInt32
     ) {
         self.gameGap = gameGap
@@ -45,8 +45,8 @@ extension LeagueGeneralSettings {
 }
 
 // MARK: General
-extension LeagueGeneralSettings {
-    func isFlag(_ flag: LeagueSettingFlags) -> Bool {
+extension GeneralSettings {
+    func isFlag(_ flag: SettingFlags) -> Bool {
         flags & UInt32(1 << flag.rawValue) != 0
     }
 

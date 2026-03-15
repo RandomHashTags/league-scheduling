@@ -1,4 +1,4 @@
 
-extension LeagueDivision {
+extension Division {
     typealias IDValue = UInt32
 }

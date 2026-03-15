@@ -3,7 +3,7 @@
 extension LeagueScheduleData {
     /// Tries to move previously scheduled matchups to later days.
     mutating func tryRedistributing(
-        settings: LeagueRequestPayload.Runtime,
+        settings: RequestPayload.Runtime,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         guard day > 0 else {
@@ -38,8 +38,8 @@ extension LeagueScheduleData {
     }
 
     private mutating func tryRedistributing(
-        startDayIndex: LeagueDayIndex,
-        settings: LeagueRequestPayload.Runtime,
+        startDayIndex: DayIndex,
+        settings: RequestPayload.Runtime,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {

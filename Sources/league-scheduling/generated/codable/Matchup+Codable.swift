@@ -1,12 +1,12 @@
 
 #if ProtobufCodable
-extension LeagueMatchup: Codable {
+extension Matchup: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        time = try container.decode(LeagueTimeIndex.self, forKey: .time)
-        location = try container.decode(LeagueLocationIndex.self, forKey: .location)
-        home = try container.decode(LeagueEntry.IDValue.self, forKey: .home)
-        away = try container.decode(LeagueEntry.IDValue.self, forKey: .away)
+        time = try container.decode(TimeIndex.self, forKey: .time)
+        location = try container.decode(LocationIndex.self, forKey: .location)
+        home = try container.decode(Entry.IDValue.self, forKey: .home)
+        away = try container.decode(Entry.IDValue.self, forKey: .away)
     }
 
     public func encode(to encoder: any Encoder) throws {

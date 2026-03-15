@@ -1,6 +1,6 @@
 
 #if ProtobufCodable
-extension LeagueLocationTravelDurationFrom: Codable {
+extension LocationTravelDurationFrom: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         travelDurationTo = try container.decode([Double].self)

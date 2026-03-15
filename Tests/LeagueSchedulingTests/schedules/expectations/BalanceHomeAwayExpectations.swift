@@ -4,11 +4,11 @@ import Testing
 
 struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
     func expectations(
-        cap: LeagueMaximumSameOpponentMatchupsCap,
+        cap: MaximumSameOpponentMatchupsCap,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionEntries: [LeagueEntry.Runtime]
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionEntries: [Entry.Runtime]
     ) {
         for entry in divisionEntries {
             let entryMatchupsPlayed = matchupsPlayedPerDay.reduce(0, { $0 + $1[unchecked: entry.id] })
@@ -40,10 +40,10 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
         }
     }
     func isBalanced(
-        entry: LeagueEntry.Runtime,
+        entry: Entry.Runtime,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay
     ) -> Bool {
         let entryMatchupsPlayed = matchupsPlayedPerDay.reduce(0, { $0 + $1[unchecked: entry.id] })
         let halfMatchupsPlayed = entryMatchupsPlayed / entryMatchupsPerGameDay
@@ -61,7 +61,7 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
 }
 extension BalanceHomeAwayExpectations {
     private static func totalHomeAwayGamesPlayed(
-        for team: LeagueEntry.IDValue,
+        for team: Entry.IDValue,
         assignedEntryHomeAways: AssignedEntryHomeAways
     ) -> (home: Int, away: Int) {
         var home = 0
@@ -74,7 +74,7 @@ extension BalanceHomeAwayExpectations {
     }
 }
 
-extension LeagueEntry.Runtime: Equatable {
+extension Entry.Runtime: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id
     }

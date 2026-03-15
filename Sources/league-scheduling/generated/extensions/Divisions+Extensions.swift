@@ -1,7 +1,7 @@
 
 extension LitLeagues_Leagues_Divisions {
     init(
-        divisions: [LeagueDivision]
+        divisions: [Division]
     ) {
         self.divisions = divisions
     }

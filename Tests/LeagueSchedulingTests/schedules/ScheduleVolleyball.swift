@@ -8,8 +8,8 @@ import Testing
 struct ScheduleVolleyball: ScheduleTestsProtocol {
     @Test(.timeLimit(.minutes(1)))
     func scheduleVOLLEYBALL() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 4, 1, 7)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (12, 4, 1, 7)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -50,8 +50,8 @@ extension ScheduleVolleyball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MzU3MzM1MA==&arg3=NTA5Mzk=
     @Test
     func scheduleVolleyball_12GameDays3Times1Location5Teams1Matchup() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 3, 1, 5)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (12, 3, 1, 5)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -91,8 +91,8 @@ extension ScheduleVolleyball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MzU3MzM1MA==&arg3=NTA5Mzk=
     @Test
     func scheduleVolleyball_12GameDays3Times1Location5Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 3, 1, 5)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (12, 3, 1, 5)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -132,8 +132,8 @@ extension ScheduleVolleyball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MzU3MzM1MA==&arg3=NTA5Mzk=
     @Test
     func scheduleVolleyball_12GameDays4Times1Location5Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 4, 1, 5)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (12, 4, 1, 5)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -174,8 +174,8 @@ extension ScheduleVolleyball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=Mjk5NTUyNw==&arg3=NDI0OTE=
     @Test
     func scheduleVolleyball_12GameDays3Times2Location11Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (12, 3, 2, 11)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (12, 3, 2, 11)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,

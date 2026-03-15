@@ -5,10 +5,10 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     /// - Warning: Only checks if the allocations and game gap are allowed.
     func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        time: TimeIndex,
+        location: LocationIndex,
+        allowedTimes: Set<TimeIndex>,
+        allowedLocations: Set<LocationIndex>,
         playsAt: PlaysAt.Element,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element,
@@ -35,10 +35,10 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     /// - Warning: Only checks if the allocations and `gameGap` are allowed.
     static func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        time: TimeIndex,
+        location: LocationIndex,
+        allowedTimes: Set<TimeIndex>,
+        allowedLocations: Set<LocationIndex>,
         playsAtTimes: PlaysAtTimes.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,
@@ -62,10 +62,10 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
 
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     static func isAllowed(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        time: TimeIndex,
+        location: LocationIndex,
+        allowedTimes: Set<TimeIndex>,
+        allowedLocations: Set<LocationIndex>,
         playsAtTimes: PlaysAtTimes.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,

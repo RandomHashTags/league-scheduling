@@ -5,30 +5,30 @@ import StaticDateTimes
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
 struct LeagueScheduleData: Sendable, ~Copyable {
     let clock = ContinuousClock()
-    let entriesPerMatchup:LeagueEntriesPerMatchup
+    let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
-    let entryDivisions:ContiguousArray<LeagueDivision.IDValue>
+    let entryDivisions:ContiguousArray<Division.IDValue>
 
     var expectedMatchupsCount:Int = 0
 
-    var divisionRecurringDayLimitInterval:ContiguousArray<LeagueRecurringDayLimitInterval>
+    var divisionRecurringDayLimitInterval:ContiguousArray<RecurringDayLimitInterval>
 
     /// Day index that is currently being scheduled.
-    private(set) var day:LeagueDayIndex
+    private(set) var day:DayIndex
 
     /// Number of locations currently available.
-    //private(set) var locations:LeagueLocationIndex
+    //private(set) var locations:LocationIndex
 
     /// Maximum number of times a single team can play on `day`.
-    private(set) var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+    private(set) var defaultMaxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay
     private(set) var gameGap:GameGap.TupleValue
     private(set) var sameLocationIfB2B:Bool
 
-    /// - Usage: [`combination index`: [`LeagueDivision.IDValue`: [`combination`]]]
+    /// - Usage: [`combination index`: [`Division.IDValue`: [`combination`]]]
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<LeagueMatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
 
     var assignmentState:AssignmentState
     var prioritizeEarlierTimes:Bool
@@ -103,14 +103,14 @@ extension LeagueScheduleData {
     /// 
     /// - Parameters:
     ///   - day: Day index that will be scheduled.
-    ///   - divisionEntries: Division entries that play on the `day`. (`LeagueDivision.IDValue`: `Set<LeagueEntry.IDValue>`)
+    ///   - divisionEntries: Division entries that play on the `day`. (`Division.IDValue`: `Set<Entry.IDValue>`)
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
     mutating func newDay(
-        day: LeagueDayIndex,
-        daySettings: LeagueGeneralSettings.Runtime,
-        divisionEntries: ContiguousArray<Set<LeagueEntry.IDValue>>,
-        availableSlots: Set<LeagueAvailableSlot>,
-        settings: LeagueRequestPayload.Runtime,
+        day: DayIndex,
+        daySettings: GeneralSettings.Runtime,
+        divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
+        availableSlots: Set<AvailableSlot>,
+        settings: RequestPayload.Runtime,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         let now = clock.now
@@ -123,8 +123,8 @@ extension LeagueScheduleData {
         self.prioritizeEarlierTimes = daySettings.prioritizeEarlierTimes
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
-        var availableMatchups = Set<LeagueMatchupPair>()
-        var prioritizedEntries = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
+        var availableMatchups = Set<MatchupPair>()
+        var prioritizedEntries = Set<Entry.IDValue>(minimumCapacity: entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
         expectedMatchupsCount = 0
         assignmentState.allDivisionMatchups = .init(repeating: [], count: divisionEntries.count)
@@ -209,8 +209,8 @@ extension LeagueScheduleData {
     ///   - entries: The entries that play for the `day`.
     /// - Returns: The available matchup pairs that can play for the `day`.
     func availableMatchupPairs(
-        for entries: Set<LeagueEntry.IDValue>
-    ) -> Set<LeagueMatchupPair> {
+        for entries: Set<Entry.IDValue>
+    ) -> Set<MatchupPair> {
         return Self.availableMatchupPairs(
             for: entries,
             assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
@@ -222,11 +222,11 @@ extension LeagueScheduleData {
     ///   - entries: Entries that will participate in matchup scheduling.
     /// - Returns: The available matchup pairs that can play for the `day`.
     static func availableMatchupPairs(
-        for entries: Set<LeagueEntry.IDValue>,
+        for entries: Set<Entry.IDValue>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
-    ) -> Set<LeagueMatchupPair> {
-        var pairs = Set<LeagueMatchupPair>(minimumCapacity: (entries.count-1) * 2)
+        maxSameOpponentMatchups: MaximumSameOpponentMatchups
+    ) -> Set<MatchupPair> {
+        var pairs = Set<MatchupPair>(minimumCapacity: (entries.count-1) * 2)
         let sortedEntries = entries.sorted()
 
         var index = 0
@@ -249,8 +249,8 @@ extension LeagueScheduleData {
 extension LeagueScheduleData {
     static func recurringDayLimitInterval(
         entries: Int,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
-    ) -> LeagueRecurringDayLimitInterval {
-        return LeagueRecurringDayLimitInterval(LeagueEntryMatchupsPerGameDay(entries - 1) / entryMatchupsPerGameDay)
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay
+    ) -> RecurringDayLimitInterval {
+        return RecurringDayLimitInterval(EntryMatchupsPerGameDay(entries - 1) / entryMatchupsPerGameDay)
     }
 }

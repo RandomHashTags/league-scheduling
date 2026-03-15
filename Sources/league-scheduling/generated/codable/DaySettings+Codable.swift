@@ -1,9 +1,9 @@
 
 #if ProtobufCodable
-extension LeagueDaySettings: Codable {
+extension DaySettings: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try container.decodeIfPresent(LeagueGeneralSettings.self, forKey: .settings) {
+        if let v = try container.decodeIfPresent(GeneralSettings.self, forKey: .settings) {
             settings = v
         }
     }

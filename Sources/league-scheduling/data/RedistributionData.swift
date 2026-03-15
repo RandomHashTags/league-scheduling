@@ -1,19 +1,19 @@
 
 struct RedistributionData: Sendable {
-    /// The latest `LeagueDayIndex` that is allowed to redistribute matchups from.
-    let startDayIndex:LeagueDayIndex
-    let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+    /// The latest `DayIndex` that is allowed to redistribute matchups from.
+    let startDayIndex:DayIndex
+    let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 
     let minMatchupsRequired:Int
     let maxMovableMatchups:Int
 
     private var redistributedEntries:[UInt16]
-    private(set) var redistributed:Set<LeagueMatchup>
+    private(set) var redistributed:Set<Matchup>
 
     init(
-        dayIndex: LeagueDayIndex,
-        startDayIndex: LeagueDayIndex,
-        settings: LeagueRequestPayload.Runtime,
+        dayIndex: DayIndex,
+        startDayIndex: DayIndex,
+        settings: RequestPayload.Runtime,
         data: borrowing LeagueScheduleData
     ) {
         self.startDayIndex = startDayIndex
@@ -40,7 +40,7 @@ extension RedistributionData {
     mutating func redistributeMatchups(
         clock: ContinuousClock,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
-        day: LeagueDayIndex,
+        day: DayIndex,
         gameGap: GameGap.TupleValue,
         assignmentState: inout AssignmentState,
         executionSteps: inout [ExecutionStep],
@@ -157,7 +157,7 @@ extension RedistributionData {
 // MARK: Calculate min max
 extension RedistributionData {
     private func calculateMinMax(
-        matchup: LeagueMatchup
+        matchup: Matchup
     ) -> (minimum: UInt16, maximum: UInt16) {
         let home = redistributedEntries[unchecked: matchup.home]
         let away = redistributedEntries[unchecked: matchup.away]
@@ -202,8 +202,8 @@ extension RedistributionData {
 // MARK: Redistributable
 extension RedistributionData {
     private struct Redistributable: Hashable, Sendable {
-        let fromDay:LeagueDayIndex
-        var matchup:LeagueMatchup
-        let toSlot:LeagueAvailableSlot
+        let fromDay:DayIndex
+        var matchup:Matchup
+        let toSlot:AvailableSlot
     }
 }

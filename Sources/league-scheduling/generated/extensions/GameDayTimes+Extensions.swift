@@ -1,7 +1,7 @@
 
 extension LitLeagues_Leagues_GameDayTimes {
     init(
-        times: [LeagueGameTimes]
+        times: [GameTimes]
     ) {
         self.times = times
     }

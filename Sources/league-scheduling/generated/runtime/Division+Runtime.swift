@@ -1,10 +1,10 @@
 
-extension LeagueDivision {
+extension Division {
     func runtime(
-        defaultGameDays: Set<LeagueDayIndex>,
+        defaultGameDays: Set<DayIndex>,
         defaultGameGap: GameGap,
-        fallbackDayOfWeek: LeagueDayOfWeek,
-        fallbackMaxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
+        fallbackDayOfWeek: DayOfWeek,
+        fallbackMaxSameOpponentMatchups: MaximumSameOpponentMatchupsCap
     ) throws(LeagueError) -> Runtime {
         try .init(
             protobuf: self,
@@ -17,29 +17,29 @@ extension LeagueDivision {
 
     /// For optimal runtime performance.
     struct Runtime: Sendable {
-        let dayOfWeek:LeagueDayOfWeek
-        let gameDays:Set<LeagueDayIndex>
+        let dayOfWeek:DayOfWeek
+        let gameDays:Set<DayIndex>
         let gameGaps:[GameGap]
-        let maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchupsCap
+        let maxSameOpponentMatchups:MaximumSameOpponentMatchupsCap
 
         init(
-            protobuf: LeagueDivision,
-            defaultGameDays: Set<LeagueDayIndex>,
+            protobuf: Division,
+            defaultGameDays: Set<DayIndex>,
             defaultGameGap: GameGap,
-            fallbackDayOfWeek: LeagueDayOfWeek,
-            fallbackMaxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
+            fallbackDayOfWeek: DayOfWeek,
+            fallbackMaxSameOpponentMatchups: MaximumSameOpponentMatchupsCap
         ) throws(LeagueError) {
-            dayOfWeek = protobuf.hasDayOfWeek ? LeagueDayOfWeek(protobuf.dayOfWeek) : fallbackDayOfWeek
+            dayOfWeek = protobuf.hasDayOfWeek ? DayOfWeek(protobuf.dayOfWeek) : fallbackDayOfWeek
             self.gameDays = protobuf.hasGameDays ? Set(protobuf.gameDays.gameDayIndexes) : defaultGameDays
             gameGaps = protobuf.hasGameGaps ? try Self.parseGameGaps(protobuf.gameGaps.gameGaps) : .init(repeating: defaultGameGap, count: defaultGameDays.count)
             maxSameOpponentMatchups = protobuf.hasMaxSameOpponentMatchups ? protobuf.maxSameOpponentMatchups : fallbackMaxSameOpponentMatchups
         }
 
         init(
-            dayOfWeek: LeagueDayOfWeek,
-            gameDays: Set<LeagueDayIndex>,
+            dayOfWeek: DayOfWeek,
+            gameDays: Set<DayIndex>,
             gameGaps: [GameGap],
-            maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchupsCap
+            maxSameOpponentMatchups: MaximumSameOpponentMatchupsCap
         ) {
             self.dayOfWeek = dayOfWeek
             self.gameDays = gameDays
@@ -50,7 +50,7 @@ extension LeagueDivision {
 }
 
 // MARK: Parse game gaps
-extension LeagueDivision.Runtime {
+extension Division.Runtime {
     private static func parseGameGaps(_ gameGaps: [String]) throws(LeagueError) -> [GameGap] {
         var gaps = [GameGap]()
         gaps.reserveCapacity(gameGaps.count)

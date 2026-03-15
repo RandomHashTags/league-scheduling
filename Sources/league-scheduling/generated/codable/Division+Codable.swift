@@ -1,6 +1,6 @@
 
 #if ProtobufCodable
-extension LeagueDivision: Codable {
+extension Division: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let v = try container.decodeIfPresent(String.self, forKey: .name) {
@@ -27,16 +27,16 @@ extension LeagueDivision: Codable {
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_DivisionMatchupDurations.self, forKey: .matchupDurations) {
             self.matchupDurations = v
         }
-        if let v = try container.decodeIfPresent(LeagueLocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
+        if let v = try container.decodeIfPresent(LocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
             self.locationTimeExclusivities = v
         }
-        if let v = try container.decodeIfPresent(LeagueLocationTravelDurations.self, forKey: .travelDurations) {
+        if let v = try container.decodeIfPresent(LocationTravelDurations.self, forKey: .travelDurations) {
             self.travelDurations = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_DivisionOpponents.self, forKey: .opponents) {
             self.opponents = v
         }
-        if let v = try container.decodeIfPresent(LeagueMaximumSameOpponentMatchupsCap.self, forKey: .maxSameOpponentMatchups) {
+        if let v = try container.decodeIfPresent(MaximumSameOpponentMatchupsCap.self, forKey: .maxSameOpponentMatchups) {
             self.maxSameOpponentMatchups = v
         }
     }

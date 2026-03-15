@@ -1,6 +1,6 @@
 
 // MARK: General
-extension LeagueBalanceStrictness {
+extension BalanceStrictness {
     init?(rawValue: String) {
         switch rawValue {
         case "lenient", "LENIENT": self = .lenient

@@ -1,18 +1,18 @@
 
 // MARK: CustomStringConverible
-extension LeagueMatchup: CustomStringConvertible {
+extension Matchup: CustomStringConvertible {
     public var description: String {
         "T\(time)L\(location) \(away) @ \(home)"
     }
 }
 
 // MARK: General
-extension LeagueMatchup {
+extension Matchup {
     init(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue
+        time: TimeIndex,
+        location: LocationIndex,
+        home: Entry.IDValue,
+        away: Entry.IDValue
     ) {
         self.time = time
         self.location = location
@@ -20,11 +20,11 @@ extension LeagueMatchup {
         self.away = away
     }
 
-    var pair: LeagueMatchupPair {
-        LeagueMatchupPair(team1: home, team2: away)
+    var pair: MatchupPair {
+        MatchupPair(team1: home, team2: away)
     }
 
-    var slot: LeagueAvailableSlot {
-       LeagueAvailableSlot(time: time, location: location)
+    var slot: AvailableSlot {
+       AvailableSlot(time: time, location: location)
     }
 }

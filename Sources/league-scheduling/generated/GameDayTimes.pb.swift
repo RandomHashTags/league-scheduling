@@ -55,7 +55,7 @@ public struct LitLeagues_Leagues_GameDayTimes: Sendable {
 
   /// Playable times for a specific day index.
   /// 
-  /// - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
+  /// - Usage: [`DayIndex`: `Set<TimeIndex>`]
   public var times: [LitLeagues_Leagues_GameTimes] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

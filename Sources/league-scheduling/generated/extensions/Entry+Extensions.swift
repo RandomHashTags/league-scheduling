@@ -1,15 +1,15 @@
 
-extension LeagueEntry {
+extension Entry {
     typealias IDValue = UInt32
 
     init(
-        division: LeagueDivision.IDValue,
+        division: Division.IDValue,
         gameDays: LitLeagues_Leagues_GameDays?,
         gameDayTimes: LitLeagues_Leagues_GameDayTimes?,
         gameDayLocations: LitLeagues_Leagues_GameDayLocations?,
         homeLocations: LitLeagues_Leagues_EntryHomeLocations?,
         byes: LitLeagues_Leagues_Byes?,
-        matchupsPerGameDay: [LeagueEntryMatchupsPerGameDay]? = nil
+        matchupsPerGameDay: [EntryMatchupsPerGameDay]? = nil
     ) {
         self.division = division
         if let gameDays {

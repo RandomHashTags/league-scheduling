@@ -2,14 +2,14 @@
 // MARK: Unassign
 extension AssignmentState {
     mutating func unassign(
-        matchup: LeagueMatchup,
-        day: LeagueDayIndex,
+        matchup: Matchup,
+        day: DayIndex,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: matchup.home]]
@@ -40,9 +40,9 @@ extension AssignmentState {
 // MARK: Decrement assign data
 extension AssignmentState {
     mutating func decrementAssignData(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        slot: LeagueAvailableSlot
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        slot: AvailableSlot
     ) {
         Self.subtractClampingOverflow(number: &numberOfAssignedMatchups[unchecked: home], amount: 1)
         Self.subtractClampingOverflow(number: &numberOfAssignedMatchups[unchecked: away], amount: 1)
@@ -66,9 +66,9 @@ extension AssignmentState {
     }
 
     mutating func removePlaysAt(
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue,
-        slot: LeagueAvailableSlot
+        home: Entry.IDValue,
+        away: Entry.IDValue,
+        slot: AvailableSlot
     ) {
         playsAt[unchecked: home].remove(slot)
         playsAt[unchecked: away].remove(slot)
@@ -82,9 +82,9 @@ extension AssignmentState {
 // MARK: Recalculate available matchups
 extension AssignmentState {
     mutating func recalculateAvailableMatchups(
-        day: LeagueDayIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        allAvailableMatchups: Set<LeagueMatchupPair>
+        day: DayIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        allAvailableMatchups: Set<MatchupPair>
     ) {
         availableMatchups = allAvailableMatchups.filter({
             guard assignedEntryHomeAways[unchecked: $0.team1][unchecked: $0.team2].sum < maxSameOpponentMatchups[unchecked: $0.team1][unchecked: $0.team2]

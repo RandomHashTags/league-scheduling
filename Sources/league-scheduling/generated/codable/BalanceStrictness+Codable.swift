@@ -1,5 +1,5 @@
 
 #if ProtobufCodable
-extension LeagueBalanceStrictness: Codable {
+extension BalanceStrictness: Codable {
 }
 #endif

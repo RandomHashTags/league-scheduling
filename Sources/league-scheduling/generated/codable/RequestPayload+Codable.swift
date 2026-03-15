@@ -1,20 +1,20 @@
 
 #if ProtobufCodable
-extension LeagueRequestPayload: Codable {
+extension RequestPayload: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let v = try container.decodeIfPresent(String.self, forKey: .starts) {
             starts = v
         }
-        gameDays = try container.decode(LeagueDayIndex.self, forKey: .gameDays)
-        settings = try container.decode(LeagueGeneralSettings.self, forKey: .settings)
+        gameDays = try container.decode(DayIndex.self, forKey: .gameDays)
+        settings = try container.decode(GeneralSettings.self, forKey: .settings)
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_DaySettingsArray.self, forKey: .individualDaySettings) {
             individualDaySettings = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_Divisions.self, forKey: .divisions) {
             divisions = v
         }
-        entries = try container.decode([LeagueEntry].self, forKey: .teams)
+        entries = try container.decode([Entry].self, forKey: .teams)
     }
 
     public func encode(to encoder: any Encoder) throws {

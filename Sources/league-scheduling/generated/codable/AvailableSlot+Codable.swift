@@ -1,10 +1,10 @@
 
 #if ProtobufCodable
-extension LeagueAvailableSlot: Codable {
+extension AvailableSlot: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        time = try container.decode(LeagueTimeIndex.self, forKey: .time)
-        location = try container.decode(LeagueLocationIndex.self, forKey: .location)
+        time = try container.decode(TimeIndex.self, forKey: .time)
+        location = try container.decode(LocationIndex.self, forKey: .location)
     }
 
     public func encode(to encoder: any Encoder) throws {

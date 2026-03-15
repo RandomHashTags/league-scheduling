@@ -1,6 +1,6 @@
 
 extension LitLeagues_Leagues_EntryMatchupsPerGameDay {
-    init(gameDayMatchups: [LeagueEntryMatchupsPerGameDay]) {
+    init(gameDayMatchups: [EntryMatchupsPerGameDay]) {
         self.gameDayMatchups = gameDayMatchups
     }
 }

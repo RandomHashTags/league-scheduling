@@ -3,14 +3,14 @@ import StaticDateTimes
 
 struct CanPlayAtWithTravelDurations: CanPlayAtProtocol, ~Copyable {
     let startingTimes:[StaticTime]
-    let matchupDuration:LeagueMatchupDuration
-    let travelDurations:[[LeagueMatchupDuration]]
+    let matchupDuration:MatchupDuration
+    let travelDurations:[[MatchupDuration]]
 
     func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        time: TimeIndex,
+        location: LocationIndex,
+        allowedTimes: Set<TimeIndex>,
+        allowedLocations: Set<LocationIndex>,
         playsAt: PlaysAt.Element,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element,
@@ -46,20 +46,20 @@ extension CanPlayAtWithTravelDurations {
     /// - Returns: If a matchup can play at the given `time` and `location` taking into account the provided data.
     static func test(
         startingTimes: [StaticTime],
-        matchupDuration: LeagueMatchupDuration,
-        travelDurations: [[LeagueMatchupDuration]],
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        matchupDuration: MatchupDuration,
+        travelDurations: [[MatchupDuration]],
+        time: TimeIndex,
+        location: LocationIndex,
         playsAt: PlaysAt.Element,
         gameGap: GameGap.TupleValue
     ) -> Bool {
-        var closestSlot:LeagueAvailableSlot? = nil
-        var closestDistance:LeagueTimeIndex? = nil
+        var closestSlot:AvailableSlot? = nil
+        var closestDistance:TimeIndex? = nil
         for slot in playsAt {
             let distance = abs(slot.time.distance(to: time))
             if closestSlot == nil || distance < closestSlot!.time {
                 closestSlot = slot
-                closestDistance = LeagueTimeIndex(distance)
+                closestDistance = TimeIndex(distance)
             }
         }
         guard let closestSlot, let closestDistance else { return true }
@@ -77,11 +77,11 @@ extension CanPlayAtWithTravelDurations {
     /// - Returns: If a matchup can play at the given `time` and `location` taking into account the provided data.
     static func isAllowed(
         startingTimes: [StaticTime],
-        matchupDuration: LeagueMatchupDuration,
-        travelDurations: [[LeagueMatchupDuration]],
-        closestSlot: LeagueAvailableSlot,
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex
+        matchupDuration: MatchupDuration,
+        travelDurations: [[MatchupDuration]],
+        closestSlot: AvailableSlot,
+        time: TimeIndex,
+        location: LocationIndex
     ) -> Bool {
         let totalDuration = matchupDuration + travelDurations[unchecked: closestSlot.location][unchecked: location]
         var closestTime = startingTimes[unchecked: closestSlot.time]

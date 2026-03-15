@@ -35,6 +35,6 @@ import "GameTimes.proto";
 message GameDayTimes {
     // Playable times for a specific day index.
     // 
-    // - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
+    // - Usage: [`DayIndex`: `Set<TimeIndex>`]
     repeated GameTimes times = 1;
 }

@@ -79,10 +79,10 @@ message GeneralSettings {
     // Number of seconds that are reserved for a matchup to play.
     optional double matchupDuration = 8;
 
-    // - Usage: [`LeagueLocationIndex`: `Set<LeagueTimeIndex>`]
+    // - Usage: [`LocationIndex`: `Set<TimeIndex>`]
     optional LocationTimeExclusivities locationTimeExclusivities = 9;
 
-    // - Usage: [`LeagueLocationIndex`: [`LeagueLocationIndex`: `LeagueMatchupDuration`]]
+    // - Usage: [`LocationIndex`: [`LocationIndex`: `MatchupDuration`]]
     optional LocationTravelDurations locationTravelDurations = 10;
 
     // Strictness level when balancing time allocations.

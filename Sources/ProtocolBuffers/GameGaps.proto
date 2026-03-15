@@ -33,6 +33,6 @@ package lit_leagues.leagues;
 message GameGaps {
     // Game gaps for specific game days.
     // 
-    // - Usage: [`LeagueDayIndex`: `GameGap`]
+    // - Usage: [`DayIndex`: `GameGap`]
     repeated string gameGaps = 1;
 }

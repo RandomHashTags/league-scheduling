@@ -1,5 +1,5 @@
 
-extension LeagueSettingFlags {
+extension SettingFlags {
     static func get(
         optimizeTimes: Bool,
         prioritizeEarlierTimes: Bool,

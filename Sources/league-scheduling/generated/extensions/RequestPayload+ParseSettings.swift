@@ -8,8 +8,8 @@ import Foundation
 #endif
 
 // MARK: Parse
-extension LeagueRequestPayload {
-    func parseSettings() throws(LeagueError) -> LeagueRequestPayload.Runtime {
+extension RequestPayload {
+    func parseSettings() throws(LeagueError) -> RequestPayload.Runtime {
         guard gameDays > 0 else {
             throw .malformedInput(msg: "'gameDays' needs to be > 0")
         }
@@ -40,7 +40,7 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        let startingDayOfWeek:LeagueDayOfWeek
+        let startingDayOfWeek:DayOfWeek
         if hasStarts {
             guard let starts = StaticDate(htmlDate: starts) else {
                 throw .malformedHTMLDateInput(key: "starts", value: starts)
@@ -67,8 +67,8 @@ extension LeagueRequestPayload {
             fallbackDayOfWeek: startingDayOfWeek,
             teamsForDivision: teamsForDivision
         )
-        let timesSet = Set<LeagueTimeIndex>(0..<settings.timeSlots)
-        let locationsSet = Set<LeagueLocationIndex>(0..<settings.locations)
+        let timesSet = Set<TimeIndex>(0..<settings.timeSlots)
+        let locationsSet = Set<LocationIndex>(0..<settings.locations)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
@@ -77,7 +77,7 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        var defaultTravelDurations:[[LeagueMatchupDuration]] = .init(repeating: .init(repeating: 0, count: settings.locations), count: settings.locations)
+        var defaultTravelDurations:[[MatchupDuration]] = .init(repeating: .init(repeating: 0, count: settings.locations), count: settings.locations)
         if settings.hasLocationTravelDurations {
             for (fromLocation, values) in settings.locationTravelDurations.locations.enumerated() {
                 if !values.travelDurationTo.isEmpty {
@@ -85,8 +85,8 @@ extension LeagueRequestPayload {
                 }
             }
         }
-        var balancedTimes:Set<LeagueTimeIndex>
-        var balancedLocations:Set<LeagueLocationIndex>
+        var balancedTimes:Set<TimeIndex>
+        var balancedLocations:Set<LocationIndex>
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
@@ -104,7 +104,7 @@ extension LeagueRequestPayload {
             teamsCount: entries.count,
             maximumPlayableMatchups: settings.maximumPlayableMatchups.array
         )
-        let general = LeagueGeneralSettings.Runtime(
+        let general = GeneralSettings.Runtime(
             gameGap: defaultGameGap,
             timeSlots: settings.timeSlots,
             startingTimes: settings.startingTimes.times,
@@ -155,31 +155,31 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Division defaults
-extension LeagueRequestPayload {
+extension RequestPayload {
     struct DivisionDefaults: Sendable, ~Copyable {
-        let gameDays:[Set<LeagueDayIndex>]
-        let byes:[Set<LeagueDayIndex>]
-        let gameTimes:[[Set<LeagueTimeIndex>]]
-        let gameLocations:[[Set<LeagueLocationIndex>]]
+        let gameDays:[Set<DayIndex>]
+        let byes:[Set<DayIndex>]
+        let gameTimes:[[Set<TimeIndex>]]
+        let gameLocations:[[Set<LocationIndex>]]
     }
 }
 
 // MARK: Load division defaults
-extension LeagueRequestPayload {
+extension RequestPayload {
     private func loadDivisionDefaults(
         divisionsCount: Int
     ) -> DivisionDefaults {
-        var gameDays = [Set<LeagueDayIndex>]()
-        var byes = [Set<LeagueDayIndex>]()
-        var gameTimes = [[Set<LeagueTimeIndex>]]()
-        var gameLocations = [[Set<LeagueLocationIndex>]]()
+        var gameDays = [Set<DayIndex>]()
+        var byes = [Set<DayIndex>]()
+        var gameTimes = [[Set<TimeIndex>]]()
+        var gameLocations = [[Set<LocationIndex>]]()
         gameDays.reserveCapacity(divisionsCount)
         byes.reserveCapacity(divisionsCount)
         gameTimes.reserveCapacity(divisionsCount)
         gameLocations.reserveCapacity(divisionsCount)
 
-        let getTimesFunc:@Sendable (LeagueRequestPayload, LeagueDayIndex, LeagueTimeIndex) -> LeagueTimeIndex
-        let getLocationsFunc:@Sendable (LeagueRequestPayload, LeagueDayIndex, LeagueLocationIndex) -> LeagueLocationIndex
+        let getTimesFunc:@Sendable (RequestPayload, DayIndex, TimeIndex) -> TimeIndex
+        let getLocationsFunc:@Sendable (RequestPayload, DayIndex, LocationIndex) -> LocationIndex
         if hasIndividualDaySettings {
             getTimesFunc = Self.individualDayTimes
             getLocationsFunc = Self.individualDayLocations
@@ -189,7 +189,7 @@ extension LeagueRequestPayload {
         }
         if hasDivisions {
             for division in divisions.divisions {
-                let targetGameDays:Set<LeagueDayIndex>
+                let targetGameDays:Set<DayIndex>
                 if division.hasGameDays {
                     targetGameDays = Set(division.gameDays.gameDayIndexes)
                 } else {
@@ -204,7 +204,7 @@ extension LeagueRequestPayload {
                 if division.hasGameDayTimes {
                     gameTimes.append(division.gameDayTimes.times.map({ Set($0.times) }))
                 } else {
-                    var dgdt = [Set<LeagueTimeIndex>]()
+                    var dgdt = [Set<TimeIndex>]()
                     for gameDay in 0..<self.gameDays {
                         let times = getTimesFunc(self, gameDay, settings.timeSlots)
                         dgdt.append(.init(0..<times))
@@ -214,7 +214,7 @@ extension LeagueRequestPayload {
                 if division.hasGameDayLocations {
                     gameLocations.append(division.gameDayLocations.locations.map({ Set($0.locations) }))
                 } else {
-                    var dgdl = [Set<LeagueLocationIndex>]()
+                    var dgdl = [Set<LocationIndex>]()
                     for gameDay in 0..<self.gameDays {
                         let locations = getLocationsFunc(self, gameDay, settings.locations)
                         dgdl.append(.init(0..<locations))
@@ -226,14 +226,14 @@ extension LeagueRequestPayload {
             gameDays.append(Set(0..<self.gameDays))
             byes.append([])
 
-            var dgdt = [Set<LeagueTimeIndex>]()
+            var dgdt = [Set<TimeIndex>]()
             for gameDay in 0..<self.gameDays {
                 let times = getTimesFunc(self, gameDay, settings.timeSlots)
                 dgdt.append(.init(0..<times))
             }
             gameTimes.append(dgdt)
 
-            var dgdl = [Set<LeagueLocationIndex>]()
+            var dgdl = [Set<LocationIndex>]()
             for gameDay in 0..<self.gameDays {
                 let locations = getLocationsFunc(self, gameDay, settings.locations)
                 dgdl.append(.init(0..<locations))
@@ -248,34 +248,34 @@ extension LeagueRequestPayload {
         )
     }
     private static func individualDayTimes(
-        payload: LeagueRequestPayload,
-        dayIndex: LeagueDayIndex,
-        fallback: LeagueTimeIndex
-    ) -> LeagueTimeIndex {
+        payload: RequestPayload,
+        dayIndex: DayIndex,
+        fallback: TimeIndex
+    ) -> TimeIndex {
         let daySettings = payload.individualDaySettings.days[unchecked: dayIndex]
         guard daySettings.hasSettings, daySettings.settings.hasTimeSlots else { return fallback }
         return daySettings.settings.timeSlots
     }
     private static func individualDayLocations(
-        payload: LeagueRequestPayload,
-        dayIndex: LeagueDayIndex,
-        fallback: LeagueLocationIndex
-    ) -> LeagueLocationIndex {
+        payload: RequestPayload,
+        dayIndex: DayIndex,
+        fallback: LocationIndex
+    ) -> LocationIndex {
         let daySettings = payload.individualDaySettings.days[unchecked: dayIndex]
         guard daySettings.hasSettings, daySettings.settings.hasLocations else { return fallback }
-        return LeagueTimeIndex(daySettings.settings.locations)
+        return TimeIndex(daySettings.settings.locations)
     }
 }
 
 // MARK: Parse teams
-extension LeagueRequestPayload {
+extension RequestPayload {
     private func parseEntries(
         divisionsCount: Int,
-        teams: [LeagueEntry],
+        teams: [Entry],
         teamsForDivision: inout [Int],
         divisionDefaults: borrowing DivisionDefaults
-    ) throws(LeagueError) -> [LeagueEntry.Runtime] {
-        var entries = [LeagueEntry.Runtime]()
+    ) throws(LeagueError) -> [Entry.Runtime] {
+        var entries = [Entry.Runtime]()
         entries.reserveCapacity(teams.count)
         for (i, team) in teams.enumerated() {
             if team.hasGameDayTimes {
@@ -296,7 +296,7 @@ extension LeagueRequestPayload {
             let division = min(team.division, UInt32(divisionsCount - 1))
             teamsForDivision[Int(division)] += 1
             entries.append(team.runtime(
-                id: LeagueEntry.IDValue(i),
+                id: Entry.IDValue(i),
                 division: division,
                 defaultGameDays: divisionDefaults.gameDays[unchecked: division],
                 defaultByes: divisionDefaults.byes[unchecked: division],
@@ -309,16 +309,16 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Parse divisions
-extension LeagueRequestPayload {
+extension RequestPayload {
     private func parseDivisions(
         divisionsCount: Int,
-        locations: LeagueLocationIndex,
-        divisionGameDays: [Set<LeagueDayIndex>],
+        locations: LocationIndex,
+        divisionGameDays: [Set<DayIndex>],
         defaultGameGap: GameGap,
-        fallbackDayOfWeek: LeagueDayOfWeek,
+        fallbackDayOfWeek: DayOfWeek,
         teamsForDivision: [Int]
-    ) throws(LeagueError) -> [LeagueDivision.Runtime] {
-        var runtimeDivisions = [LeagueDivision.Runtime]()
+    ) throws(LeagueError) -> [Division.Runtime] {
+        var runtimeDivisions = [Division.Runtime]()
         runtimeDivisions.reserveCapacity(divisionsCount)
         if hasDivisions {
             for (i, division) in divisions.divisions.enumerated() {
@@ -369,13 +369,13 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Parse day settings
-extension LeagueRequestPayload {
+extension RequestPayload {
     private func parseDaySettings(
-        general: LeagueGeneralSettings.Runtime,
+        general: GeneralSettings.Runtime,
         correctMaximumPlayableMatchups: [UInt32],
-        entries: [LeagueEntry.Runtime]
-    ) throws(LeagueError) -> [LeagueDaySettings.Runtime] {
-        var daySettings = [LeagueDaySettings.Runtime]()
+        entries: [Entry.Runtime]
+    ) throws(LeagueError) -> [DaySettings.Runtime] {
+        var daySettings = [DaySettings.Runtime]()
         daySettings.reserveCapacity(gameDays)
         if hasIndividualDaySettings {
             for dayIndex in 0..<gameDays {
@@ -456,12 +456,12 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Validate settings
-extension LeagueRequestPayload {
+extension RequestPayload {
     @discardableResult
     private func validateSettings(
         kind: String,
-        settings: LeagueGeneralSettings,
-        fallbackSettings: LeagueGeneralSettings
+        settings: GeneralSettings,
+        fallbackSettings: GeneralSettings
     ) throws(LeagueError) -> GameGap? {
         let isDefault = kind == "default"
         if isDefault || settings.hasTimeSlots {
@@ -533,10 +533,10 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Calculate maximum same opponent matchups cap
-extension LeagueRequestPayload {
+extension RequestPayload {
     func calculateMaximumSameOpponentMatchupsCap(
         entriesCount: Int
-    ) throws(LeagueError) -> LeagueMaximumSameOpponentMatchupsCap {
+    ) throws(LeagueError) -> MaximumSameOpponentMatchupsCap {
         return try Self.calculateMaximumSameOpponentMatchupsCap(
             gameDays: gameDays,
             entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
@@ -545,14 +545,14 @@ extension LeagueRequestPayload {
     }
 
     static func calculateMaximumSameOpponentMatchupsCap(
-        gameDays: LeagueDayIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        gameDays: DayIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         entriesCount: Int
-    ) throws(LeagueError) -> LeagueMaximumSameOpponentMatchupsCap {
+    ) throws(LeagueError) -> MaximumSameOpponentMatchupsCap {
         guard entriesCount > 1 else {
             throw .malformedInput(msg: "Number of teams need to be > 1 when calculating maximum same opponent matchups cap; got \(entriesCount)")
         }
-        return LeagueMaximumSameOpponentMatchupsCap(
+        return MaximumSameOpponentMatchupsCap(
             ceil(
                 Double(gameDays) / (Double(entriesCount-1) / Double(entryMatchupsPerGameDay))
             )
@@ -561,10 +561,10 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Calculate max playable matchups
-extension LeagueRequestPayload {
+extension RequestPayload {
     static func calculateMaximumPlayableMatchups(
-        gameDays: LeagueDayIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        gameDays: DayIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         teamsCount: Int,
         maximumPlayableMatchups: [UInt32]
     ) -> [UInt32] {

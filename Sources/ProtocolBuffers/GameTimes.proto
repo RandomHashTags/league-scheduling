@@ -33,6 +33,6 @@ package lit_leagues.leagues;
 message GameTimes {
     // Playable times for a specific day index.
     //
-    // - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
+    // - Usage: [`DayIndex`: `Set<TimeIndex>`]
     repeated uint32 times = 1;
 }

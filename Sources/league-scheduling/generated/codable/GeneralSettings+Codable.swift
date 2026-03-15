@@ -3,46 +3,46 @@
 
 import StaticDateTimes
 
-extension LeagueGeneralSettings: Codable {
+extension GeneralSettings: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let v = try container.decodeIfPresent(String.self, forKey: .gameGap) {
             gameGap = v
         }
-        if let v = try container.decodeIfPresent(LeagueTimeIndex.self, forKey: .timeSlots) {
+        if let v = try container.decodeIfPresent(TimeIndex.self, forKey: .timeSlots) {
             timeSlots = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_StaticTimes.self, forKey: .startingTimes) {
             startingTimes = v
         }
-        if let v = try container.decodeIfPresent(LeagueEntriesPerMatchup.self, forKey: .entriesPerLocation) {
+        if let v = try container.decodeIfPresent(EntriesPerMatchup.self, forKey: .entriesPerLocation) {
             entriesPerLocation = v
         }
-        if let v = try container.decodeIfPresent(LeagueLocationIndex.self, forKey: .locations) {
+        if let v = try container.decodeIfPresent(LocationIndex.self, forKey: .locations) {
             locations = v
         }
-        if let v = try container.decodeIfPresent(LeagueEntryMatchupsPerGameDay.self, forKey: .entryMatchupsPerGameDay) {
+        if let v = try container.decodeIfPresent(EntryMatchupsPerGameDay.self, forKey: .entryMatchupsPerGameDay) {
             entryMatchupsPerGameDay = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_UInt32Array.self, forKey: .maximumPlayableMatchups) {
             maximumPlayableMatchups = v
         }
-        if let v = try container.decodeIfPresent(LeagueMatchupDuration.self, forKey: .matchupDuration) {
+        if let v = try container.decodeIfPresent(MatchupDuration.self, forKey: .matchupDuration) {
             matchupDuration = v
         }
-        if let v = try container.decodeIfPresent(LeagueLocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
+        if let v = try container.decodeIfPresent(LocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
             locationTimeExclusivities = v
         }
-        if let v = try container.decodeIfPresent(LeagueLocationTravelDurations.self, forKey: .locationTravelDurations) {
+        if let v = try container.decodeIfPresent(LocationTravelDurations.self, forKey: .locationTravelDurations) {
             locationTravelDurations = v
         }
-        if let v = try container.decodeIfPresent(LeagueBalanceStrictness.self, forKey: .balanceTimeStrictness) {
+        if let v = try container.decodeIfPresent(BalanceStrictness.self, forKey: .balanceTimeStrictness) {
             balanceTimeStrictness = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_UInt32Array.self, forKey: .balancedTimes) {
             balancedTimes = v
         }
-        if let v = try container.decodeIfPresent(LeagueBalanceStrictness.self, forKey: .balanceLocationStrictness) {
+        if let v = try container.decodeIfPresent(BalanceStrictness.self, forKey: .balanceLocationStrictness) {
             balanceLocationStrictness = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_UInt32Array.self, forKey: .balancedLocations) {

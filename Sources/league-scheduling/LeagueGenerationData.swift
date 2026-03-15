@@ -20,8 +20,8 @@ extension LeagueGenerationData: Codable {
         try container.encode(shuffleHistory, forKey: .shuffleHistory)
     }
 
-    func scheduleSorted() -> ContiguousArray<[LeagueMatchup]> {
-        var array:ContiguousArray<[LeagueMatchup]> = .init(repeating: [], count: schedule.count)
+    func scheduleSorted() -> ContiguousArray<[Matchup]> {
+        var array:ContiguousArray<[Matchup]> = .init(repeating: [], count: schedule.count)
         for (dayIndex, matchups) in schedule.enumerated() {
             array[unchecked: dayIndex] = matchups.sorted(by: {
                 guard $0.time == $1.time else { return $0.time < $1.time }

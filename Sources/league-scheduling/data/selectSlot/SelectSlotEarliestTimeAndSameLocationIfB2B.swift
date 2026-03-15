@@ -1,14 +1,14 @@
 
 struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable {
     func select(
-        team1: LeagueEntry.IDValue,
-        team2: LeagueEntry.IDValue,
-        assignedTimes: LeagueAssignedTimes,
-        assignedLocations: LeagueAssignedLocations,
+        team1: Entry.IDValue,
+        team2: Entry.IDValue,
+        assignedTimes: AssignedTimes,
+        assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<LeagueAvailableSlot>
-    ) -> LeagueAvailableSlot? {
+        playableSlots: inout Set<AvailableSlot>
+    ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]
         let awayPlaysAtTimes = playsAtTimes[unchecked: team2]
@@ -29,7 +29,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         let team2Locations = assignedLocations[unchecked: team2]
         let team2PlaysAtLocations = playsAtLocations[unchecked: team2]
 
-        var nonBackToBackSlots = [LeagueAvailableSlot]()
+        var nonBackToBackSlots = [AvailableSlot]()
         nonBackToBackSlots.reserveCapacity(playableSlots.count)
 
         // TODO: fix | balancing of home/away can make the new home no longer play at home

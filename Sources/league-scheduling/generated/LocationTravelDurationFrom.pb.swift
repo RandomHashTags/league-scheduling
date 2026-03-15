@@ -53,7 +53,7 @@ public struct LitLeagues_Leagues_LocationTravelDurationFrom: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// - Usage: [`LeagueLocationIndex`: `LeagueMatchupDuration`]
+  /// - Usage: [`LocationIndex`: `MatchupDuration`]
   public var travelDurationTo: [Double] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

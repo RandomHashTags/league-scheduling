@@ -9,11 +9,11 @@ struct ScheduleBack2Back: ScheduleTestsProtocol {
     // MARK: 2 divisions | 12/12
     @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_11GameDays4Times6Locations2Divisions24TeamsEvenSplit() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 6, 24)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 12))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 12))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 24)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -58,11 +58,11 @@ extension ScheduleBack2Back {
         try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
     }
     static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> LeagueSchedule {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 6, 24)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 14))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 10))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 24)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 14))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 10))
         return Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -100,11 +100,11 @@ extension ScheduleBack2Back {
     // MARK: 2 divisions | 11/10
     @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_10GameDays4Times6Locations2Divisions21Teams11_10() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 5, 21)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 11))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 10))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 5, 21)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 11))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 10))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,

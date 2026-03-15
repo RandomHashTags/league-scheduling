@@ -1,7 +1,7 @@
 
 extension LitLeagues_Leagues_GameDayLocations {
     init(
-        locations: [LeagueGameLocations]
+        locations: [GameLocations]
     ) {
         self.locations = locations
     }

@@ -1,9 +1,9 @@
 
 #if ProtobufCodable
-extension LeagueLocationTimeExclusivities: Codable {
+extension LocationTimeExclusivities: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        locations = try container.decode([LeagueLocationTimeExclusivity].self)
+        locations = try container.decode([LocationTimeExclusivity].self)
     }
 
     public func encode(to encoder: any Encoder) throws {

@@ -1,13 +1,13 @@
 
 // MARK: CustomStringConvertible
-extension LeagueAvailableSlot: CustomStringConvertible {
+extension AvailableSlot: CustomStringConvertible {
     public var description: String {
         "T\(time)L\(location)"
     }
 }
 
 // MARK: Hashable
-extension LeagueAvailableSlot: Hashable {
+extension AvailableSlot: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(time)
         hasher.combine(location)
@@ -15,8 +15,8 @@ extension LeagueAvailableSlot: Hashable {
 }
 
 // MARK: General
-extension LeagueAvailableSlot {
-    init(time: LeagueTimeIndex, location: LeagueLocationIndex) {
+extension AvailableSlot {
+    init(time: TimeIndex, location: LocationIndex) {
         self.time = time
         self.location = location
     }

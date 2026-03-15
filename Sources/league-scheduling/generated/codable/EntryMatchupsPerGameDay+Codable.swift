@@ -3,7 +3,7 @@
 extension LitLeagues_Leagues_EntryMatchupsPerGameDay: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        gameDayMatchups = try container.decode([LeagueDayIndex].self, forKey: .gameDayMatchups)
+        gameDayMatchups = try container.decode([DayIndex].self, forKey: .gameDayMatchups)
     }
 
     public func encode(to encoder: any Encoder) throws {

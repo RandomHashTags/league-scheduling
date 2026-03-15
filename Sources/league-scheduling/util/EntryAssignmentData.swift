@@ -12,40 +12,40 @@ struct EntryAssignmentData: Sendable {
     var maximumPlayableMatchups:UInt32
 
     /// Remaining allocations for the current `day`.
-    var remainingAllocations:Set<LeagueAvailableSlot>
+    var remainingAllocations:Set<AvailableSlot>
 
     /// When entries can play against each other again.
     /// 
-    /// - Usage: [opponent `LeagueEntry.IDValue`: `LeagueRecurringDayLimitInterval`]
-    var recurringDayLimits:[LeagueRecurringDayLimitInterval]
+    /// - Usage: [opponent `Entry.IDValue`: `RecurringDayLimitInterval`]
+    var recurringDayLimits:[RecurringDayLimitInterval]
 
     var assignedTimes:ContiguousArray<UInt8>
     var assignedLocations:ContiguousArray<UInt8>
 
     /// Number of times an entry was assigned to play at home or away against another entry.
     /// 
-    /// - Usage: [opponent `LeagueEntry.IDValue`: [`LeagueSchedule.HomeAwayValue`]]
+    /// - Usage: [opponent `Entry.IDValue`: [`LeagueSchedule.HomeAwayValue`]]
     var assignedEntryHomeAways:[LeagueSchedule.HomeAwayValue]
 
     /// Maximum number of times an entry can play against another entry.
     ///
-    /// - Usage: [opponent `LeagueEntry.IDValue`: `maximum allowed matchups for opponent`]
-    var maxSameOpponentMatchups:ContiguousArray<LeagueMaximumSameOpponentMatchupsCap>
+    /// - Usage: [opponent `Entry.IDValue`: `maximum allowed matchups for opponent`]
+    var maxSameOpponentMatchups:ContiguousArray<MaximumSameOpponentMatchupsCap>
 
-    var playsAt:Set<LeagueAvailableSlot>
-    var playsAtTimes:Set<LeagueTimeIndex>
-    var playsAtLocations:Set<LeagueLocationIndex>
+    var playsAt:Set<AvailableSlot>
+    var playsAtTimes:Set<TimeIndex>
+    var playsAtLocations:Set<LocationIndex>
 
-    var maxTimeAllocations:[LeagueTimeIndex]
-    var maxLocationAllocations:[LeagueLocationIndex]
+    var maxTimeAllocations:[TimeIndex]
+    var maxLocationAllocations:[LocationIndex]
 }
 
 // MARK: Assign
 extension EntryAssignmentData {
     mutating func assignHome(
-        to slot: LeagueAvailableSlot,
-        away: LeagueEntry.IDValue,
-        recurringDayLimitInterval: LeagueRecurringDayLimitInterval
+        to slot: AvailableSlot,
+        away: Entry.IDValue,
+        recurringDayLimitInterval: RecurringDayLimitInterval
     ) {
         totalNumberOfHomeMatchupsPlayedSoFar += 1
         assignedEntryHomeAways[unchecked: away].home += 1
@@ -56,9 +56,9 @@ extension EntryAssignmentData {
     }
 
     mutating func assignAway(
-        to slot: LeagueAvailableSlot,
-        home: LeagueEntry.IDValue,
-        recurringDayLimitInterval: LeagueRecurringDayLimitInterval
+        to slot: AvailableSlot,
+        home: Entry.IDValue,
+        recurringDayLimitInterval: RecurringDayLimitInterval
     ) {
         totalNumberOfAwayMatchupsPlayedSoFar += 1
         assignedEntryHomeAways[unchecked: home].away += 1
@@ -69,7 +69,7 @@ extension EntryAssignmentData {
     }
 
     private mutating func assign(
-        to slot: LeagueAvailableSlot
+        to slot: AvailableSlot
     ) {
         totalNumberOfMatchupsPlayedSoFar += 1
         assignedTimes[unchecked: slot.time] += 1

@@ -31,6 +31,6 @@ syntax = "proto3";
 package lit_leagues.leagues;
 
 message EntryMatchupsPerGameDay {
-    // - Usage: [`LeagueDayIndex` : `maximum number of matchups the entry can play on the game day`]
+    // - Usage: [`DayIndex` : `maximum number of matchups the entry can play on the game day`]
     repeated uint32 gameDayMatchups = 1;
 }

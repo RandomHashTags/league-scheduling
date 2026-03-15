@@ -12,8 +12,8 @@ extension ScheduleBaseball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=Mjc0OTMzNg==&arg3=MzU2NzQ=
     @Test(.timeLimit(.minutes(1)))
     func scheduleBaseball_7GameDays2Times2Locations1Division8Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (7, 2, 2, 8)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (7, 2, 2, 8)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -50,8 +50,8 @@ extension ScheduleBaseball {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MjMwMDc5OA==&arg3=MzA2OTA=
     @Test(.timeLimit(.minutes(1)))
     func scheduleBaseball_8GameDays2Times2Locations1Division8Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 2, 2, 8)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (8, 2, 2, 8)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,

@@ -1,15 +1,15 @@
 
 // MARK: Init
-extension LeagueRequestPayload {
+extension RequestPayload {
     init(
         starts: String? = nil,
-        gameDays: LeagueDayIndex,
+        gameDays: DayIndex,
 
-        settings: LeagueGeneralSettings,
+        settings: GeneralSettings,
         individualDaySettings: LitLeagues_Leagues_DaySettingsArray?,
 
-        divisions: [LeagueDivision],
-        teams: [LeagueEntry]
+        divisions: [Division],
+        teams: [Entry]
     ) {
         if let starts {
             self.starts = starts
@@ -28,7 +28,7 @@ extension LeagueRequestPayload {
 }
 
 // MARK: Generate
-extension LeagueRequestPayload {
+extension RequestPayload {
     public func generate() async throws(LeagueError) -> LeagueGenerationResult {
         let settings = try parseSettings()
         return await LeagueSchedule.init(settings: settings).generate()

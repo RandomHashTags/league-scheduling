@@ -53,7 +53,7 @@ public struct LitLeagues_Leagues_EntryMatchupsPerGameDay: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// - Usage: [`LeagueDayIndex` : `maximum number of matchups the entry can play on the game day`]
+  /// - Usage: [`DayIndex` : `maximum number of matchups the entry can play on the game day`]
   public var gameDayMatchups: [UInt32] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

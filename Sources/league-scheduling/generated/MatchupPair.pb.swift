@@ -53,10 +53,10 @@ public struct LitLeagues_Leagues_MatchupPair: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// LeagueEntry.IDValue (usually the home team)
+  /// Entry.IDValue (usually the home team)
   public var team1: UInt32 = 0
 
-  /// LeagueEntry.IDValue (usually the away team)
+  /// Entry.IDValue (usually the away team)
   public var team2: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

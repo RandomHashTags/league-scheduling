@@ -1,7 +1,7 @@
 
 extension LitLeagues_Leagues_GameDays {
     init(
-        gameDayIndexes: [LeagueDayIndex]
+        gameDayIndexes: [DayIndex]
     ) {
         self.gameDayIndexes = gameDayIndexes
     }

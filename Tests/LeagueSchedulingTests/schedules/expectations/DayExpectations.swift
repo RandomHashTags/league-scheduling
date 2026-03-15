@@ -3,7 +3,7 @@
 import Testing
 
 struct DayExpectations: ScheduleTestsProtocol {
-    let settings:LeagueGeneralSettings.Runtime
+    let settings:GeneralSettings.Runtime
     let b2bMatchupsAtDifferentLocations:Set<ValidLeagueMatchup>
 
     func expectations() {

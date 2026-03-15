@@ -1,12 +1,12 @@
 
-extension LeagueEntry {
+extension Entry {
     func runtime(
         id: IDValue,
-        division: LeagueDivision.IDValue,
-        defaultGameDays: Set<LeagueDayIndex>,
-        defaultByes: Set<LeagueDayIndex>,
-        defaultGameTimes: [Set<LeagueTimeIndex>],
-        defaultGameLocations: [Set<LeagueLocationIndex>]
+        division: Division.IDValue,
+        defaultGameDays: Set<DayIndex>,
+        defaultByes: Set<DayIndex>,
+        defaultGameTimes: [Set<TimeIndex>],
+        defaultGameLocations: [Set<LocationIndex>]
     ) -> Runtime {
         return .init(
             id: id,
@@ -22,40 +22,40 @@ extension LeagueEntry {
     /// For optimal runtime performance.
     struct Runtime: Sendable {
         /// ID associated with this entry.
-        let id:LeagueEntry.IDValue
+        let id:Entry.IDValue
 
         /// Division id this entry is in.
-        let division:LeagueDivision.IDValue
+        let division:Division.IDValue
 
         /// Game days this entry can play on.
-        let gameDays:Set<LeagueDayIndex>
+        let gameDays:Set<DayIndex>
 
         /// Times this entry can play at for a specific day index.
         /// 
-        /// - Usage: [`LeagueDayIndex`: `Set<LeagueTimeIndex>`]
-        let gameTimes:[Set<LeagueTimeIndex>]
+        /// - Usage: [`DayIndex`: `Set<TimeIndex>`]
+        let gameTimes:[Set<TimeIndex>]
 
         /// Locations this entry can play at for a specific day index.
         /// 
-        /// - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
-        let gameLocations:[Set<LeagueLocationIndex>]
+        /// - Usage: [`DayIndex`: `Set<LocationIndex>`]
+        let gameLocations:[Set<LocationIndex>]
 
         /// Home locations for this entry.
-        let homeLocations:Set<LeagueLocationIndex>
+        let homeLocations:Set<LocationIndex>
 
         /// Day indexes where this entry doesn't play due to being on a bye week.
-        let byes:Set<LeagueDayIndex>
+        let byes:Set<DayIndex>
 
         let matchupsPerGameDay:LitLeagues_Leagues_EntryMatchupsPerGameDay?
 
         init(
-            id: LeagueEntry.IDValue,
-            division: LeagueDivision.IDValue,
-            protobuf: LeagueEntry,
-            defaultGameDays: Set<LeagueDayIndex>,
-            defaultByes: Set<LeagueDayIndex>,
-            defaultGameTimes: [Set<LeagueTimeIndex>],
-            defaultGameLocations: [Set<LeagueLocationIndex>]
+            id: Entry.IDValue,
+            division: Division.IDValue,
+            protobuf: Entry,
+            defaultGameDays: Set<DayIndex>,
+            defaultByes: Set<DayIndex>,
+            defaultGameTimes: [Set<TimeIndex>],
+            defaultGameLocations: [Set<LocationIndex>]
         ) {
             self.id = id
             self.division = division
@@ -68,13 +68,13 @@ extension LeagueEntry {
         }
 
         init(
-            id: LeagueEntry.IDValue,
-            division: LeagueDivision.IDValue,
-            gameDays: Set<LeagueDayIndex>,
-            gameTimes: [Set<LeagueTimeIndex>],
-            gameLocations: [Set<LeagueLocationIndex>],
-            homeLocations: Set<LeagueLocationIndex>,
-            byes: Set<LeagueDayIndex>,
+            id: Entry.IDValue,
+            division: Division.IDValue,
+            gameDays: Set<DayIndex>,
+            gameTimes: [Set<TimeIndex>],
+            gameLocations: [Set<LocationIndex>],
+            homeLocations: Set<LocationIndex>,
+            byes: Set<DayIndex>,
             matchupsPerGameDay: LitLeagues_Leagues_EntryMatchupsPerGameDay?
         ) {
             self.id = id
@@ -89,9 +89,9 @@ extension LeagueEntry {
 
         /// - Returns: Maximum number of matchups this entry can play on the given day index.
         func maxMatchupsForGameDay(
-            day: LeagueDayIndex,
-            fallback: LeagueEntryMatchupsPerGameDay
-        ) -> LeagueEntryMatchupsPerGameDay {
+            day: DayIndex,
+            fallback: EntryMatchupsPerGameDay
+        ) -> EntryMatchupsPerGameDay {
             return matchupsPerGameDay?.gameDayMatchups[uncheckedPositive: day] ?? fallback
         }
     }

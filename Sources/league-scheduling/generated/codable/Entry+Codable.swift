@@ -1,12 +1,12 @@
 
 #if ProtobufCodable
-extension LeagueEntry: Codable {
+extension Entry: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let v = try container.decodeIfPresent(String.self, forKey: .name) {
             self.name = v
         }
-        if let v = try container.decodeIfPresent(LeagueDivision.IDValue.self, forKey: .division) {
+        if let v = try container.decodeIfPresent(Division.IDValue.self, forKey: .division) {
             division = v
         }
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDays.self, forKey: .gameDays) {
@@ -24,7 +24,7 @@ extension LeagueEntry: Codable {
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_Byes.self, forKey: .byes) {
             self.byes = v
         }
-        if let v = try container.decodeIfPresent([LeagueEntryMatchupsPerGameDay].self, forKey: .gameDayMatchups) {
+        if let v = try container.decodeIfPresent([EntryMatchupsPerGameDay].self, forKey: .gameDayMatchups) {
             self.matchupsPerGameDay = .init(gameDayMatchups: v)
         }
     }

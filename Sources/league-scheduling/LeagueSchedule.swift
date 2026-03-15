@@ -294,15 +294,6 @@ extension LeagueSchedule {
         generationData: inout LeagueGenerationData,
         data: borrowing LeagueScheduleData
     ) {
-        #if UnitTesting
-        generationData.assignedTimes = data.assignmentState.assignedTimes
-        generationData.assignedLocations = data.assignmentState.assignedLocations
-        generationData.assignedEntryHomeAways = data.assignmentState.assignedEntryHomeAways
-        //generationData.assignedHomeAways = data.assignmentState.assignedHomeAways
-        generationData.maxTimeAllocations = data.assignmentState.maxTimeAllocations
-        generationData.maxLocationAllocations = data.assignmentState.maxLocationAllocations
-        #endif
-
         generationData.executionSteps = data.executionSteps
         generationData.shuffleHistory = data.shuffleHistory
     }

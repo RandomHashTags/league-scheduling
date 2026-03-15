@@ -22,21 +22,5 @@ extension LeagueRequestPayload {
         /// 
         /// - Usage: [`LeagueDayIndex`: `LeagueDaySettings`]
         let daySettings:[LeagueDaySettings.Runtime]
-
-        init(
-            constraints: GenerationConstraints,
-            gameDays: LeagueDayIndex,
-            divisions: [LeagueDivision.Runtime],
-            entries: [LeagueEntry.Runtime],
-            general: LeagueGeneralSettings.Runtime,
-            daySettings: [LeagueDaySettings.Runtime]
-        ) {
-            self.constraints = constraints
-            self.gameDays = gameDays
-            self.divisions = divisions
-            self.entries = entries
-            self.general = general
-            self.daySettings = daySettings
-        }
     }
 }

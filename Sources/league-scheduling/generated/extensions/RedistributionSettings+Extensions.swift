@@ -4,11 +4,11 @@ extension LitLeagues_Leagues_RedistributionSettings {
         minMatchupsRequired: UInt32? = nil,
         maxMovableMatchups: UInt32? = nil
     ) {
-        if let m = minMatchupsRequired {
-            self.minMatchupsRequired = m
+        if let v = minMatchupsRequired {
+            self.minMatchupsRequired = v
         }
-        if let m = maxMovableMatchups {
-            self.maxMovableMatchups = m
+        if let v = maxMovableMatchups {
+            self.maxMovableMatchups = v
         }
     }
 }

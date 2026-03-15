@@ -76,7 +76,9 @@ extension LeagueGeneralSettings: Codable {
         if hasEntryMatchupsPerGameDay {
             try container.encode(entryMatchupsPerGameDay, forKey: .entryMatchupsPerGameDay)
         }
-        try container.encode(maximumPlayableMatchups, forKey: .maximumPlayableMatchups)
+        if hasMaximumPlayableMatchups {
+            try container.encode(maximumPlayableMatchups, forKey: .maximumPlayableMatchups)
+        }
         if hasMatchupDuration {
             try container.encode(matchupDuration, forKey: .matchupDuration)
         }

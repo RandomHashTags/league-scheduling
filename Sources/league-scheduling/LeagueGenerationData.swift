@@ -6,17 +6,6 @@ public struct LeagueGenerationData: Sendable {
     public var schedule:ContiguousArray<Set<LitLeagues_Leagues_Matchup>> = []
     public var executionSteps = [ExecutionStep]()
     public var shuffleHistory = [LeagueShuffleAction]()
-
-    func scheduleSorted() -> ContiguousArray<[LeagueMatchup]> {
-        var array:ContiguousArray<[LeagueMatchup]> = .init(repeating: [], count: schedule.count)
-        for (dayIndex, matchups) in schedule.enumerated() {
-            array[unchecked: dayIndex] = matchups.sorted(by: {
-                guard $0.time == $1.time else { return $0.time < $1.time }
-                return $0.location < $1.location
-            })
-        }
-        return array
-    }
 }
 
 #if ProtobufCodable
@@ -29,6 +18,17 @@ extension LeagueGenerationData: Codable {
         try container.encode(scheduleSorted(), forKey: .schedule)
         try container.encode(executionSteps, forKey: .executionSteps)
         try container.encode(shuffleHistory, forKey: .shuffleHistory)
+    }
+
+    func scheduleSorted() -> ContiguousArray<[LeagueMatchup]> {
+        var array:ContiguousArray<[LeagueMatchup]> = .init(repeating: [], count: schedule.count)
+        for (dayIndex, matchups) in schedule.enumerated() {
+            array[unchecked: dayIndex] = matchups.sorted(by: {
+                guard $0.time == $1.time else { return $0.time < $1.time }
+                return $0.location < $1.location
+            })
+        }
+        return array
     }
 
     enum CodingKeys: CodingKey {

@@ -3,27 +3,29 @@
 extension LeagueEntry: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let name = try container.decodeIfPresent(String.self, forKey: .name) {
-            self.name = name
+        if let v = try container.decodeIfPresent(String.self, forKey: .name) {
+            self.name = v
         }
-        division = try container.decode(LeagueDivision.IDValue.self, forKey: .division)
-        if let gameDays = try container.decodeIfPresent(LitLeagues_Leagues_GameDays.self, forKey: .gameDays) {
-            self.gameDays = gameDays
+        if let v = try container.decodeIfPresent(LeagueDivision.IDValue.self, forKey: .division) {
+            division = v
         }
-        if let gameDayTimes = try container.decodeIfPresent(LitLeagues_Leagues_GameDayTimes.self, forKey: .gameDayTimes) {
-            self.gameDayTimes = gameDayTimes
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDays.self, forKey: .gameDays) {
+            self.gameDays = v
         }
-        if let gameDayLocations = try container.decodeIfPresent(LitLeagues_Leagues_GameDayLocations.self, forKey: .gameDayLocations) {
-            self.gameDayLocations = gameDayLocations
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDayTimes.self, forKey: .gameDayTimes) {
+            self.gameDayTimes = v
         }
-        if let homeLocations = try container.decodeIfPresent(LitLeagues_Leagues_EntryHomeLocations.self, forKey: .homeLocations) {
-            self.homeLocations = homeLocations
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDayLocations.self, forKey: .gameDayLocations) {
+            self.gameDayLocations = v
         }
-        if let byes = try container.decodeIfPresent(LitLeagues_Leagues_Byes.self, forKey: .byes) {
-            self.byes = byes
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_EntryHomeLocations.self, forKey: .homeLocations) {
+            self.homeLocations = v
         }
-        if let matchupsPerGameDay = try container.decodeIfPresent([LeagueEntryMatchupsPerGameDay].self, forKey: .gameDayMatchups) {
-            self.matchupsPerGameDay = .init(gameDayMatchups: matchupsPerGameDay)
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_Byes.self, forKey: .byes) {
+            self.byes = v
+        }
+        if let v = try container.decodeIfPresent([LeagueEntryMatchupsPerGameDay].self, forKey: .gameDayMatchups) {
+            self.matchupsPerGameDay = .init(gameDayMatchups: v)
         }
     }
 
@@ -32,7 +34,9 @@ extension LeagueEntry: Codable {
         if hasName {
             try container.encode(name, forKey: .name)
         }
-        try container.encode(division, forKey: .division)
+        if hasDivision {
+            try container.encode(division, forKey: .division)
+        }
         if hasGameDays {
             try container.encode(gameDays, forKey: .gameDays)
         }

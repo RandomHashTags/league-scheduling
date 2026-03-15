@@ -3,41 +3,41 @@
 extension LeagueDivision: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let name = try container.decodeIfPresent(String.self, forKey: .name) {
-            self.name = name
+        if let v = try container.decodeIfPresent(String.self, forKey: .name) {
+            self.name = v
         }
-        if let dayOfWeek = try container.decodeIfPresent(UInt32.self, forKey: .dayOfWeek) {
-            self.dayOfWeek = dayOfWeek
+        if let v = try container.decodeIfPresent(UInt32.self, forKey: .dayOfWeek) {
+            self.dayOfWeek = v
         }
-        if let gameDays = try container.decodeIfPresent(LitLeagues_Leagues_GameDays.self, forKey: .gameDays) {
-            self.gameDays = gameDays
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDays.self, forKey: .gameDays) {
+            self.gameDays = v
         }
-        if let byes = try container.decodeIfPresent(LitLeagues_Leagues_Byes.self, forKey: .byes) {
-            self.byes = byes
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_Byes.self, forKey: .byes) {
+            self.byes = v
         }
-        if let gameGaps = try container.decodeIfPresent(LitLeagues_Leagues_GameGaps.self, forKey: .gameGaps) {
-            self.gameGaps = gameGaps
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameGaps.self, forKey: .gameGaps) {
+            self.gameGaps = v
         }
-        if let gameDayTimes = try container.decodeIfPresent(LitLeagues_Leagues_GameDayTimes.self, forKey: .gameDayTimes) {
-            self.gameDayTimes = gameDayTimes
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDayTimes.self, forKey: .gameDayTimes) {
+            self.gameDayTimes = v
         }
-        if let gameDayLocations = try container.decodeIfPresent(LitLeagues_Leagues_GameDayLocations.self, forKey: .gameDayLocations) {
-            self.gameDayLocations = gameDayLocations
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_GameDayLocations.self, forKey: .gameDayLocations) {
+            self.gameDayLocations = v
         }
-        if let matchupDurations = try container.decodeIfPresent(LitLeagues_Leagues_DivisionMatchupDurations.self, forKey: .matchupDurations) {
-            self.matchupDurations = matchupDurations
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_DivisionMatchupDurations.self, forKey: .matchupDurations) {
+            self.matchupDurations = v
         }
-        if let locationTimeExclusivities = try container.decodeIfPresent(LeagueLocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
-            self.locationTimeExclusivities = locationTimeExclusivities
+        if let v = try container.decodeIfPresent(LeagueLocationTimeExclusivities.self, forKey: .locationTimeExclusivities) {
+            self.locationTimeExclusivities = v
         }
-        if let travelDurations = try container.decodeIfPresent(LeagueLocationTravelDurations.self, forKey: .travelDurations) {
-            self.travelDurations = travelDurations
+        if let v = try container.decodeIfPresent(LeagueLocationTravelDurations.self, forKey: .travelDurations) {
+            self.travelDurations = v
         }
-        if let opponents = try container.decodeIfPresent(LitLeagues_Leagues_DivisionOpponents.self, forKey: .opponents) {
-            self.opponents = opponents
+        if let v = try container.decodeIfPresent(LitLeagues_Leagues_DivisionOpponents.self, forKey: .opponents) {
+            self.opponents = v
         }
-        if let maxSameOpponentMatchups = try container.decodeIfPresent(LeagueMaximumSameOpponentMatchupsCap.self, forKey: .maxSameOpponentMatchups) {
-            self.maxSameOpponentMatchups = maxSameOpponentMatchups
+        if let v = try container.decodeIfPresent(LeagueMaximumSameOpponentMatchupsCap.self, forKey: .maxSameOpponentMatchups) {
+            self.maxSameOpponentMatchups = v
         }
     }
 

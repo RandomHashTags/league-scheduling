@@ -6,12 +6,12 @@ public struct ExecutionStep: Sendable {
     public let key:String
     public let nanoseconds:String
 
-    public init(key: String, duration: Duration) {
+    init(key: String, duration: Duration) {
         self.key = key
         let totalNano = UInt64(duration.components.seconds * 1_000_000_000) + UInt64(duration.components.attoseconds / 1_000_000_000)
         nanoseconds = ExecutionStep.numberFormatter.string(from: NSNumber(value: totalNano)) ?? "\(totalNano)"
     }
-    public init(key: String, nanoseconds: String) {
+    init(key: String, nanoseconds: String) {
         self.key = key
         self.nanoseconds = nanoseconds
     }
@@ -24,6 +24,8 @@ public struct ExecutionStep: Sendable {
     }()
 }
 
+#if ProtobufCodable
 // MARK: Codable
 extension ExecutionStep: Codable {
 }
+#endif

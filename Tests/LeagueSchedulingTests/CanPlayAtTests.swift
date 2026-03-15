@@ -13,13 +13,13 @@ struct CanPlayAtTests {
         var gameGap = GameGap.upTo(1).minMax
         var playsAt:PlaysAt.Element = []
         var playsAtTimes:PlaysAtTimes.Element = []
-        var timeNumbers:LeagueAssignedTimes.Element = .init(repeating: 0, count: times)
-        var locationNumbers:LeagueAssignedLocations.Element = .init(repeating: 0, count: locations)
+        var timeNumbers:AssignedTimes.Element = .init(repeating: 0, count: times)
+        var locationNumbers:AssignedLocations.Element = .init(repeating: 0, count: locations)
         let maxTimeNumbers:MaximumTimeAllocations.Element = .init(repeating: 1, count: times)
         var maxLocationNumbers:MaximumLocationAllocations.Element = .init(repeating: 1, count: locations)
 
-        var location:LeagueLocationIndex = 0
-        for time in 0..<LeagueTimeIndex(times) {
+        var location:LocationIndex = 0
+        for time in 0..<TimeIndex(times) {
             #expect(CanPlayAtNormal.test(
                 time: time,
                 location: location,
@@ -46,7 +46,7 @@ struct CanPlayAtTests {
             ))
         }
 
-        playsAt.insert(LeagueAvailableSlot(time: 0, location: location))
+        playsAt.insert(AvailableSlot(time: 0, location: location))
         playsAtTimes.insert(0)
         #expect(!CanPlayAtNormal.test(
             time: 0,
@@ -89,16 +89,16 @@ extension CanPlayAtTests {
             StaticTime(hour: 7, minute: 30),
             StaticTime(hour: 8, minute: 0)
         ]
-        var matchupDuration:LeagueMatchupDuration = 0
-        var travelDurations:[[LeagueMatchupDuration]] = [
+        var matchupDuration:MatchupDuration = 0
+        var travelDurations:[[MatchupDuration]] = [
             [0, 0, 0],
             [0, 0, 0],
             [0, 0, 0],
             [0, 0, 0]
         ]
-        var time:LeagueTimeIndex = 0
-        var location:LeagueLocationIndex = 0
-        var playsAt:Set<LeagueAvailableSlot> = []
+        var time:TimeIndex = 0
+        var location:LocationIndex = 0
+        var playsAt:Set<AvailableSlot> = []
         var gameGap = GameGap.upTo(5).minMax
         
         #expect(CanPlayAtWithTravelDurations.test(
@@ -112,7 +112,7 @@ extension CanPlayAtTests {
         ))
 
         matchupDuration = .minutes(30)
-        playsAt = [LeagueAvailableSlot(time: 1, location: 0)]
+        playsAt = [AvailableSlot(time: 1, location: 0)]
         #expect(CanPlayAtWithTravelDurations.test(
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,

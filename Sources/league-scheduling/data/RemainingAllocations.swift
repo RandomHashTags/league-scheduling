@@ -5,7 +5,7 @@ extension AssignmentState {
         entriesCount: Int
     ) {
         remainingAllocations = .init(repeating: availableSlots, count: entriesCount)
-        var cached = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
+        var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
         for matchup in availableMatchups {
             recalculateNewDayRemainingAllocations(
                 for: matchup,
@@ -18,8 +18,8 @@ extension AssignmentState {
     }
 
     private mutating func recalculateNewDayRemainingAllocations(
-        for pair: LeagueMatchupPair,
-        cached: inout Set<LeagueEntry.IDValue>
+        for pair: MatchupPair,
+        cached: inout Set<Entry.IDValue>
     ) {
         recalculateNewDayRemainingAllocations(
             for: pair.team1,
@@ -31,8 +31,8 @@ extension AssignmentState {
         )
     }
     private mutating func recalculateNewDayRemainingAllocations(
-        for team: LeagueEntry.IDValue,
-        cached: inout Set<LeagueEntry.IDValue>
+        for team: Entry.IDValue,
+        cached: inout Set<Entry.IDValue>
     ) {
         guard !cached.contains(team) else { return }
         cached.insert(team)
@@ -53,12 +53,12 @@ extension AssignmentState {
 // MARK: All
 extension AssignmentState {
     mutating func recalculateAllRemainingAllocations(
-        day: LeagueDayIndex,
+        day: DayIndex,
         entriesCount: Int,
         gameGap: GameGap.TupleValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
-        var cached = Set<LeagueEntry.IDValue>(minimumCapacity: entriesCount)
+        var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
         for matchup in availableMatchups {
             recalculateRemainingAllocations(
                 day: day,
@@ -74,9 +74,9 @@ extension AssignmentState {
     }
 
     private mutating func recalculateRemainingAllocations(
-        day: LeagueDayIndex,
-        for pair: LeagueMatchupPair,
-        cached: inout Set<LeagueEntry.IDValue>,
+        day: DayIndex,
+        for pair: MatchupPair,
+        cached: inout Set<Entry.IDValue>,
         gameGap: GameGap.TupleValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
@@ -97,9 +97,9 @@ extension AssignmentState {
     }
 
     private mutating func recalculateRemainingAllocations(
-        day: LeagueDayIndex,
-        for team: LeagueEntry.IDValue,
-        cached: inout Set<LeagueEntry.IDValue>,
+        day: DayIndex,
+        for team: Entry.IDValue,
+        cached: inout Set<Entry.IDValue>,
         gameGap: GameGap.TupleValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {

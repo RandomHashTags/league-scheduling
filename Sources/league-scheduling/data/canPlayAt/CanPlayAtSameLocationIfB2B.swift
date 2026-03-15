@@ -3,10 +3,10 @@ import StaticDateTimes
 
 struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
     func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        allowedTimes: Set<LeagueTimeIndex>,
-        allowedLocations: Set<LeagueLocationIndex>,
+        time: TimeIndex,
+        location: LocationIndex,
+        allowedTimes: Set<TimeIndex>,
+        allowedLocations: Set<LocationIndex>,
         playsAt: PlaysAt.Element,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element,
@@ -38,8 +38,8 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
 
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     static func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        time: TimeIndex,
+        location: LocationIndex,
         playsAtTimes: PlaysAtTimes.Element,
         playsAtLocations: PlaysAtLocations.Element
     ) -> Bool {

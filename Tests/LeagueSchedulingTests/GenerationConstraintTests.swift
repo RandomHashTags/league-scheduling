@@ -18,7 +18,7 @@ struct GenerationConstraintTests: ScheduleExpectations {
             #expect(e.starts(with: "Failed to build schedule within provided time limit;"))
         } else {
             try expectations(
-                settings: schedule.settings,
+                settings: schedule,
                 matchupsCount: 210,
                 data: data
             )

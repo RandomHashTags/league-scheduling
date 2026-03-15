@@ -3,16 +3,16 @@
 extension AssignmentState {
     /// - Returns: The slot a matchup was sucessfully moved from.
     mutating func shuffle(
-        matchup: LeagueMatchupPair,
-        day: LeagueDayIndex,
+        matchup: MatchupPair,
+        day: DayIndex,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueAvailableSlot? {
+    ) -> AvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)
         let team1AllowedTimes = entries[unchecked: matchup.team1].gameTimes[unchecked: day]
         let team1AllowedLocations = entries[unchecked: matchup.team1].gameLocations[unchecked: day]

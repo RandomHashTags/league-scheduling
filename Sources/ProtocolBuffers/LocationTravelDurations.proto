@@ -33,6 +33,6 @@ package lit_leagues.leagues;
 import "LocationTravelDurationFrom.proto";
 
 message LocationTravelDurations {
-    // - Usage: [`LeagueLocationIndex`: [`LeagueLocationIndex`: `LeagueMatchupDuration`]]
+    // - Usage: [`LocationIndex`: [`LocationIndex`: `MatchupDuration`]]
     repeated LocationTravelDurationFrom locations = 1;
 }

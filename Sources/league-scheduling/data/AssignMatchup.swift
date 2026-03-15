@@ -1,14 +1,14 @@
 
 // MARK: Assign Matchup
 extension LeagueScheduleData {
-    /// - Returns: The `LeagueMatchup` that was successfully assigned.
+    /// - Returns: The `Matchup` that was successfully assigned.
     @discardableResult
     mutating func assignMatchupPair(
-        _ pair: LeagueMatchupPair,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        _ pair: MatchupPair,
+        allAvailableMatchups: Set<MatchupPair>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
+    ) -> Matchup? {
         return assignmentState.assignMatchupPair(
             pair,
             entriesCount: entriesCount,
@@ -25,19 +25,19 @@ extension LeagueScheduleData {
 }
 
 extension AssignmentState {
-    /// - Returns: The `LeagueMatchup` that was successfully assigned.
+    /// - Returns: The `Matchup` that was successfully assigned.
     mutating func assignMatchupPair(
-        _ pair: LeagueMatchupPair,
+        _ pair: MatchupPair,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
-        day: LeagueDayIndex,
+        entryDivisions: ContiguousArray<Division.IDValue>,
+        day: DayIndex,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
+    ) -> Matchup? {
         var slots = playableSlots(for: pair)
         #if LOG
         let playableSlots = slots
@@ -91,13 +91,13 @@ extension AssignmentState {
 
 // MARK: Playable slots
 extension AssignmentState {
-    func playableSlots(for pair: LeagueMatchupPair) -> Set<LeagueAvailableSlot> {
+    func playableSlots(for pair: MatchupPair) -> Set<AvailableSlot> {
         return Self.playableSlots(for: pair, remainingAllocations: remainingAllocations)
     }
     static func playableSlots(
-        for pair: LeagueMatchupPair,
+        for pair: MatchupPair,
         remainingAllocations: RemainingAllocations
-    ) -> Set<LeagueAvailableSlot> {
+    ) -> Set<AvailableSlot> {
         return remainingAllocations[unchecked: pair.team1].intersection(remainingAllocations[unchecked: pair.team2])
     }
 }

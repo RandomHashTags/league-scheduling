@@ -55,7 +55,7 @@ public struct LitLeagues_Leagues_GameDayLocations: Sendable {
 
   /// Playable locations for a specific day index.
   ///
-  /// - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
+  /// - Usage: [`DayIndex`: `Set<LocationIndex>`]
   public var locations: [LitLeagues_Leagues_GameLocations] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

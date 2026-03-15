@@ -12,8 +12,10 @@ let package = Package(
     ],
     traits: [
         .default(enabledTraits: [
+            "ProtobufCodable",
             "UncheckedArraySubscript"
         ]),
+        .trait(name: "ProtobufCodable"),
         .trait(name: "UncheckedArraySubscript")
     ],
     dependencies: [

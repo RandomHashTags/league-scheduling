@@ -3,8 +3,8 @@
 import Testing
 
 struct BalanceNumberCalculation {
-    @Test(arguments: [LeagueBalanceStrictness.lenient, .relaxed, .normal, .very])
-    func balanceNumberCalculation(strictness: LeagueBalanceStrictness) {
+    @Test(arguments: [BalanceStrictness.lenient, .relaxed, .normal, .very])
+    func balanceNumberCalculation(strictness: BalanceStrictness) {
         // `totalMatchupsPlayed` = total number of matchups played by a single entry/team in a schedule
         // `value` = number of available times/locations
         let mutateMinimum:(_ value: inout Int) -> Void
@@ -17,7 +17,7 @@ struct BalanceNumberCalculation {
         }
         var minimumRequired = 4
         mutateMinimum(&minimumRequired)
-        var balanceNumber:Int = LeagueSchedule.balanceNumber(
+        var balanceNumber:Int = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 16,
             value: 4,
             strictness: strictness
@@ -26,7 +26,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 6
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 16,
             value: 3,
             strictness: strictness
@@ -35,7 +35,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 8
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 16,
             value: 2,
             strictness: strictness
@@ -44,7 +44,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 5,
             value: 2,
             strictness: strictness
@@ -53,7 +53,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 5
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 5,
             value: 1,
             strictness: strictness
@@ -62,7 +62,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 9,
             value: 3,
             strictness: strictness
@@ -70,7 +70,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 2
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 7,
             value: 4,
             strictness: strictness
@@ -78,7 +78,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = LeagueSchedule.balanceNumber(
+        balanceNumber = RequestPayload.Runtime.balanceNumber(
             totalMatchupsPlayed: 7,
             value: 3,
             strictness: strictness

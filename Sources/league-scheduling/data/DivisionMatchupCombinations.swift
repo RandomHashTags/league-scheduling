@@ -2,10 +2,10 @@
 // MARK: All combinations
 extension LeagueScheduleData {
     /// - Returns: All division matchup combinations separated by division.
-    /// - Usage: [`LeagueDivision.IDValue`: `division matchup combinations`]
+    /// - Usage: [`Division.IDValue`: `division matchup combinations`]
     static func allDivisionMatchupCombinations(
-        entriesPerMatchup: LeagueEntriesPerMatchup,
-        locations: LeagueLocationIndex,
+        entriesPerMatchup: EntriesPerMatchup,
+        locations: LocationIndex,
         entryCountsForDivision: ContiguousArray<Int>
     ) -> ContiguousArray<ContiguousArray<ContiguousArray<Int>>> {
         var combinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = .init(repeating: [], count: entryCountsForDivision.count)
@@ -38,10 +38,10 @@ extension LeagueScheduleData {
 // MARK: Allowed combinations
 extension LeagueScheduleData {
     /// - Returns: Allowed division matchup combinations
-    /// - Usage: [`allowed matchup combination index`: [`LeagueDivision.IDValue`: `division matchup combination`]]
+    /// - Usage: [`allowed matchup combination index`: [`Division.IDValue`: `division matchup combination`]]
     static func allowedDivisionMatchupCombinations(
-        entriesPerMatchup: LeagueEntriesPerMatchup,
-        locations: LeagueLocationIndex,
+        entriesPerMatchup: EntriesPerMatchup,
+        locations: LocationIndex,
         entryCountsForDivision: ContiguousArray<Int>
     ) -> ContiguousArray<ContiguousArray<ContiguousArray<Int>>> {
         let allCombinations = allDivisionMatchupCombinations(
@@ -66,8 +66,8 @@ extension LeagueScheduleData {
     }
     private static func yieldAllowedCombinations(
         allCombinations: ContiguousArray<ContiguousArray<ContiguousArray<Int>>>,
-        division: LeagueDivision.IDValue,
-        locations: LeagueLocationIndex,
+        division: Division.IDValue,
+        locations: LocationIndex,
         results: ContiguousArray<Int>,
         combinationBuilder: ContiguousArray<ContiguousArray<Int>>,
         yield: (_ combination: ContiguousArray<ContiguousArray<Int>>) -> Void

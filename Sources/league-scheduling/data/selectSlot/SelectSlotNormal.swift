@@ -1,14 +1,14 @@
 
 struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
     func select(
-        team1: LeagueEntry.IDValue,
-        team2: LeagueEntry.IDValue,
-        assignedTimes: LeagueAssignedTimes,
-        assignedLocations: LeagueAssignedLocations,
+        team1: Entry.IDValue,
+        team2: Entry.IDValue,
+        assignedTimes: AssignedTimes,
+        assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<LeagueAvailableSlot>
-    ) -> LeagueAvailableSlot? {
+        playableSlots: inout Set<AvailableSlot>
+    ) -> AvailableSlot? {
         return Self.select(
             team1: team1,
             team2: team2,
@@ -22,12 +22,12 @@ struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
 extension SelectSlotNormal {
     /// Selects a slot from `playableSlots` based on the least number of matchups they've already played at the given times and locations.
     static func select(
-        team1: LeagueEntry.IDValue,
-        team2: LeagueEntry.IDValue,
-        assignedTimes: LeagueAssignedTimes,
-        assignedLocations: LeagueAssignedLocations,
-        playableSlots: Set<LeagueAvailableSlot>
-    ) -> LeagueAvailableSlot? {
+        team1: Entry.IDValue,
+        team2: Entry.IDValue,
+        assignedTimes: AssignedTimes,
+        assignedLocations: AssignedLocations,
+        playableSlots: Set<AvailableSlot>
+    ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let team1Times = assignedTimes[unchecked: team1]
         let team2Times = assignedTimes[unchecked: team2]
@@ -44,12 +44,12 @@ extension SelectSlotNormal {
 
     /// Selects a slot from `playableSlots` based on the least number of matchups they've already played at the given times and locations.
     static func select(
-        team1Times: LeagueAssignedTimes.Element,
-        team1Locations: LeagueAssignedLocations.Element,
-        team2Times: LeagueAssignedTimes.Element,
-        team2Locations: LeagueAssignedLocations.Element,
-        playableSlots: Set<LeagueAvailableSlot>
-    ) -> LeagueAvailableSlot? {
+        team1Times: AssignedTimes.Element,
+        team1Locations: AssignedLocations.Element,
+        team2Times: AssignedTimes.Element,
+        team2Locations: AssignedLocations.Element,
+        playableSlots: Set<AvailableSlot>
+    ) -> AvailableSlot? {
         var selected = getSelectedSlot(playableSlots[playableSlots.startIndex], team1Times, team1Locations, team2Times, team2Locations)
         for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] {
             let minimum = getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations)
@@ -62,20 +62,20 @@ extension SelectSlotNormal {
     }
 
     private static func getSelectedSlot(
-        _ slot: LeagueAvailableSlot,
-        _ team1Times: LeagueAssignedTimes.Element,
-        _ team1Locations: LeagueAssignedLocations.Element,
-        _ team2Times: LeagueAssignedTimes.Element,
-        _ team2Locations: LeagueAssignedLocations.Element
+        _ slot: AvailableSlot,
+        _ team1Times: AssignedTimes.Element,
+        _ team1Locations: AssignedLocations.Element,
+        _ team2Times: AssignedTimes.Element,
+        _ team2Locations: AssignedLocations.Element
     ) -> SelectedSlot {
         return SelectedSlot(slot: slot, minimumAssigned: getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations))
     }
     private static func getMinimumAssigned(
-        _ slot: LeagueAvailableSlot,
-        _ team1Times: LeagueAssignedTimes.Element,
-        _ team1Locations: LeagueAssignedLocations.Element,
-        _ team2Times: LeagueAssignedTimes.Element,
-        _ team2Locations: LeagueAssignedLocations.Element
+        _ slot: AvailableSlot,
+        _ team1Times: AssignedTimes.Element,
+        _ team1Locations: AssignedLocations.Element,
+        _ team2Times: AssignedTimes.Element,
+        _ team2Locations: AssignedLocations.Element
     ) -> UInt8 {
         return min(
             min(team1Times[unchecked: slot.time], team1Locations[unchecked: slot.location]),
@@ -84,7 +84,7 @@ extension SelectSlotNormal {
     }
 
     struct SelectedSlot: Sendable, ~Copyable {
-        var slot:LeagueAvailableSlot
+        var slot:AvailableSlot
         var minimumAssigned:UInt8
     }
 }

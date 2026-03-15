@@ -53,7 +53,7 @@ public struct LitLeagues_Leagues_LocationTimeExclusivities: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// - Usage: [`LeagueLocationIndex`: `Set<LeagueTimeIndex>`]
+  /// - Usage: [`LocationIndex`: `Set<TimeIndex>`]
   public var locations: [LitLeagues_Leagues_LocationTimeExclusivity] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

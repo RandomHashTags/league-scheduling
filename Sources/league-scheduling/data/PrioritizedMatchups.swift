@@ -1,12 +1,12 @@
 
 struct PrioritizedMatchups: Sendable, ~Copyable {
-    private(set) var matchups:Set<LeagueMatchupPair>
+    private(set) var matchups:Set<MatchupPair>
     private(set) var availableMatchupCountForEntry:ContiguousArray<Int>
 
     init(
         entriesCount: Int,
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
-        availableMatchups: Set<LeagueMatchupPair>
+        prioritizedEntries: Set<Entry.IDValue>,
+        availableMatchups: Set<MatchupPair>
     ) {
         let matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         var availableMatchupCountForEntry = ContiguousArray<Int>(repeating: 0, count: entriesCount)
@@ -19,8 +19,8 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
     }
 
     mutating func update(
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
-        availableMatchups: Set<LeagueMatchupPair>
+        prioritizedEntries: Set<Entry.IDValue>,
+        availableMatchups: Set<MatchupPair>
     ) {
         matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         for i in availableMatchupCountForEntry.indices {
@@ -33,14 +33,14 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
     }
 
     /// Removes the specified matchup pair from `matchups`.
-    mutating func remove(_ matchup: LeagueMatchupPair) {
+    mutating func remove(_ matchup: MatchupPair) {
         matchups.remove(matchup)
     }
 
     private static func filterMatchups(
-        prioritizedEntries: Set<LeagueEntry.IDValue>,
-        availableMatchups: Set<LeagueMatchupPair>
-    ) -> Set<LeagueMatchupPair> {
+        prioritizedEntries: Set<Entry.IDValue>,
+        availableMatchups: Set<MatchupPair>
+    ) -> Set<MatchupPair> {
         if prioritizedEntries.isEmpty {
             return availableMatchups
         }

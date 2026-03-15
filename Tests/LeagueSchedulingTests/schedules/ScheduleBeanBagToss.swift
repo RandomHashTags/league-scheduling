@@ -11,18 +11,18 @@ struct ScheduleBeanBagToss: ScheduleTestsProtocol {
         let schedule = try Self.schedule8GameDays3Times3Locations1Division9Teams()
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 72,
             data: data
         )
     }
     static func schedule8GameDays3Times3Locations1Division9Teams(
         constraints: GenerationConstraints = .default
-    ) throws -> LeagueSchedule {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 3, 3, 9)
+    ) throws -> RequestPayload.Runtime {
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (8, 3, 3, 9)
         let entries = getEntries(
-            divisions: [LeagueDivision.IDValue](repeating: 0, count: teams),
+            divisions: [Division.IDValue](repeating: 0, count: teams),
             gameDays: gameDays,
             times: times,
             locations: locations,
@@ -56,11 +56,11 @@ extension ScheduleBeanBagToss {
     // MARK: 11GD | 4T | 6L | 2D | 12x12T
     @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 6, 24)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 12))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 12))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 24)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -90,7 +90,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
+        try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
 }
 
@@ -99,8 +99,8 @@ extension ScheduleBeanBagToss {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MjUwNTE2OA==&arg3=MzM0NjM=
     @Test(.timeLimit(.minutes(1)))
     func schedule5GameDays3Times6Locations1Division13Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (5, 3, 6, 13)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (5, 3, 6, 13)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -128,7 +128,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 65, data: data)
+        try expectations(settings: schedule, matchupsCount: 65, data: data)
     }
 }
 
@@ -137,11 +137,11 @@ extension ScheduleBeanBagToss {
     // https://secure.rec1.com/MN/owatonna-mn/leagues/publicLeague/2505159
     @Test(.timeLimit(.minutes(1)))
     func schedule5GameDays4Times8Locations2Divisions25Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (5, 4, 8, 25)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 9))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 16))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (5, 4, 8, 25)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 9))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 16))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -171,7 +171,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 125, data: data)
+        try expectations(settings: schedule, matchupsCount: 125, data: data)
     }
 }
 
@@ -179,11 +179,11 @@ extension ScheduleBeanBagToss {
     // MARK: 10GD | 3T | 6L | 2D | 12x12T
     @Test(.timeLimit(.minutes(1)))
     func schedule10GameDays3Times8Locations2Divisions24Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 3, 8, 24)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 12))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 12))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 3, 8, 24)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -212,7 +212,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 240, data: data)
+        try expectations(settings: schedule, matchupsCount: 240, data: data)
     }
 }
 
@@ -220,11 +220,11 @@ extension ScheduleBeanBagToss {
     // MARK: 11GD | 4T | 6L | 2D | 12x11T
     @Test(.timeLimit(.minutes(1)))
     func schedule11GameDays4Times6Locations2Divisions23Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 6, 23)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 12))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 11))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 23)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 11))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -254,7 +254,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 253, data: data)
+        try expectations(settings: schedule, matchupsCount: 253, data: data)
     }
 }
 
@@ -262,11 +262,11 @@ extension ScheduleBeanBagToss {
     // MARK: 10GD | 4T | 6L | 2D | 11x12T
     @Test(.timeLimit(.minutes(1)))
     func schedule10GameDays4Times6Locations2Divisions23Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 6, 23)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 11))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 12))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 6, 23)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 11))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -296,7 +296,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 230, data: data)
+        try expectations(settings: schedule, matchupsCount: 230, data: data)
     }
 }
 
@@ -304,12 +304,12 @@ extension ScheduleBeanBagToss {
     // MARK: 10GD | 4T | 8L | 3D | 8x8x10T
     @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_10GameDays4Times8Locations3Divisions26Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 8, 26)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 8))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 8))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 2, count: 10))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 8, 26)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 8))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 8))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 2, count: 10))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -340,7 +340,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 260, data: data)
+        try expectations(settings: schedule, matchupsCount: 260, data: data)
     }
 }
 
@@ -348,11 +348,11 @@ extension ScheduleBeanBagToss {
     // MARK: 11GD | 4T | 8L | 2D | 12x12T
     //@Test(.timeLimit(.minutes(1))) // TODO: support
     func scheduleB2B_11GameDays4Times8Locations2DivisionsDifferentTimes24Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 4, 8, 24)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 12))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 12))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 8, 24)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -383,7 +383,7 @@ extension ScheduleBeanBagToss {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 253, data: data)
+        try expectations(settings: schedule, matchupsCount: 253, data: data)
     }
 }
 
@@ -394,13 +394,13 @@ extension ScheduleBeanBagToss {
     func scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams() async throws {
         let schedule = try Self.scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams()
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 210, data: data)
+        try expectations(settings: schedule, matchupsCount: 210, data: data)
     }
     static func scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams(
         constraints: GenerationConstraints = .default
-    ) throws -> LeagueSchedule {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 8, 21)
+    ) throws -> RequestPayload.Runtime {
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 8, 21)
         return Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -440,13 +440,13 @@ extension ScheduleBeanBagToss {
     func scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams() async throws {
         let schedule = try Self.scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams()
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 230, data: data)
+        try expectations(settings: schedule, matchupsCount: 230, data: data)
     }
     static func scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams(
         constraints: GenerationConstraints = .default
-    ) throws -> LeagueSchedule {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 6, 23)
+    ) throws -> RequestPayload.Runtime {
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 6, 23)
         return Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,

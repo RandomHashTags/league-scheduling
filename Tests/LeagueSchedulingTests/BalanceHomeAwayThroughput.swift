@@ -24,7 +24,7 @@ struct BalancedHomeAwayThroughput {
     private func balanceHomeAway() async throws -> Output {
         var output = Output()
         let schedule = try ScheduleBack2Back.scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10()
-        let entries = schedule.settings.entries
+        let entries = schedule.entries
         let entriesCount = entries.count
         let expectation = BalanceHomeAwayExpectations()
         while !Task.isCancelled {
@@ -42,7 +42,7 @@ struct BalancedHomeAwayThroughput {
                     }
                 }
                 let matchupsPerGameDay = MatchupsPlayedPerGameDay.get(
-                    gameDays: schedule.settings.gameDays,
+                    gameDays: schedule.gameDays,
                     entriesCount: entries.count,
                     schedule: resultData.schedule
                 )
@@ -52,7 +52,7 @@ struct BalancedHomeAwayThroughput {
                         entry: entry,
                         matchupsPlayedPerDay: matchupsPerGameDay,
                         assignedEntryHomeAways: assignedEntryHomeAways,
-                        entryMatchupsPerGameDay: schedule.settings.general.defaultMaxEntryMatchupsPerGameDay
+                        entryMatchupsPerGameDay: schedule.general.defaultMaxEntryMatchupsPerGameDay
                     ) {
                         isBalanced = false
                         break

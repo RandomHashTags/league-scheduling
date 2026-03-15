@@ -40,7 +40,7 @@ struct ScheduleMisc: ScheduleTestsProtocol {
         )
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 20,
             data: data
         )
@@ -88,7 +88,7 @@ extension ScheduleMisc {
         )
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 40,
             data: data
         )
@@ -130,7 +130,7 @@ extension ScheduleMisc {
         )
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 18,
             data: data
         )
@@ -178,7 +178,7 @@ extension ScheduleMisc {
         )
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 144,
             data: data
         )
@@ -192,13 +192,13 @@ extension ScheduleMisc {
         let schedule = try Self.schedule10GameDays4Times5Locations2Divisions20Teams2Matchups()
         let data = await schedule.generate()
         try expectations(
-            settings: schedule.settings,
+            settings: schedule,
             matchupsCount: 200,
             data: data
         )
     }
 
-    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> LeagueSchedule {
+    static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> RequestPayload.Runtime {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 5, 20)
         var entryDivisions = [Division.IDValue]()

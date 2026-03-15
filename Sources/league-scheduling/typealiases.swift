@@ -32,7 +32,7 @@ typealias MatchupPair = LitLeagues_Leagues_MatchupPair
 /// Number of times an entry was assigned to play at home or away against another entry.
 /// 
 /// - Usage: [`Entry.IDValue`: [opponent `Entry.IDValue`: [`home (0) or away (1)`: `total played`]]]
-typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<LeagueSchedule.HomeAwayValue>>
+typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<HomeAwayValue>>
 
 /// Maximum number of times an entry can play against another entry.
 ///

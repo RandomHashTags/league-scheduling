@@ -24,8 +24,8 @@ struct EntryAssignmentData: Sendable {
 
     /// Number of times an entry was assigned to play at home or away against another entry.
     /// 
-    /// - Usage: [opponent `Entry.IDValue`: [`LeagueSchedule.HomeAwayValue`]]
-    var assignedEntryHomeAways:[LeagueSchedule.HomeAwayValue]
+    /// - Usage: [opponent `Entry.IDValue`: [`HomeAwayValue`]]
+    var assignedEntryHomeAways:[HomeAwayValue]
 
     /// Maximum number of times an entry can play against another entry.
     ///

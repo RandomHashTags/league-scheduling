@@ -1,6 +1,4 @@
 
-import SwiftProtobuf
-
 extension RequestPayload {
     /// For optimal runtime performance.
     struct Runtime: Sendable {

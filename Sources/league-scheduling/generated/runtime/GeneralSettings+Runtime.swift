@@ -143,7 +143,7 @@ extension GeneralSettings.Runtime {
                 }
             }
             maxMatchupsPlayedToday /= entriesPerLocation
-            let filledTimeSlots = LeagueSchedule.optimalTimeSlots(
+            let filledTimeSlots = RequestPayload.Runtime.optimalTimeSlots(
                 availableTimeSlots: timeSlots,
                 locations: locations,
                 matchupsCount: maxMatchupsPlayedToday

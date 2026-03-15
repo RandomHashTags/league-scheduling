@@ -6,16 +6,13 @@ import Foundation
 #endif
 
 // TODO: support divisions on the same day with different times
-struct LeagueSchedule: Sendable, ~Copyable {
-    /// Settings for this schedule.
-    let settings:RequestPayload.Runtime
-
+extension RequestPayload.Runtime {
     // MARK: Generate
     func generate() async -> LeagueGenerationResult {
         var err:String? = nil
         var results = [LeagueGenerationData]()
         do {
-            results = try await generateSchedules(settings: settings)
+            results = try await generateSchedules()
             for result in results {
                 if let error = result.error {
                     if err == nil {
@@ -36,22 +33,20 @@ struct LeagueSchedule: Sendable, ~Copyable {
 }
 
 // MARK: Generate schedules
-extension LeagueSchedule {
-    func generateSchedules(
-        settings: RequestPayload.Runtime
-    ) async throws -> [LeagueGenerationData] {
-        let divisionsCount = settings.divisions.count
+extension RequestPayload.Runtime {
+    private func generateSchedules() async throws -> [LeagueGenerationData] {
+        let divisionsCount = divisions.count
         var divisionEntries:ContiguousArray<Set<Entry.IDValue>> = .init(repeating: Set(), count: divisionsCount)
         #if LOG
-        print("LeagueSchedule;generateSchedules;divisionsCount=\(divisionsCount);settings.entries.count=\(settings.entries.count)")
+        print("LeagueSchedule;generateSchedules;divisionsCount=\(divisionsCount);entries.count=\(entries.count)")
         #endif
-        for entryIndex in 0..<settings.entries.count {
-            divisionEntries[unchecked: settings.entries[entryIndex].division].insert(settings.entries[entryIndex].id)
+        for entryIndex in 0..<entries.count {
+            divisionEntries[unchecked: entries[entryIndex].division].insert(entries[entryIndex].id)
         }
 
         var maxStartingTimes:TimeIndex = 0
         var maxLocations:LocationIndex = 0
-        for setting in settings.daySettings {
+        for setting in daySettings {
             if setting.general.timeSlots > maxStartingTimes {
                 maxStartingTimes = TimeIndex(setting.general.timeSlots)
             }
@@ -61,38 +56,38 @@ extension LeagueSchedule {
         }
 
         let maxSameOpponentMatchups = Self.maximumSameOpponentMatchups(
-            gameDays: settings.gameDays,
-            entriesCount: settings.entries.count,
+            gameDays: gameDays,
+            entriesCount: entries.count,
             divisionEntries: divisionEntries,
-            divisions: settings.divisions
+            divisions: divisions
         )
         let dataSnapshot = LeagueScheduleDataSnapshot(
             maxStartingTimes: maxStartingTimes,
-            startingTimes: settings.general.startingTimes,
+            startingTimes: general.startingTimes,
             maxLocations: maxLocations,
-            entriesPerMatchup: settings.general.entriesPerLocation,
-            maximumPlayableMatchups: settings.general.maximumPlayableMatchups,
-            entries: settings.entries,
+            entriesPerMatchup: general.entriesPerLocation,
+            maximumPlayableMatchups: general.maximumPlayableMatchups,
+            entries: entries,
             divisionEntries: divisionEntries,
-            matchupDuration: settings.general.matchupDuration,
-            gameGap: settings.general.gameGap.minMax,
-            sameLocationIfB2B: settings.general.sameLocationIfB2B,
-            locationTravelDurations: settings.general.locationTravelDurations ?? .init(repeating: .init(repeating: 0, count: maxLocations), count: maxLocations),
+            matchupDuration: general.matchupDuration,
+            gameGap: general.gameGap.minMax,
+            sameLocationIfB2B: general.sameLocationIfB2B,
+            locationTravelDurations: general.locationTravelDurations ?? .init(repeating: .init(repeating: 0, count: maxLocations), count: maxLocations),
             maxSameOpponentMatchups: maxSameOpponentMatchups
         )
         var grouped = [DayOfWeek:Set<Entry.IDValue>]()
-        for (divisionID, division) in settings.divisions.enumerated() {
+        for (divisionID, division) in divisions.enumerated() {
             grouped[DayOfWeek(division.dayOfWeek), default: []].formUnion(divisionEntries[divisionID])
         }
         let finalMaxStartingTimes = maxStartingTimes
         let finalMaxLocations = maxLocations
-        guard settings.constraints.timeoutDelay > 0 else {
+        guard constraints.timeoutDelay > 0 else {
             return await withTaskGroup { group in
                 for (dow, scheduledEntries) in grouped {
                     group.addTask {
                         return Self.generateSchedule(
                             dayOfWeek: dow,
-                            settings: settings,
+                            settings: self,
                             dataSnapshot: dataSnapshot,
                             divisionsCount: divisionsCount,
                             maxStartingTimes: finalMaxStartingTimes,
@@ -112,13 +107,13 @@ extension LeagueSchedule {
         return try await withTimeout(
             key: "generateSchedules",
             resultCount: grouped.count,
-            timeout: .seconds(settings.constraints.timeoutDelay)
+            timeout: .seconds(constraints.timeoutDelay)
         ) { group in
             for (dow, scheduledEntries) in grouped {
                 group.addTask {
                     return Self.generateSchedule(
                         dayOfWeek: dow,
-                        settings: settings,
+                        settings: self,
                         dataSnapshot: dataSnapshot,
                         divisionsCount: divisionsCount,
                         maxStartingTimes: finalMaxStartingTimes,
@@ -132,7 +127,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Timeout logic
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     func withTimeout<T>(
         key: String,
         resultCount: Int,
@@ -172,7 +167,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Generate schedule
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     private static func generateSchedule(
         dayOfWeek: DayOfWeek,
         settings: RequestPayload.Runtime,
@@ -209,7 +204,7 @@ extension LeagueSchedule {
             if gameDaySettingValuesCount <= day {
                 gameDaySettingValuesCount += 1
                 let daySettings = settings.daySettings[unchecked: day].general
-                let availableSlots = LeagueSchedule.availableSlots(
+                let availableSlots = Self.availableSlots(
                     times: daySettings.timeSlots,
                     locations: daySettings.locations,
                     locationTimeExclusivity: daySettings.locationTimeExclusivities
@@ -300,7 +295,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Load max allocations
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     static func loadMaxAllocations(
         dataSnapshot: inout LeagueScheduleDataSnapshot,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Set<Entry.IDValue>>>,
@@ -396,7 +391,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Optimal time slots
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     static func optimalTimeSlots(
         availableTimeSlots: TimeIndex,
         locations: LocationIndex,
@@ -416,7 +411,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Get available slots
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     static func availableSlots(
         times: TimeIndex,
         locations: LocationIndex,
@@ -447,7 +442,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Get balance numbers
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     static func balanceNumber<T: FixedWidthInteger>(
         totalMatchupsPlayed: some FixedWidthInteger,
         value: some FixedWidthInteger,
@@ -467,7 +462,7 @@ extension LeagueSchedule {
 }
 
 // MARK: Maximum same opponent matchups
-extension LeagueSchedule {
+extension RequestPayload.Runtime {
     static func maximumSameOpponentMatchups(
         gameDays: DayIndex,
         entriesCount: Int,

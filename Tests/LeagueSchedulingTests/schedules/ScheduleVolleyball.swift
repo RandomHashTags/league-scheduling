@@ -41,7 +41,7 @@ struct ScheduleVolleyball: ScheduleTestsProtocol {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 36, data: data)
+        try expectations(settings: schedule, matchupsCount: 36, data: data)
     }
 }
 
@@ -82,7 +82,7 @@ extension ScheduleVolleyball {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 24, data: data)
+        try expectations(settings: schedule, matchupsCount: 24, data: data)
     }
 }
 
@@ -123,7 +123,7 @@ extension ScheduleVolleyball {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 36, data: data)
+        try expectations(settings: schedule, matchupsCount: 36, data: data)
     }
 }
 
@@ -165,7 +165,7 @@ extension ScheduleVolleyball {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 48, data: data)
+        try expectations(settings: schedule, matchupsCount: 48, data: data)
     }
 }
 
@@ -206,6 +206,6 @@ extension ScheduleVolleyball {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 72, data: data)
+        try expectations(settings: schedule, matchupsCount: 72, data: data)
     }
 }

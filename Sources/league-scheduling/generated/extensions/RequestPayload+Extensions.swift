@@ -30,7 +30,7 @@ extension RequestPayload {
 // MARK: Generate
 extension RequestPayload {
     public func generate() async throws(LeagueError) -> LeagueGenerationResult {
-        let settings = try parseSettings()
-        return await LeagueSchedule.init(settings: settings).generate()
+        let runtime = try parseSettings()
+        return await runtime.generate()
     }
 }

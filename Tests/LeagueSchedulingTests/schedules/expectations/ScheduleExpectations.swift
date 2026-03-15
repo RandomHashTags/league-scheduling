@@ -119,7 +119,7 @@ extension ScheduleExpectations {
 
             let balanceTimeNumber:TimeIndex
             if !settings.general.balancedTimes.isEmpty {
-                balanceTimeNumber = LeagueSchedule.balanceNumber(
+                balanceTimeNumber = RequestPayload.Runtime.balanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedTimes.count,
                     strictness: settings.general.balanceTimeStrictness
@@ -135,7 +135,7 @@ extension ScheduleExpectations {
 
             let balanceLocationNumber:LocationIndex
             if !settings.general.balancedLocations.isEmpty {
-                balanceLocationNumber = LeagueSchedule.balanceNumber(
+                balanceLocationNumber = RequestPayload.Runtime.balanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedLocations.count,
                     strictness: settings.general.balanceLocationStrictness

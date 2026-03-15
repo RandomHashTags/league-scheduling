@@ -45,7 +45,7 @@ struct ScheduleBack2Back: ScheduleTestsProtocol {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
+        try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
 }
 
@@ -55,9 +55,9 @@ extension ScheduleBack2Back {
     func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() async throws {
         let schedule = try Self.scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10()
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 264, data: data)
+        try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
-    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> LeagueSchedule {
+    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> RequestPayload.Runtime {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 24)
         var entryDivisions = [Division.IDValue]()
@@ -136,6 +136,6 @@ extension ScheduleBack2Back {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 200, data: data)
+        try expectations(settings: schedule, matchupsCount: 200, data: data)
     }
 }

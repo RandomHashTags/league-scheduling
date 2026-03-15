@@ -43,6 +43,6 @@ extension ScheduleTball {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 12, data: data)
+        try expectations(settings: schedule, matchupsCount: 12, data: data)
     }
 }

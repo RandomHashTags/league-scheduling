@@ -49,7 +49,7 @@ extension ScheduleRedistribution {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 30, data: data)
+        try expectations(settings: schedule, matchupsCount: 30, data: data)
     }
 }
 
@@ -93,7 +93,7 @@ extension ScheduleRedistribution {
             entries: entries
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 33, data: data)
+        try expectations(settings: schedule, matchupsCount: 33, data: data)
     }
 }
 
@@ -139,7 +139,7 @@ extension ScheduleRedistribution {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 75, data: data)
+        try expectations(settings: schedule, matchupsCount: 75, data: data)
     }
 }
 
@@ -184,6 +184,6 @@ extension ScheduleRedistribution {
             )
         )
         let data = await schedule.generate()
-        try expectations(settings: schedule.settings, matchupsCount: 60, data: data)
+        try expectations(settings: schedule, matchupsCount: 60, data: data)
     }
 }

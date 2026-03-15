@@ -82,21 +82,6 @@ extension LeagueScheduleData {
     }
 }
 
-// MARK: HomeAwayValue
-extension LeagueSchedule {
-    struct HomeAwayValue: Sendable {
-        /// Number of matchups played at 'home'.
-        var home:UInt8
-
-        /// Number of matchups played at 'away'.
-        var away:UInt8
-
-        var sum: UInt16 {
-            UInt16(home) + UInt16(away)
-        }
-    }
-}
-
 // MARK: New Day
 extension LeagueScheduleData {
     /// Indicates a new day will begin to be scheduled.

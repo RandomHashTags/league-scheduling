@@ -87,7 +87,7 @@ extension ScheduleTestsProtocol {
         divisionsCanPlayAtSameTime: Bool = true,
         entries: [Entry.Runtime],
         constraints: GenerationConstraints = .default
-    ) -> LeagueSchedule {
+    ) -> RequestPayload.Runtime {
         let correctMaximumPlayableMatchups = RequestPayload.calculateMaximumPlayableMatchups(
             gameDays: gameDays,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
@@ -129,7 +129,7 @@ extension ScheduleTestsProtocol {
             settings.computeSettings(day: day, entries: entries)
             daySettings.append(.init(general: settings))
         }
-        let settings = RequestPayload.Runtime(
+        return .init(
             constraints: constraints,
             gameDays: gameDays,
             divisions: divisions,
@@ -139,6 +139,5 @@ extension ScheduleTestsProtocol {
             general: generalSettings,
             daySettings: daySettings
         )
-        return LeagueSchedule(settings: settings)
     }
 }

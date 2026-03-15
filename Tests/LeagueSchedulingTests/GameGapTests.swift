@@ -17,7 +17,12 @@ extension GameGapTests {
 
         let decoder = JSONDecoder()
         let test = try decoder.decode(CodablePayload.self, from: data)
-        #expect(test == .init(gameGaps: .no))
+        switch test.gameGaps {
+        case .no:
+            #expect(Bool(true))
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
@@ -40,7 +45,7 @@ extension GameGapTests {
         #expect(String(decoding: data, as: UTF8.self) == "{\"gameGaps\":\"minimumof 1\"}")
     }
 
-    struct CodablePayload: Codable, Equatable {
+    struct CodablePayload: Codable {
         var gameGaps:GameGap
     }
 }

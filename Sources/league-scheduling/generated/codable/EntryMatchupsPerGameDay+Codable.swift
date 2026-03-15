@@ -1,5 +1,5 @@
 
-// MARK: Codable
+#if ProtobufCodable
 extension LitLeagues_Leagues_EntryMatchupsPerGameDay: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -15,10 +15,4 @@ extension LitLeagues_Leagues_EntryMatchupsPerGameDay: Codable {
         case gameDayMatchups
     }
 }
-
-// MARK: Initializer
-extension LitLeagues_Leagues_EntryMatchupsPerGameDay {
-    init(gameDayMatchups: [LeagueEntryMatchupsPerGameDay]) {
-        self.gameDayMatchups = gameDayMatchups
-    }
-}
+#endif

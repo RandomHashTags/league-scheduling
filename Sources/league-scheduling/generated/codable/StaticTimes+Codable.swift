@@ -1,10 +1,12 @@
 
-// MARK: Codable
-extension LeagueGameTimes: Codable {
+#if ProtobufCodable
 
+import StaticDateTimes
+
+extension LitLeagues_Leagues_StaticTimes: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        times = try container.decode([LeagueTimeIndex].self)
+        times = try container.decode([StaticTime].self)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -12,10 +14,4 @@ extension LeagueGameTimes: Codable {
         try container.encode(times)
     }
 }
-
-// MARK: General
-extension LeagueGameTimes {
-    var set: Set<LeagueTimeIndex> {
-        Set(times)
-    }
-}
+#endif

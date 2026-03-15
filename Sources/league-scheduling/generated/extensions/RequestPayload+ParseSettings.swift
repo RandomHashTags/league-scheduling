@@ -202,7 +202,7 @@ extension LeagueRequestPayload {
                     byes.append([])
                 }
                 if division.hasGameDayTimes {
-                    gameTimes.append(division.gameDayTimes.times.map({ $0.set }))
+                    gameTimes.append(division.gameDayTimes.times.map({ Set($0.times) }))
                 } else {
                     var dgdt = [Set<LeagueTimeIndex>]()
                     for gameDay in 0..<self.gameDays {
@@ -212,7 +212,7 @@ extension LeagueRequestPayload {
                     gameTimes.append(dgdt)
                 }
                 if division.hasGameDayLocations {
-                    gameLocations.append(division.gameDayLocations.locations.map({ $0.set }))
+                    gameLocations.append(division.gameDayLocations.locations.map({ Set($0.locations) }))
                 } else {
                     var dgdl = [Set<LeagueLocationIndex>]()
                     for gameDay in 0..<self.gameDays {

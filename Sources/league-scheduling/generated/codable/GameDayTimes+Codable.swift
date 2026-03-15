@@ -1,5 +1,5 @@
 
-// MARK: Codable
+#if ProtobufCodable
 extension LitLeagues_Leagues_GameDayTimes: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -11,12 +11,4 @@ extension LitLeagues_Leagues_GameDayTimes: Codable {
         try container.encode(times)
     }
 }
-
-// MARK: Init
-extension LitLeagues_Leagues_GameDayTimes {
-    init(
-        times: [LeagueGameTimes]
-    ) {
-        self.times = times
-    }
-}
+#endif

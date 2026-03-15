@@ -1,10 +1,9 @@
 
-
-// MARK: Codable
-extension LeagueGameLocations: Codable {
+#if ProtobufCodable
+extension LeagueLocationTravelDurations: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        locations = try container.decode([LeagueLocationIndex].self)
+        locations = try container.decode([LeagueLocationTravelDurationFrom].self)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -12,10 +11,4 @@ extension LeagueGameLocations: Codable {
         try container.encode(locations)
     }
 }
-
-// MARK: General
-extension LeagueGameLocations {
-    var set: Set<LeagueLocationIndex> {
-        Set(locations)
-    }
-}
+#endif

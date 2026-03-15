@@ -1,5 +1,5 @@
 
-// MARK: Codable
+#if ProtobufCodable
 extension LeagueDaySettings: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -19,3 +19,4 @@ extension LeagueDaySettings: Codable {
         case settings
     }
 }
+#endif

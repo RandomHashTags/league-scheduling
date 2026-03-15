@@ -1,8 +1,4 @@
 
-// MARK: Codable
-extension LeagueBalanceStrictness: Codable {
-}
-
 // MARK: General
 extension LeagueBalanceStrictness {
     init?(rawValue: String) {

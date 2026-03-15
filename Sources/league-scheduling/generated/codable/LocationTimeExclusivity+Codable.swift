@@ -1,13 +1,14 @@
 
-// MARK: Codable
-extension LitLeagues_Leagues_DaySettingsArray: Codable {
+#if ProtobufCodable
+extension LeagueLocationTimeExclusivity: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        days = try container.decode([LitLeagues_Leagues_DaySettings].self)
+        times = try container.decode([LeagueTimeIndex].self)
     }
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(days)
+        try container.encode(times)
     }
 }
+#endif

@@ -1,7 +1,6 @@
 
-// MARK: Codable
+#if ProtobufCodable
 extension LeagueMatchup: Codable {
-
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         time = try container.decode(LeagueTimeIndex.self, forKey: .time)
@@ -25,33 +24,4 @@ extension LeagueMatchup: Codable {
         case away
     }
 }
-
-// MARK: CustomStringConverible
-extension LeagueMatchup: CustomStringConvertible {
-    public var description: String {
-        "T\(time)L\(location) \(away) @ \(home)"
-    }
-}
-
-// MARK: General
-extension LeagueMatchup {
-    init(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
-        home: LeagueEntry.IDValue,
-        away: LeagueEntry.IDValue
-    ) {
-        self.time = time
-        self.location = location
-        self.home = home
-        self.away = away
-    }
-
-    var pair: LeagueMatchupPair {
-        LeagueMatchupPair(team1: home, team2: away)
-    }
-
-    var slot: LeagueAvailableSlot {
-       LeagueAvailableSlot(time: time, location: location)
-    }
-}
+#endif

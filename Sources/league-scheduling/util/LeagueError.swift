@@ -4,10 +4,10 @@ public enum LeagueError: CustomStringConvertible, Error, Sendable {
     case malformedInput(msg: String? = nil)
 
     case failedNegativeDayIndex
-    case failedZeroExpectedMatchupsForDay(LeagueDayIndex)
+    case failedZeroExpectedMatchupsForDay(UInt32)
     case failedRedistributionRequiresPreviouslyScheduledMatchups
-    case failedRedistributingMatchupsForDay(LeagueDayIndex)
-    case failedAssignment(regenerationAttemptsThreshold: UInt32, balanceTimeStrictness: LeagueBalanceStrictness)
+    case failedRedistributingMatchupsForDay(UInt32)
+    case failedAssignment(regenerationAttemptsThreshold: UInt32, balanceTimeStrictness: LitLeagues_Leagues_BalanceStrictness)
 
     case timedOut(function: String)
 

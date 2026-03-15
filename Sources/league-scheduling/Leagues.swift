@@ -2,12 +2,12 @@
 import SwiftProtobuf
 
 // MARK: typealiases
-public typealias LeagueDayIndex = UInt32            // WARNING: do not change value type!
-typealias LeagueTimeIndex = UInt32                  // WARNING: do not change value type!
-typealias LeagueLocationIndex = UInt32              // WARNING: do not change value type!
-typealias LeagueEntryMatchupsPerGameDay = UInt32    // WARNING: do not change value type!
-typealias LeagueEntriesPerMatchup = UInt32          // WARNING: do not change value type!
-typealias LeagueRecurringDayLimitInterval = UInt8   // WARNING: do not change value type!
+typealias LeagueDayIndex = UInt32                  // WARNING: do not change value type!
+typealias LeagueTimeIndex = UInt32                 // WARNING: do not change value type!
+typealias LeagueLocationIndex = UInt32             // WARNING: do not change value type!
+typealias LeagueEntryMatchupsPerGameDay = UInt32   // WARNING: do not change value type!
+typealias LeagueEntriesPerMatchup = UInt32         // WARNING: do not change value type!
+typealias LeagueRecurringDayLimitInterval = UInt8  // WARNING: do not change value type!
 
 /// Measured in seconds.
 typealias LeagueMatchupDuration = Double            // WARNING: do not change value type!
@@ -16,14 +16,13 @@ typealias LeagueDayOfWeek = UInt8                   // WARNING: do not change va
 
 // protobufs
 typealias LeagueAvailableSlot = LitLeagues_Leagues_AvailableSlot
-public typealias LeagueBalanceStrictness = LitLeagues_Leagues_BalanceStrictness
+typealias LeagueBalanceStrictness = LitLeagues_Leagues_BalanceStrictness
 typealias LeagueDaySettings = LitLeagues_Leagues_DaySettings
 typealias LeagueDivision = LitLeagues_Leagues_Division
 typealias LeagueEntry = LitLeagues_Leagues_Entry
 typealias LeagueGameTimes = LitLeagues_Leagues_GameTimes
 typealias LeagueGameLocations = LitLeagues_Leagues_GameLocations
 typealias GenerationConstraints = LitLeagues_Leagues_GenerationConstraints
-//public typealias LeagueEntryMatchupsPerGameDay = LitLeagues_Leagues_EntryMatchupsPerGameDay
 typealias LeagueGeneralSettings = LitLeagues_Leagues_GeneralSettings
 typealias LeagueMatchup = LitLeagues_Leagues_Matchup
 typealias LeagueRequestPayload = LitLeagues_Leagues_RequestPayload

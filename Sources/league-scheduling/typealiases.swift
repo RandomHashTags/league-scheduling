@@ -1,18 +1,14 @@
 
-import SwiftProtobuf
-
-// MARK: typealiases
-typealias LeagueDayIndex = UInt32                  // WARNING: do not change value type!
-typealias LeagueTimeIndex = UInt32                 // WARNING: do not change value type!
-typealias LeagueLocationIndex = UInt32             // WARNING: do not change value type!
-typealias LeagueEntryMatchupsPerGameDay = UInt32   // WARNING: do not change value type!
-typealias LeagueEntriesPerMatchup = UInt32         // WARNING: do not change value type!
-typealias LeagueRecurringDayLimitInterval = UInt8  // WARNING: do not change value type!
+typealias LeagueDayIndex = UInt32
+typealias LeagueTimeIndex = UInt32
+typealias LeagueLocationIndex = UInt32
+typealias LeagueEntryMatchupsPerGameDay = UInt32
+typealias LeagueEntriesPerMatchup = UInt32
+typealias LeagueRecurringDayLimitInterval = UInt8
 
 /// Measured in seconds.
-typealias LeagueMatchupDuration = Double            // WARNING: do not change value type!
-typealias LeagueDayOfWeek = UInt8                   // WARNING: do not change value type!
-
+typealias LeagueMatchupDuration = Double
+typealias LeagueDayOfWeek = UInt8
 
 // protobufs
 typealias LeagueAvailableSlot = LitLeagues_Leagues_AvailableSlot
@@ -88,13 +84,3 @@ typealias PlaysAtLocations = ContiguousArray<Set<LeagueLocationIndex>>
 /// 
 /// - Usage: [`LeagueEntry.IDValue`: `Set<LeagueAvailableSlot>`]
 typealias PlaysAt = ContiguousArray<Set<LeagueAvailableSlot>>
-
-// MARK: Leagues3
-public struct Leagues3 {
-    public static let protobufJSONEncodingOptions: JSONEncodingOptions = {
-        var options = JSONEncodingOptions()
-        options.alwaysPrintEnumsAsInts = true
-        options.alwaysPrintInt64sAsNumbers = true
-        return options
-    }()
-}

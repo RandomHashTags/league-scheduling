@@ -6,6 +6,8 @@ public struct LeagueShuffleAction: Sendable {
     public let pair:LitLeagues_Leagues_MatchupPair
 }
 
+#if ProtobufCodable
 // MARK: Codable
 extension LeagueShuffleAction: Codable {
 }
+#endif

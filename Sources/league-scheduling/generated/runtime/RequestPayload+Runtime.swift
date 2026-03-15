@@ -1,13 +1,6 @@
 
-#if canImport(FoundationEssentials)
-import struct FoundationEssentials.Date
-#elseif canImport(Foundation)
-import struct Foundation.Date
-#endif
-
 import SwiftProtobuf
 
-// MARK: Runtime
 extension LeagueRequestPayload {
     /// For optimal runtime performance.
     struct Runtime: Sendable {

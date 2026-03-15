@@ -1,5 +1,4 @@
 
-// MARK: General
 extension LeagueSettingFlags {
     static func get(
         optimizeTimes: Bool,

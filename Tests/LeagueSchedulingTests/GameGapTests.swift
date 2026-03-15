@@ -1,4 +1,6 @@
 
+#if ProtobufCodable
+
 import FoundationEssentials
 @testable import LeagueScheduling
 import Testing
@@ -49,3 +51,5 @@ extension GameGapTests {
         var gameGaps:GameGap
     }
 }
+
+#endif

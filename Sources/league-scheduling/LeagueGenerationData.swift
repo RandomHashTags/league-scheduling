@@ -52,6 +52,7 @@ public struct LeagueGenerationData: Sendable {
     }
 }
 
+#if ProtobufCodable
 // MARK: Codable
 extension LeagueGenerationData: Codable {
     public func encode(to encoder: any Encoder) throws {
@@ -72,10 +73,7 @@ extension LeagueGenerationData: Codable {
         try container.encode(executionSteps, forKey: .executionSteps)
         try container.encode(shuffleHistory, forKey: .shuffleHistory)
     }
-}
 
-// MARK: CodingKeys
-extension LeagueGenerationData {
     enum CodingKeys: CodingKey {
         case assignLocationTimeRegenerationAttempts
         case negativeDayIndexRegenerationAttempts
@@ -93,3 +91,4 @@ extension LeagueGenerationData {
         #endif
     }
 }
+#endif

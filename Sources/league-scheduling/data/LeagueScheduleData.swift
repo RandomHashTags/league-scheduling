@@ -157,12 +157,15 @@ extension LeagueScheduleData {
         }
         expectedMatchupsCount = min(availableSlots.count, expectedMatchupsCount)
         assignmentState.availableSlots = availableSlots
-        if daySettings.gameGap == .no {
+        switch daySettings.gameGap {
+        case .no:
             allowedDivisionCombinations = allowedDivisionMatchupCombinations(
                 entriesPerMatchup: entriesPerMatchup,
                 locations: daySettings.locations,
                 entryCountsForDivision: entryCountsForDivision
             )
+        default:
+            break
         }
         failedMatchupSelections = .init(repeating: Set(), count: expectedMatchupsCount)
         assignmentState.allMatchups = availableMatchups

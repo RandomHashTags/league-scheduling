@@ -1,6 +1,7 @@
 
 // MARK: Try redistributing
 extension LeagueScheduleData {
+    /// Tries to move previously scheduled matchups to later days.
     mutating func tryRedistributing(
         settings: borrowing RequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
@@ -36,7 +37,7 @@ extension LeagueScheduleData {
         }
     }
 
-    mutating func tryRedistributing(
+    private mutating func tryRedistributing(
         startDayIndex: DayIndex,
         settings: borrowing RequestPayload.Runtime<Config>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,

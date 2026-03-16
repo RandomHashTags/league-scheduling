@@ -51,7 +51,7 @@ extension ScheduleTestsProtocol {
             entriesCount: Int
         )
     ) throws(LeagueError) -> UnitTestScheduleConfig.DivisionRuntime {
-        let maxSameOpponentMatchups = try RequestPayload.calculateMaximumSameOpponentMatchupsCap(
+        let maxSameOpponentMatchups = try calculateMaximumSameOpponentMatchupsCap(
             gameDays: values.gameDays,
             entryMatchupsPerGameDay: values.entryMatchupsPerGameDay,
             entriesCount: values.entriesCount
@@ -87,7 +87,8 @@ extension ScheduleTestsProtocol {
         divisions: [UnitTestScheduleConfig.DivisionRuntime],
         divisionsCanPlayOnSameDay: Bool = true,
         divisionsCanPlayAtSameTime: Bool = true,
-        entries: [UnitTestScheduleConfig.EntryRuntime]
+        entries: [UnitTestScheduleConfig.EntryRuntime],
+        constraints: GenerationConstraints = .default
     ) -> RequestPayload.Runtime<UnitTestScheduleConfig> {
         let correctMaximumPlayableMatchups = RequestPayload.calculateMaximumPlayableMatchups(
             gameDays: gameDays,
@@ -130,7 +131,8 @@ extension ScheduleTestsProtocol {
             settings.computeSettings(day: day, entries: entries)
             daySettings.append(settings)
         }
-        return RequestPayload.Runtime(
+        return .init(
+            constraints: constraints,
             gameDays: gameDays,
             divisions: divisions,
             entries: entries,

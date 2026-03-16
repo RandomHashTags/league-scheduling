@@ -38,7 +38,7 @@ struct ScheduleMisc: ScheduleTestsProtocol {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(
             settings: schedule,
             matchupsCount: 20,
@@ -86,7 +86,7 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(
             settings: schedule,
             matchupsCount: 40,
@@ -128,7 +128,7 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(
             settings: schedule,
             matchupsCount: 18,
@@ -176,7 +176,7 @@ extension ScheduleMisc {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(
             settings: schedule,
             matchupsCount: 144,
@@ -190,7 +190,7 @@ extension ScheduleMisc {
     @Test(.timeLimit(.minutes(1)))
     func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() async throws {
         let schedule = try Self.schedule10GameDays4Times5Locations2Divisions20Teams2Matchups()
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(
             settings: schedule,
             matchupsCount: 200,

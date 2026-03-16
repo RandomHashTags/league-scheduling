@@ -24,6 +24,8 @@ public struct ExecutionStep: Sendable {
     }()
 }
 
+#if ProtobufCodable
 // MARK: Codable
 extension ExecutionStep: Codable {
 }
+#endif

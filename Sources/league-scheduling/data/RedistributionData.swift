@@ -115,15 +115,10 @@ extension RedistributionData {
             assigned += 1
             redistribute(
                 redistributable: &redistributable,
+                redistributables: &redistributables,
                 assignmentState: &assignmentState,
                 generationData: &generationData
             )
-            // filter redistributables so only the ones that can still play remain
-            redistributables = redistributables.filter {
-                assignmentState.availableSlots.contains($0.toSlot)
-                && assignmentState.playsAt[unchecked: $0.matchup.home].count < entryMatchupsPerGameDay
-                && assignmentState.playsAt[unchecked: $0.matchup.away].count < entryMatchupsPerGameDay
-            }
         }
         #if LOG
         print("redistributeMatchups;day=\(day);assigned=\(assigned)")
@@ -183,6 +178,7 @@ extension RedistributionData {
 extension RedistributionData {
     private mutating func redistribute(
         redistributable: inout Redistributable,
+        redistributables: inout Set<Redistributable>,
         assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
@@ -192,6 +188,14 @@ extension RedistributionData {
         redistributed.insert(redistributable.matchup)
         redistributedEntries[unchecked: redistributable.matchup.home] += 1
         redistributedEntries[unchecked: redistributable.matchup.away] += 1
+        // filter redistributables so only the ones that can still play remain
+        redistributables = redistributables.filter {
+            $0.matchup != redistributable.matchup // remove other instances of the matchup since we just redistributed it
+            && assignmentState.availableSlots.contains($0.toSlot)
+            && assignmentState.playsAt[unchecked: $0.matchup.home].count < entryMatchupsPerGameDay
+            && assignmentState.playsAt[unchecked: $0.matchup.away].count < entryMatchupsPerGameDay
+        }
+
         redistributable.matchup.time = redistributable.toSlot.time
         redistributable.matchup.location = redistributable.toSlot.location
         assignmentState.matchups.insert(redistributable.matchup)

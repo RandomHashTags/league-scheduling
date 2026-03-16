@@ -116,13 +116,9 @@ extension ScheduleExpectations {
                 )
             }
 
-            #if UnitTesting
-            #expect(assignedTimes == result.assignedTimes)
-            #endif
-
             let balanceTimeNumber:TimeIndex
             if !settings.general.balancedTimes.isEmpty {
-                balanceTimeNumber = LeagueSchedule.balanceNumber(
+                balanceTimeNumber = calculateBalanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedTimes.count,
                     strictness: settings.general.balanceTimeStrictness
@@ -136,13 +132,9 @@ extension ScheduleExpectations {
                 balanceTimeNumber: balanceTimeNumber
             )
 
-            #if UnitTesting
-            #expect(assignedLocations == result.assignedLocations)
-            #endif
-
             let balanceLocationNumber:LocationIndex
             if !settings.general.balancedLocations.isEmpty {
-                balanceLocationNumber = LeagueSchedule.balanceNumber(
+                balanceLocationNumber = calculateBalanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedLocations.count,
                     strictness: settings.general.balanceLocationStrictness

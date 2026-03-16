@@ -1,12 +1,7 @@
 
-#if canImport(SwiftGlibc)
-import SwiftGlibc
-#elseif canImport(Foundation)
-import Foundation
-#endif
-
 // TODO: support divisions on the same day with different times
 extension RequestPayload.Runtime {
+    // MARK: Generate
     func generate() async -> LeagueGenerationResult {
         var err:String? = nil
         var results = [LeagueGenerationData]()
@@ -33,6 +28,10 @@ extension RequestPayload.Runtime {
 
 // MARK: Generate schedules
 extension RequestPayload.Runtime {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     func generateSchedules() async throws -> [LeagueGenerationData] {
         let divisionsCount = divisions.count
         var divisionEntries:ContiguousArray<Config.EntryIDSet> = .init(repeating: .init(), count: divisionsCount)
@@ -54,7 +53,7 @@ extension RequestPayload.Runtime {
             }
         }
 
-        let maxSameOpponentMatchups:MaximumSameOpponentMatchups = Self.maximumSameOpponentMatchups(
+        let maxSameOpponentMatchups = Self.maximumSameOpponentMatchups(
             gameDays: gameDays,
             entriesCount: entries.count,
             divisionEntries: divisionEntries,
@@ -80,13 +79,37 @@ extension RequestPayload.Runtime {
         }
         let finalMaxStartingTimes = maxStartingTimes
         let finalMaxLocations = maxLocations
-        return try await Self.withTimeout(
+        guard constraints.timeoutDelay > 0 else {
+            return await withTaskGroup { group in
+                let settingsCopy = copy()
+                for (dow, scheduledEntries) in grouped {
+                    group.addTask {
+                        return Self.generateSchedule(
+                            dayOfWeek: dow,
+                            settings: settingsCopy,
+                            dataSnapshot: dataSnapshot,
+                            divisionsCount: divisionsCount,
+                            maxStartingTimes: finalMaxStartingTimes,
+                            maxLocations: finalMaxLocations,
+                            scheduledEntries: scheduledEntries
+                        )
+                    }
+                }
+                var results = [LeagueGenerationData]()
+                results.reserveCapacity(grouped.count)
+                for await r in group {
+                    results.append(r)
+                }
+                return results
+            }
+        }
+        return try await withTimeout(
             key: "generateSchedules",
             resultCount: grouped.count,
-            timeout: .seconds(60)
+            timeout: .seconds(constraints.timeoutDelay)
         ) { group in
+            let settingsCopy = copy()
             for (dow, scheduledEntries) in grouped {
-                let settingsCopy = copy()
                 group.addTask {
                     return Self.generateSchedule(
                         dayOfWeek: dow,
@@ -105,7 +128,7 @@ extension RequestPayload.Runtime {
 
 // MARK: Timeout logic
 extension RequestPayload.Runtime {
-    static func withTimeout<T>(
+    func withTimeout<T>(
         key: String,
         resultCount: Int,
         timeout: Duration,
@@ -121,13 +144,18 @@ extension RequestPayload.Runtime {
                 var completed = 0
                 var results = [T]()
                 results.reserveCapacity(resultCount)
-                for try await result in group {
-                    completed += 1
-                    results.append(result)
-                    if completed == resultCount {
-                        group.cancelAll()
-                        break
+                do {
+                    for try await result in group {
+                        completed += 1
+                        results.append(result)
+                        if completed == resultCount {
+                            group.cancelAll()
+                            break
+                        }
                     }
+                } catch {
+                    group.cancelAll()
+                    throw error
                 }
                 return results
             })
@@ -140,6 +168,10 @@ extension RequestPayload.Runtime {
 
 // MARK: Generate schedule
 extension RequestPayload.Runtime {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     private static func generateSchedule(
         dayOfWeek: DayOfWeek,
         settings: borrowing RequestPayload.Runtime<Config>,
@@ -254,6 +286,10 @@ extension RequestPayload.Runtime {
         return generationData
     }
 
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     private static func finalizeGenerationData(
         generationData: inout LeagueGenerationData,
         data: borrowing LeagueScheduleData<Config>
@@ -265,6 +301,10 @@ extension RequestPayload.Runtime {
 
 // MARK: Load max allocations
 extension RequestPayload.Runtime {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     static func loadMaxAllocations(
         dataSnapshot: inout LeagueScheduleDataSnapshot<Config>,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Config.EntryIDSet>>,
@@ -312,7 +352,7 @@ extension RequestPayload.Runtime {
             maxStartingTimesPlayedAt = max(maxStartingTimesPlayedAt, 1)
             maxLocationsPlayedAt = max(maxLocationsPlayedAt, 1)
 
-            let defaultTimeNumber:TimeIndex = Self.balanceNumber(
+            let defaultTimeNumber:TimeIndex = calculateBalanceNumber(
                 totalMatchupsPlayed: maxPossiblePlayed,
                 value: maxStartingTimesPlayedAt,
                 strictness: settings.general.balanceTimeStrictness
@@ -321,7 +361,7 @@ extension RequestPayload.Runtime {
                 let timeNumber:TimeIndex
                 if settings.general.balancedTimes.contains(time) {
                     timeNumber = defaultTimeNumber
-                    /*timeNumber = Self.balanceNumber(
+                    /*timeNumber = calculateBalanceNumber(
                         totalMatchupsPlayed: maxPossiblePlayedForTimes[unchecked: time],
                         value: maxStartingTimesPlayedAt,
                         strictness: settings.general.balanceTimeStrictness
@@ -332,7 +372,7 @@ extension RequestPayload.Runtime {
                 dataSnapshot.assignmentState.maxTimeAllocations[unchecked: entryIndex][unchecked: time] = timeNumber
             }
 
-            let defaultLocationNumber:LocationIndex = Self.balanceNumber(
+            let defaultLocationNumber:LocationIndex = calculateBalanceNumber(
                 totalMatchupsPlayed: maxPossiblePlayed,
                 value: maxLocationsPlayedAt,
                 strictness: settings.general.balanceLocationStrictness
@@ -341,7 +381,7 @@ extension RequestPayload.Runtime {
                 let locationNumber:LocationIndex
                 if settings.general.balancedLocations.contains(location) {
                     locationNumber = defaultLocationNumber
-                    /*locationNumber = Self.balanceNumber(
+                    /*locationNumber = calculateBalanceNumber(
                         totalMatchupsPlayed: maxPossiblePlayedForLocations[unchecked: location],
                         value: maxLocationsPlayedAt,
                         strictness: settings.general.balanceLocationStrictness
@@ -359,28 +399,12 @@ extension RequestPayload.Runtime {
     }
 }
 
-// MARK: Get balance numbers
-extension RequestPayload.Runtime {
-    static func balanceNumber<T: FixedWidthInteger>(
-        totalMatchupsPlayed: some FixedWidthInteger,
-        value: some FixedWidthInteger,
-        strictness: BalanceStrictness
-    ) -> T {
-        guard strictness != .lenient else { return .max }
-        var minimumValue = T(ceil(Double(totalMatchupsPlayed) / Double(value)))
-        switch strictness {
-        case .lenient:      minimumValue = .max
-        case .normal:       minimumValue += 1
-        case .relaxed:      minimumValue += 2
-        case .very:         break
-        case .UNRECOGNIZED: break
-        }
-        return minimumValue
-    }
-}
-
 // MARK: Maximum same opponent matchups
 extension RequestPayload.Runtime {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     static func maximumSameOpponentMatchups(
         gameDays: DayIndex,
         entriesCount: Int,

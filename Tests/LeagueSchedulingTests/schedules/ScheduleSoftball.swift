@@ -44,7 +44,7 @@ extension ScheduleSoftball {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(settings: schedule, matchupsCount: 132, data: data)
     }
 }
@@ -84,7 +84,7 @@ extension ScheduleSoftball {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(settings: schedule, matchupsCount: 160, data: data)
     }
 }
@@ -123,7 +123,7 @@ extension ScheduleSoftball {
                 teams: teams
             )
         )
-        let data = await LeagueSchedule.generate(schedule)
+        let data = await schedule.generate()
         try expectations(settings: schedule, matchupsCount: 90, data: data)
     }
 }

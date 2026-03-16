@@ -1,10 +1,8 @@
 
-#if UnitTesting
-
 @testable import LeagueScheduling
 import Testing
 
-struct BalancedHomeAwayThroughput {
+struct BalancedHomeAwayThroughput: ScheduleTestsProtocol {
     //@Test(.timeLimit(.minutes(1)))
     func balancedHomeAway() async throws {
         try await withThrowingTaskGroup(of: Output.self) { group in
@@ -26,15 +24,25 @@ struct BalancedHomeAwayThroughput {
     private func balanceHomeAway() async throws -> Output {
         var output = Output()
         let schedule = try ScheduleBack2Back.scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10()
-        let entries = schedule.settings.entries
-        let expectation = BalanceHomeAwayExpectations()
+        let entries = schedule.entries
+        let entriesCount = entries.count
+        let expectation = BalanceHomeAwayExpectations<UnitTestScheduleConfig>()
         while !Task.isCancelled {
             let result = await schedule.generate()
             output.throughput += 1
             if result.error == nil {
                 guard let resultData = result.results.first else { continue }
+                var assignedEntryHomeAways = AssignedEntryHomeAways(repeating: .init(repeating: .init(home: 0, away: 0), count: entriesCount), count: entriesCount)
+                for matchups in resultData.schedule {
+                    for matchup in matchups {
+                        let home = matchup.home
+                        let away = matchup.away
+                        assignedEntryHomeAways[unchecked: home][unchecked: away].home += 1
+                        assignedEntryHomeAways[unchecked: away][unchecked: home].away += 1
+                    }
+                }
                 let matchupsPerGameDay = MatchupsPlayedPerGameDay.get(
-                    gameDays: schedule.settings.gameDays,
+                    gameDays: schedule.gameDays,
                     entriesCount: entries.count,
                     schedule: resultData.schedule
                 )
@@ -43,8 +51,8 @@ struct BalancedHomeAwayThroughput {
                     if !expectation.isBalanced(
                         entry: entry,
                         matchupsPlayedPerDay: matchupsPerGameDay,
-                        assignedEntryHomeAways: resultData.assignedEntryHomeAways,
-                        entryMatchupsPerGameDay: schedule.settings.general.defaultMaxEntryMatchupsPerGameDay
+                        assignedEntryHomeAways: assignedEntryHomeAways,
+                        entryMatchupsPerGameDay: schedule.general.defaultMaxEntryMatchupsPerGameDay
                     ) {
                         isBalanced = false
                         break
@@ -72,5 +80,3 @@ struct BalancedHomeAwayThroughput {
         }
     }
 }
-
-#endif

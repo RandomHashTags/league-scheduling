@@ -1,5 +1,5 @@
 
-enum GameGap: Equatable, Sendable {
+enum GameGap: Sendable {
     case no
     case always(Int)
     case upTo(Int)
@@ -36,6 +36,7 @@ enum GameGap: Equatable, Sendable {
     }
 }
 
+#if ProtobufCodable
 // MARK: Codable
 extension GameGap: Codable {
     public func encode(to encoder: any Encoder) throws {
@@ -60,3 +61,4 @@ extension GameGap: Codable {
         }
     }
 }
+#endif

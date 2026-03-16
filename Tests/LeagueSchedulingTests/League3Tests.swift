@@ -9,7 +9,7 @@ struct League3Tests: ScheduleExpectations {
         let schedule = try ScheduleBeanBagToss.schedule8GameDays3Times3Locations1Division9Teams()
         //let schedule = try ScheduleMisc.schedule10GameDays4Times5Locations2Divisions20Teams2Matchups()
         while !Task.isCancelled {
-            let result = await LeagueSchedule.generate(schedule)
+            let result = await schedule.generate()
             throughput += 1
             if let e = result.error, !e.contains("(timed out;") {
                 failed[e, default: 0] += 1

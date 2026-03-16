@@ -12,6 +12,7 @@ let package = Package(
     ],
     traits: [
         .default(enabledTraits: [
+            "ProtobufCodable",
             "UncheckedArraySubscript",
             "SpecializeScheduleConfiguration"
         ]),

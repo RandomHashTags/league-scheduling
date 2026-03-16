@@ -32,9 +32,11 @@ protocol AbstractSet: Sendable, ~Copyable {
     func forEachWithReturn<Result>(_ body: (Element) throws -> Result?) rethrows -> Result?
 }
 
-protocol SetOfDayIndexes: AbstractSet, ~Copyable where Element == DayIndex {}
-protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == TimeIndex {}
-protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LocationIndex {}
+protocol SetOfUInt32: AbstractSet, ~Copyable where Element == UInt32 {}
+
+typealias SetOfDayIndexes = SetOfUInt32
+typealias SetOfTimeIndexes = SetOfUInt32
+typealias SetOfLocationIndexes = SetOfUInt32
 
 protocol SetOfEntryIDs: AbstractSet, ~Copyable where Element == Entry.IDValue {
     /// - Returns: The available matchup pairs that can play for the `day`.
@@ -83,9 +85,7 @@ extension Set: AbstractSet {
     }
 }
 
-extension Set<DayIndex>: SetOfDayIndexes {}
-extension Set<TimeIndex>: SetOfTimeIndexes {}
-extension Set<LocationIndex>: SetOfLocationIndexes {}
+extension Set<UInt32>: SetOfUInt32 {}
 
 extension Set<Entry.IDValue>: SetOfEntryIDs {
     func availableMatchupPairs(

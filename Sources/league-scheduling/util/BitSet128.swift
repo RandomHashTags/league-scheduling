@@ -110,9 +110,7 @@ extension BitSet128 {
 
 // MARK: AbstractSet
 extension BitSet128: AbstractSet {}
-extension BitSet128: SetOfDayIndexes where Element == TimeIndex {}
-extension BitSet128: SetOfTimeIndexes where Element == TimeIndex {}
-extension BitSet128: SetOfLocationIndexes where Element == LocationIndex {}
+extension BitSet128: SetOfUInt32 where Element == UInt32 {}
 
 extension BitSet128: SetOfEntryIDs where Element == Entry.IDValue {
     func availableMatchupPairs(

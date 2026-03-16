@@ -16,6 +16,7 @@ let package = Package(
             "UncheckedArraySubscript",
             "SpecializeScheduleConfiguration"
         ]),
+        .trait(name: "ProtobufCodable"),
         .trait(name: "UncheckedArraySubscript"),
         .trait(name: "SpecializeScheduleConfiguration")
     ],

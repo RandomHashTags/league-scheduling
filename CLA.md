@@ -1,5 +1,7 @@
 # Contributor License Agreement
 
+**League Scheduling** — Version 1.0
+
 Thank you for your interest in contributing to League Scheduling (the "Project"), owned and maintained by Evan Anderson ("Maintainer"). This Contributor License Agreement ("CLA") clarifies the intellectual property rights you grant to the Maintainer in connection with any Contribution you submit.
 
 This license is for your protection as a Contributor as well as the protection of the Maintainer. **Except for the rights granted herein, You retain all right, title, and interest in and to Your Contributions**; this Agreement does not transfer ownership of Your work to the Maintainer, and you remain free to use Your Contributions for any other purpose.

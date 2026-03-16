@@ -13,10 +13,12 @@ let package = Package(
     traits: [
         .default(enabledTraits: [
             "ProtobufCodable",
-            "UncheckedArraySubscript"
+            "UncheckedArraySubscript",
+            "SpecializeScheduleConfiguration"
         ]),
         .trait(name: "ProtobufCodable"),
-        .trait(name: "UncheckedArraySubscript")
+        .trait(name: "UncheckedArraySubscript"),
+        .trait(name: "SpecializeScheduleConfiguration")
     ],
     dependencies: [
         .package(url: "https://github.com/RandomHashTags/swift-staticdatetime", from: "0.3.5"),

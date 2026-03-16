@@ -34,9 +34,7 @@ let package = Package(
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ],
             path: "Sources/league-scheduling",
-            swiftSettings: [
-                .enableUpcomingFeature("ExistentialAny")
-            ]
+            swiftSettings: [.enableUpcomingFeature("ExistentialAny")]
         ),
         .testTarget(
             name: "LeagueSchedulingTests",

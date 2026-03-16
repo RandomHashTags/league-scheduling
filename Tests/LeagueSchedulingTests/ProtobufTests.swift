@@ -15,7 +15,7 @@ struct ProtobufTests {
 
     @Test
     func protobufMatchupPair() throws {
-        var pair = LeagueMatchupPair(team1: 10, team2: 20)
+        var pair = MatchupPair(team1: 10, team2: 20)
         var binary:[UInt8] = try pair.serializedBytes()
         var json = try pair.jsonString(options: Self.options)
         #expect(binary == [8, 10, 16, 20])
@@ -26,7 +26,7 @@ struct ProtobufTests {
         binary = try pair.serializedBytes()
         json = try pair.jsonString(options: Self.options)
         #expect(binary == [8, 2, 16, 255, 255, 255, 255, 15])
-        #expect(json == #"{"team1":2,"team2":\#(LeagueEntry.IDValue.max)}"#)
+        #expect(json == #"{"team1":2,"team2":\#(Entry.IDValue.max)}"#)
     }
 
     @Test

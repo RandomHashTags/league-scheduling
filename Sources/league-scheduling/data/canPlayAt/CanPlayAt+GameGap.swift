@@ -4,15 +4,15 @@ import StaticDateTimes
 struct CanPlayAtGameGap: Sendable, ~Copyable {
     /// - Returns: If a team with the provided `playsAtTimes` can play at the given `time` taking into account a `gameGap`.
     static func test(
-        time: LeagueTimeIndex,
+        time: TimeIndex,
         playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         gameGap: GameGap.TupleValue
     ) -> Bool {
-        var closest:LeagueTimeIndex? = nil
+        var closest:TimeIndex? = nil
         playsAtTimes.forEach { playedTime in
             let distance = abs(playedTime.distance(to: time))
             if closest == nil || distance < closest! {
-                closest = LeagueTimeIndex(distance)
+                closest = TimeIndex(distance)
             }
         }
         if let distance = closest {
@@ -23,7 +23,7 @@ struct CanPlayAtGameGap: Sendable, ~Copyable {
 
     /// - Returns: If a game gap allows a matchup to be played given the absolute distance from the closest played time to a schedule time.
     static func gameGapIsAllowed(
-        distance: LeagueTimeIndex,
+        distance: TimeIndex,
         gameGap: GameGap.TupleValue
     ) -> Bool {
         return distance >= gameGap.min && distance <= gameGap.max

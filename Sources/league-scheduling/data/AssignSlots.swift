@@ -60,15 +60,15 @@ extension LeagueScheduleData {
         )
         /*let isBack2Back = gameGap.min == 1 && gameGap.max == 1 && entryMatchupsPerGameDay != 1
         var remainingB2BMatchupsToBeScheduled = entryMatchupsPerGameDay
-        var previousPrioritizedEntries = Set<LeagueEntry.IDValue>()
-        var prioritizedEntriesB2B = Set<LeagueEntry.IDValue>(minimumCapacity: entriesPerMatchup * locations)*/
+        var previousPrioritizedEntries = Set<Entry.IDValue>()
+        var prioritizedEntriesB2B = Set<Entry.IDValue>(minimumCapacity: entriesPerMatchup * locations)*/
         while assignmentIndex != expectedMatchupsCount {
             if Task.isCancelled {
                 throw .timedOut(function: "selectAndAssignSlots")
             }
             /*combinationLoop: for combination in allowedDivisionCombinations {
                 for (divisionIndex, divisionCombination) in combination.enumerated() {
-                    let division = LeagueDivision.IDValue(divisionIndex)
+                    let division = Division.IDValue(divisionIndex)
                     let divisionMatchups = assignmentState.availableDivisionMatchups[unchecked: division]
                     prioritizedMatchups.update(prioritizedEntries: [], availableMatchups: divisionMatchups)
                     for matchupBlockCount in divisionCombination {
@@ -127,22 +127,22 @@ extension LeagueScheduleData {
 extension LeagueScheduleData {
     /// Selects and assigns a matchup to an available slot.
     /// 
-    /// - Returns: The successfully assigned `LeagueMatchup`.
+    /// - Returns: The successfully assigned `Matchup`.
     static func selectAndAssignMatchup(
-        day: LeagueDayIndex,
-        entriesPerMatchup: LeagueEntriesPerMatchup,
+        day: DayIndex,
+        entriesPerMatchup: EntriesPerMatchup,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         assignmentState: inout AssignmentState<Config>,
-        shouldSkipSelection: (LeagueMatchupPair) -> Bool,
+        shouldSkipSelection: (MatchupPair) -> Bool,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
-        var pair:LeagueMatchupPair? = nil
+    ) -> Matchup? {
+        var pair:MatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
@@ -179,19 +179,19 @@ extension LeagueScheduleData {
     }
 
     static func selectAndAssignMatchup(
-        day: LeagueDayIndex,
-        entriesPerMatchup: LeagueEntriesPerMatchup,
+        day: DayIndex,
+        entriesPerMatchup: EntriesPerMatchup,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
-        var pair:LeagueMatchupPair? = nil
+    ) -> Matchup? {
+        var pair:MatchupPair? = nil
         var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,

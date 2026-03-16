@@ -100,6 +100,16 @@ public struct LitLeagues_Leagues_RequestPayload: Sendable {
   /// The entries/teams being scheduled, including their settings.
   public var entries: [LitLeagues_Leagues_Entry] = []
 
+  /// Constraints that influence the schedule generation process.
+  public var generationConstraints: LitLeagues_Leagues_GenerationConstraints {
+    get {return _generationConstraints ?? LitLeagues_Leagues_GenerationConstraints()}
+    set {_generationConstraints = newValue}
+  }
+  /// Returns true if `generationConstraints` has been explicitly set.
+  public var hasGenerationConstraints: Bool {return self._generationConstraints != nil}
+  /// Clears the value of `generationConstraints`. Subsequent reads from it will return its default value.
+  public mutating func clearGenerationConstraints() {self._generationConstraints = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -108,6 +118,7 @@ public struct LitLeagues_Leagues_RequestPayload: Sendable {
   fileprivate var _settings: LitLeagues_Leagues_GeneralSettings? = nil
   fileprivate var _individualDaySettings: LitLeagues_Leagues_DaySettingsArray? = nil
   fileprivate var _divisions: LitLeagues_Leagues_Divisions? = nil
+  fileprivate var _generationConstraints: LitLeagues_Leagues_GenerationConstraints? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -116,7 +127,7 @@ fileprivate let _protobuf_package = "lit_leagues.leagues"
 
 extension LitLeagues_Leagues_RequestPayload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RequestPayload"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}starts\0\u{1}gameDays\0\u{1}settings\0\u{1}individualDaySettings\0\u{1}divisions\0\u{1}entries\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}starts\0\u{1}gameDays\0\u{1}settings\0\u{1}individualDaySettings\0\u{1}divisions\0\u{1}entries\0\u{1}generationConstraints\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -130,6 +141,7 @@ extension LitLeagues_Leagues_RequestPayload: SwiftProtobuf.Message, SwiftProtobu
       case 4: try { try decoder.decodeSingularMessageField(value: &self._individualDaySettings) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._divisions) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.entries) }()
+      case 7: try { try decoder.decodeSingularMessageField(value: &self._generationConstraints) }()
       default: break
       }
     }
@@ -158,6 +170,9 @@ extension LitLeagues_Leagues_RequestPayload: SwiftProtobuf.Message, SwiftProtobu
     if !self.entries.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.entries, fieldNumber: 6)
     }
+    try { if let v = self._generationConstraints {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -168,6 +183,7 @@ extension LitLeagues_Leagues_RequestPayload: SwiftProtobuf.Message, SwiftProtobu
     if lhs._individualDaySettings != rhs._individualDaySettings {return false}
     if lhs._divisions != rhs._divisions {return false}
     if lhs.entries != rhs.entries {return false}
+    if lhs._generationConstraints != rhs._generationConstraints {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -1,22 +1,22 @@
 
 struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
-    /// The latest `LeagueDayIndex` that is allowed to redistribute matchups from.
-    let startDayIndex:LeagueDayIndex
-    let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+    /// The latest `DayIndex` that is allowed to redistribute matchups from.
+    let startDayIndex:DayIndex
+    let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 
     let minMatchupsRequired:Int
     let maxMovableMatchups:Int
 
     private var redistributedEntries:[UInt16]
-    private(set) var redistributed:Set<LeagueMatchup>
+    private(set) var redistributed:Set<Matchup>
 
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     init(
-        dayIndex: LeagueDayIndex,
-        startDayIndex: LeagueDayIndex,
+        dayIndex: DayIndex,
+        startDayIndex: DayIndex,
         settings: LitLeagues_Leagues_RedistributionSettings?,
         data: borrowing LeagueScheduleData<Config>
     ) {
@@ -44,7 +44,7 @@ extension RedistributionData {
     mutating func redistributeMatchups(
         clock: ContinuousClock,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
-        day: LeagueDayIndex,
+        day: DayIndex,
         gameGap: GameGap.TupleValue,
         assignmentState: inout AssignmentState<Config>,
         executionSteps: inout [ExecutionStep],
@@ -168,7 +168,7 @@ extension RedistributionData {
 // MARK: Calculate min max
 extension RedistributionData {
     private func calculateMinMax(
-        matchup: LeagueMatchup
+        matchup: Matchup
     ) -> (minimum: UInt16, maximum: UInt16) {
         let home = redistributedEntries[unchecked: matchup.home]
         let away = redistributedEntries[unchecked: matchup.away]
@@ -204,8 +204,8 @@ extension RedistributionData {
 // MARK: Redistributable
 extension RedistributionData {
     private struct Redistributable: Hashable, Sendable {
-        let fromDay:LeagueDayIndex
-        var matchup:LeagueMatchup
-        let toSlot:LeagueAvailableSlot
+        let fromDay:DayIndex
+        var matchup:Matchup
+        let toSlot:AvailableSlot
     }
 }

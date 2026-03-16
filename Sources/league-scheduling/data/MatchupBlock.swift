@@ -4,9 +4,9 @@ extension LeagueScheduleData {
     /// - Returns: The assigned block of matchups
     mutating func assignBlockOfMatchups(
         amount: Int,
-        division: LeagueDivision.IDValue,
+        division: Division.IDValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> Set<LeagueMatchup>? {
+    ) -> Set<Matchup>? {
         if gameGap.min == 1 && gameGap.max == 1 {
             return Self.assignBlockOfMatchups(
                 amount: amount,
@@ -45,18 +45,18 @@ extension LeagueScheduleData {
     /// - Returns: The assigned block of matchups
     static func assignBlockOfMatchups(
         amount: Int,
-        division: LeagueDivision.IDValue,
-        day: LeagueDayIndex,
-        entriesPerMatchup: LeagueEntriesPerMatchup,
+        division: Division.IDValue,
+        day: DayIndex,
+        entriesPerMatchup: EntriesPerMatchup,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> Set<LeagueMatchup>? {
+    ) -> Set<Matchup>? {
         let limit = amount * entryMatchupsPerGameDay
         var remainingPrioritizedEntries = assignmentState.prioritizedEntries
         var remainingAvailableSlots = assignmentState.availableSlots
@@ -127,7 +127,7 @@ extension LeagueScheduleData {
         // assign the last matchup
         let lastLocalAssignmentStateAvailableMatchups = localAssignmentState.availableMatchups
         let lastSelectedEntries = selectedEntries
-        let shouldSkipSelection:(LeagueMatchupPair) -> Bool = entryMatchupsPerGameDay % 2 == 0 ? { pair in
+        let shouldSkipSelection:(MatchupPair) -> Bool = entryMatchupsPerGameDay % 2 == 0 ? { pair in
             var targetEntries = lastSelectedEntries
             targetEntries.insertMember(pair.team1)
             targetEntries.insertMember(pair.team2)
@@ -215,20 +215,20 @@ extension LeagueScheduleData {
 // MARK: Select and assign
 extension LeagueScheduleData {
     private static func selectAndAssignMatchup(
-        day: LeagueDayIndex,
-        entriesPerMatchup: LeagueEntriesPerMatchup,
+        day: DayIndex,
+        entriesPerMatchup: EntriesPerMatchup,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         localAssignmentState: inout AssignmentState<Config>,
         remainingPrioritizedEntries: inout Config.EntryIDSet,
         selectedEntries: inout Config.EntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
+    ) -> Matchup? {
         guard let leagueMatchup = selectAndAssignMatchup(
             day: day,
             entriesPerMatchup: entriesPerMatchup,
@@ -252,21 +252,21 @@ extension LeagueScheduleData {
         return leagueMatchup
     }
     private static func selectAndAssignMatchup(
-        day: LeagueDayIndex,
-        entriesPerMatchup: LeagueEntriesPerMatchup,
+        day: DayIndex,
+        entriesPerMatchup: EntriesPerMatchup,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         localAssignmentState: inout AssignmentState<Config>,
-        shouldSkipSelection: (LeagueMatchupPair) -> Bool,
+        shouldSkipSelection: (MatchupPair) -> Bool,
         remainingPrioritizedEntries: inout Config.EntryIDSet,
         selectedEntries: inout Config.EntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> LeagueMatchup? {
+    ) -> Matchup? {
         guard let leagueMatchup = selectAndAssignMatchup(
             day: day,
             entriesPerMatchup: entriesPerMatchup,

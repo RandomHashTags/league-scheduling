@@ -11,7 +11,7 @@ struct MatchupBlockTests: ScheduleExpectations {
 extension MatchupBlockTests {
     @Test(.timeLimit(.minutes(1)))
     func adjacentTimes() {
-        var adjacent:BitSet64<LeagueTimeIndex> = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 2)
+        var adjacent:BitSet64<TimeIndex> = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 2)
         #expect(adjacent == .init([1]))
 
         adjacent = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 3)

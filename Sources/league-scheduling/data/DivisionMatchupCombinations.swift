@@ -1,10 +1,10 @@
 
 // MARK: All combinations
 /// - Returns: All division matchup combinations separated by division.
-/// - Usage: [`LeagueDivision.IDValue`: `division matchup combinations`]
+/// - Usage: [`Division.IDValue`: `division matchup combinations`]
 func allDivisionMatchupCombinations(
-    entriesPerMatchup: LeagueEntriesPerMatchup,
-    locations: LeagueLocationIndex,
+    entriesPerMatchup: EntriesPerMatchup,
+    locations: LocationIndex,
     entryCountsForDivision: ContiguousArray<Int>
 ) -> ContiguousArray<ContiguousArray<ContiguousArray<Int>>> {
     var combinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = .init(repeating: [], count: entryCountsForDivision.count)
@@ -35,10 +35,10 @@ func allDivisionMatchupCombinations(
 
 // MARK: Allowed combinations
 /// - Returns: Allowed division matchup combinations
-/// - Usage: [`allowed matchup combination index`: [`LeagueDivision.IDValue`: `division matchup combination`]]
+/// - Usage: [`allowed matchup combination index`: [`Division.IDValue`: `division matchup combination`]]
 func allowedDivisionMatchupCombinations(
-    entriesPerMatchup: LeagueEntriesPerMatchup,
-    locations: LeagueLocationIndex,
+    entriesPerMatchup: EntriesPerMatchup,
+    locations: LocationIndex,
     entryCountsForDivision: ContiguousArray<Int>
 ) -> ContiguousArray<ContiguousArray<ContiguousArray<Int>>> {
     let allCombinations = allDivisionMatchupCombinations(
@@ -63,8 +63,8 @@ func allowedDivisionMatchupCombinations(
 }
 private func yieldAllowedCombinations(
     allCombinations: ContiguousArray<ContiguousArray<ContiguousArray<Int>>>,
-    division: LeagueDivision.IDValue,
-    locations: LeagueLocationIndex,
+    division: Division.IDValue,
+    locations: LocationIndex,
     results: ContiguousArray<Int>,
     combinationBuilder: ContiguousArray<ContiguousArray<Int>>,
     yield: (_ combination: ContiguousArray<ContiguousArray<Int>>) -> Void

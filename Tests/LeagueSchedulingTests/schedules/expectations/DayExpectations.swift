@@ -5,7 +5,7 @@ import Testing
 struct DayExpectations<Config: ScheduleConfiguration>: ScheduleTestsProtocol {
     let b2bMatchupsAtDifferentLocations:Set<ValidLeagueMatchup>
 
-    func expectations(_ settings: LeagueGeneralSettings.Runtime<Config>) {
+    func expectations(_ settings: GeneralSettings.Runtime<Config>) {
         if settings.sameLocationIfB2B {
             sameLocationIfB2B()
         }

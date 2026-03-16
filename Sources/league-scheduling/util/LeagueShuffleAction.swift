@@ -1,9 +1,9 @@
 
 public struct LeagueShuffleAction: Sendable {
-    public let day:LeagueDayIndex
-    public let from:LeagueAvailableSlot
-    public let to:LeagueAvailableSlot
-    public let pair:LeagueMatchupPair
+    public let day:UInt32
+    public let from:LitLeagues_Leagues_AvailableSlot
+    public let to:LitLeagues_Leagues_AvailableSlot
+    public let pair:LitLeagues_Leagues_MatchupPair
 }
 
 // MARK: Codable

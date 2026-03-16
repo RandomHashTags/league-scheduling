@@ -33,6 +33,6 @@ package lit_leagues.leagues;
 import "LocationTimeExclusivity.proto";
 
 message LocationTimeExclusivities {
-    // - Usage: [`LeagueLocationIndex`: `Set<LeagueTimeIndex>`]
+    // - Usage: [`LocationIndex`: `Set<TimeIndex>`]
     repeated LocationTimeExclusivity locations = 1;
 }

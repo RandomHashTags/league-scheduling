@@ -11,13 +11,13 @@ extension LeagueScheduleData {
             }
             // TODO: pick the optimal combination that should be selected?
             combinationLoop: for combination in allowedDivisionCombinations {
-                var assignedSlots = Set<LeagueAvailableSlot>()
-                var combinationTimeAllocations:ContiguousArray<BitSet64<LeagueTimeIndex>> = .init(
+                var assignedSlots = Set<AvailableSlot>()
+                var combinationTimeAllocations:ContiguousArray<BitSet64<TimeIndex>> = .init(
                     repeating: .init(),
                     count: combination.first?.count ?? 10
                 )
                 for (divisionIndex, divisionCombination) in combination.enumerated() {
-                    let division = LeagueDivision.IDValue(divisionIndex)
+                    let division = Division.IDValue(divisionIndex)
                     let divisionMatchups = assignmentState.allDivisionMatchups[unchecked: division]
                     assignmentState.availableMatchups = divisionMatchups
                     assignmentState.prioritizedEntries.removeAllKeepingCapacity()
@@ -34,7 +34,7 @@ extension LeagueScheduleData {
                     #if LOG
                     print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
                     #endif
-                    var disallowedTimes = BitSet64<LeagueTimeIndex>()
+                    var disallowedTimes = BitSet64<TimeIndex>()
                     for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
                         guard amount > 0 else { continue }
                         let combinationTimeAllocation = combinationTimeAllocations[divisionCombinationIndex]

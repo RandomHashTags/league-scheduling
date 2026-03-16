@@ -5,8 +5,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     /// - Warning: Only checks if the allocations and game gap are allowed.
     func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        time: TimeIndex,
+        location: LocationIndex,
         allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playsAt: PlaysAt.Element,
@@ -35,8 +35,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     /// - Warning: Only checks if the allocations and `gameGap` are allowed.
     static func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        time: TimeIndex,
+        location: LocationIndex,
         allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
@@ -62,8 +62,8 @@ struct CanPlayAtNormal: CanPlayAtProtocol, ~Copyable {
 
     /// - Returns: If a team with the provided data can play at the given `time` and `location`.
     static func isAllowed(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        time: TimeIndex,
+        location: LocationIndex,
         allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,

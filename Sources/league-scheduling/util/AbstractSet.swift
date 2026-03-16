@@ -32,16 +32,16 @@ protocol AbstractSet: Sendable, ~Copyable {
     func forEachWithReturn<Result>(_ body: (Element) throws -> Result?) rethrows -> Result?
 }
 
-protocol SetOfDayIndexes: AbstractSet, ~Copyable where Element == LeagueDayIndex {}
-protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == LeagueTimeIndex {}
-protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LeagueLocationIndex {}
+protocol SetOfDayIndexes: AbstractSet, ~Copyable where Element == DayIndex {}
+protocol SetOfTimeIndexes: AbstractSet, ~Copyable where Element == TimeIndex {}
+protocol SetOfLocationIndexes: AbstractSet, ~Copyable where Element == LocationIndex {}
 
-protocol SetOfEntryIDs: AbstractSet, ~Copyable where Element == LeagueEntry.IDValue {
+protocol SetOfEntryIDs: AbstractSet, ~Copyable where Element == Entry.IDValue {
     /// - Returns: The available matchup pairs that can play for the `day`.
     func availableMatchupPairs(
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
-    ) -> Set<LeagueMatchupPair>
+        maxSameOpponentMatchups: MaximumSameOpponentMatchups
+    ) -> Set<MatchupPair>
 }
 
 extension Set: AbstractSet {
@@ -83,16 +83,16 @@ extension Set: AbstractSet {
     }
 }
 
-extension Set<LeagueDayIndex>: SetOfDayIndexes {}
-extension Set<LeagueTimeIndex>: SetOfTimeIndexes {}
-extension Set<LeagueLocationIndex>: SetOfLocationIndexes {}
+extension Set<DayIndex>: SetOfDayIndexes {}
+extension Set<TimeIndex>: SetOfTimeIndexes {}
+extension Set<LocationIndex>: SetOfLocationIndexes {}
 
-extension Set<LeagueEntry.IDValue>: SetOfEntryIDs {
+extension Set<Entry.IDValue>: SetOfEntryIDs {
     func availableMatchupPairs(
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
-    ) -> Set<LeagueMatchupPair> {
-        var pairs = Set<LeagueMatchupPair>(minimumCapacity: (count-1) * 2)
+        maxSameOpponentMatchups: MaximumSameOpponentMatchups
+    ) -> Set<MatchupPair> {
+        var pairs = Set<MatchupPair>(minimumCapacity: (count-1) * 2)
         let sortedEntries = sorted()
         var index = 0
         while index < sortedEntries.count - 1 {

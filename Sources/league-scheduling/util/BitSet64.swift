@@ -116,16 +116,16 @@ extension BitSet64 {
 
 // MARK: AbstractSet
 extension BitSet64: AbstractSet {}
-extension BitSet64: SetOfDayIndexes where Element == LeagueTimeIndex {}
-extension BitSet64: SetOfTimeIndexes where Element == LeagueTimeIndex {}
-extension BitSet64: SetOfLocationIndexes where Element == LeagueLocationIndex {}
+extension BitSet64: SetOfDayIndexes where Element == TimeIndex {}
+extension BitSet64: SetOfTimeIndexes where Element == TimeIndex {}
+extension BitSet64: SetOfLocationIndexes where Element == LocationIndex {}
 
-extension BitSet64: SetOfEntryIDs where Element == LeagueEntry.IDValue {
+extension BitSet64: SetOfEntryIDs where Element == Entry.IDValue {
     func availableMatchupPairs(
         assignedEntryHomeAways: AssignedEntryHomeAways,
-        maxSameOpponentMatchups: LeagueMaximumSameOpponentMatchups
-    ) -> Set<LeagueMatchupPair> {
-        var pairs = Set<LeagueMatchupPair>(minimumCapacity: (count-1) * 2)
+        maxSameOpponentMatchups: MaximumSameOpponentMatchups
+    ) -> Set<MatchupPair> {
+        var pairs = Set<MatchupPair>(minimumCapacity: (count-1) * 2)
         var index = 0
         forEach { home in
             let assignedHome = assignedEntryHomeAways[unchecked: home]

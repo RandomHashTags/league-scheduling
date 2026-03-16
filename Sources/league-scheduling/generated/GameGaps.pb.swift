@@ -55,7 +55,7 @@ public struct LitLeagues_Leagues_GameGaps: Sendable {
 
   /// Game gaps for specific game days.
   /// 
-  /// - Usage: [`LeagueDayIndex`: `GameGap`]
+  /// - Usage: [`DayIndex`: `GameGap`]
   public var gameGaps: [String] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

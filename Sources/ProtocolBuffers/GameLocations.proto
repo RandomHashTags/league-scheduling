@@ -33,6 +33,6 @@ package lit_leagues.leagues;
 message GameLocations {
     // Playable locations for a specific day index.
     //
-    // - Usage: [`LeagueDayIndex`: `Set<LeagueLocationIndex>`]
+    // - Usage: [`DayIndex`: `Set<LocationIndex>`]
     repeated uint32 locations = 1;
 }

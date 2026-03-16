@@ -4,17 +4,17 @@ import struct FoundationEssentials.Date
 import StaticDateTimes
 
 protocol ScheduleTestsProtocol: ScheduleExpectations {
-    typealias UnitTestScheduleConfig = ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>
-    typealias UnitTestRuntimeSchedule = LeagueRequestPayload.Runtime<UnitTestScheduleConfig>
+    typealias UnitTestScheduleConfig = ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>
+    typealias UnitTestRuntimeSchedule = RequestPayload.Runtime<UnitTestScheduleConfig>
 }
 
 // MARK: Get entries
 extension ScheduleTestsProtocol {
     static func getEntries(
-        divisions: [LeagueDivision.IDValue],
-        gameDays: LeagueDayIndex,
-        times: LeagueTimeIndex,
-        locations: LeagueLocationIndex,
+        divisions: [Division.IDValue],
+        gameDays: DayIndex,
+        times: TimeIndex,
+        locations: LocationIndex,
         teams: Int,
         homeLocations: ContiguousArray<UnitTestScheduleConfig.LocationSet> = [],
         byes: ContiguousArray<UnitTestScheduleConfig.LocationSet> = []
@@ -25,8 +25,8 @@ extension ScheduleTestsProtocol {
         var entries = [UnitTestScheduleConfig.EntryRuntime]()
         entries.reserveCapacity(teams)
         for division in divisions {
-            let entry = LeagueEntry.Runtime(
-                id: LeagueEntry.IDValue(entries.count),
+            let entry = Entry.Runtime(
+                id: Entry.IDValue(entries.count),
                 division: division,
                 gameDays: playsOn[entries.count],
                 gameTimes: playsAtTimes[entries.count],
@@ -43,15 +43,15 @@ extension ScheduleTestsProtocol {
 
 extension ScheduleTestsProtocol {
     static func getDivision(
-        dayOfWeek: LeagueDayOfWeek,
+        dayOfWeek: DayOfWeek,
         gameGaps: [GameGap] = [],
         values: (
-            gameDays: LeagueDayIndex,
-            entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+            gameDays: DayIndex,
+            entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
             entriesCount: Int
         )
     ) throws(LeagueError) -> UnitTestScheduleConfig.DivisionRuntime {
-        let maxSameOpponentMatchups = try LeagueRequestPayload.calculateMaximumSameOpponentMatchupsCap(
+        let maxSameOpponentMatchups = try RequestPayload.calculateMaximumSameOpponentMatchupsCap(
             gameDays: values.gameDays,
             entryMatchupsPerGameDay: values.entryMatchupsPerGameDay,
             entriesCount: values.entriesCount
@@ -68,39 +68,39 @@ extension ScheduleTestsProtocol {
 // MARK: Get schedule
 extension ScheduleTestsProtocol {
     static func getSchedule(
-        gameDays: LeagueDayIndex,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
+        gameDays: DayIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         maximumPlayableMatchups: [UInt32] = [],
-        entriesPerLocation: LeagueEntriesPerMatchup,
-        matchupDuration: LeagueMatchupDuration = 0,
+        entriesPerLocation: EntriesPerMatchup,
+        matchupDuration: MatchupDuration = 0,
         startingTimes: [StaticTime],
-        locations: LeagueLocationIndex,
+        locations: LocationIndex,
         optimizeTimes: Bool,
         prioritizeEarlierTimes: Bool = true,
         prioritizeHomeAway: Bool,
         balanceHomeAway: Bool = true,
         sameLocationIfB2B: Bool = false,
         redistributionSettings: LitLeagues_Leagues_RedistributionSettings? = nil,
-        balanceTimeStrictness: LeagueBalanceStrictness,
-        balanceLocationStrictness: LeagueBalanceStrictness,
+        balanceTimeStrictness: BalanceStrictness,
+        balanceLocationStrictness: BalanceStrictness,
         gameGaps: GameGap,
         divisions: [UnitTestScheduleConfig.DivisionRuntime],
         divisionsCanPlayOnSameDay: Bool = true,
         divisionsCanPlayAtSameTime: Bool = true,
         entries: [UnitTestScheduleConfig.EntryRuntime]
-    ) -> LeagueRequestPayload.Runtime<UnitTestScheduleConfig> {
-        let correctMaximumPlayableMatchups = LeagueRequestPayload.calculateMaximumPlayableMatchups(
+    ) -> RequestPayload.Runtime<UnitTestScheduleConfig> {
+        let correctMaximumPlayableMatchups = RequestPayload.calculateMaximumPlayableMatchups(
             gameDays: gameDays,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             teamsCount: entries.count,
             maximumPlayableMatchups: maximumPlayableMatchups
         )
-        let times:LeagueTimeIndex = LeagueTimeIndex(startingTimes.count)
-        let timeSlots:BitSet64<LeagueTimeIndex> = .init(0..<times)
-        let matchupSlots:BitSet64<LeagueLocationIndex> = .init(0..<locations)
-        let generalSettings = LeagueGeneralSettings.Runtime<UnitTestScheduleConfig>.init(
+        let times:TimeIndex = TimeIndex(startingTimes.count)
+        let timeSlots:BitSet64<TimeIndex> = .init(0..<times)
+        let matchupSlots:BitSet64<LocationIndex> = .init(0..<locations)
+        let generalSettings = GeneralSettings.Runtime<UnitTestScheduleConfig>.init(
             gameGap: gameGaps,
-            timeSlots: LeagueTimeIndex(startingTimes.count),
+            timeSlots: TimeIndex(startingTimes.count),
             startingTimes: startingTimes,
             entriesPerLocation: entriesPerLocation,
             locations: locations,
@@ -114,7 +114,7 @@ extension ScheduleTestsProtocol {
             balanceLocationStrictness: balanceLocationStrictness,
             balancedLocations: matchupSlots,
             redistributionSettings: redistributionSettings,
-            flags: LeagueSettingFlags.get(
+            flags: SettingFlags.get(
                 optimizeTimes: optimizeTimes,
                 prioritizeEarlierTimes: prioritizeEarlierTimes,
                 prioritizeHomeAway: prioritizeHomeAway,
@@ -123,14 +123,14 @@ extension ScheduleTestsProtocol {
             )
         )
         
-        var daySettings = [LeagueGeneralSettings.Runtime<UnitTestScheduleConfig>]()
+        var daySettings = [GeneralSettings.Runtime<UnitTestScheduleConfig>]()
         daySettings.reserveCapacity(gameDays)
         for day in 0..<gameDays {
             var settings = generalSettings
             settings.computeSettings(day: day, entries: entries)
             daySettings.append(settings)
         }
-        return LeagueRequestPayload.Runtime(
+        return RequestPayload.Runtime(
             gameDays: gameDays,
             divisions: divisions,
             entries: entries,

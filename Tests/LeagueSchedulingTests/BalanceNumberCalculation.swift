@@ -3,8 +3,8 @@
 import Testing
 
 struct BalanceNumberCalculation {
-    @Test(arguments: [LeagueBalanceStrictness.lenient, .relaxed, .normal, .very])
-    func balanceNumberCalculation(strictness: LeagueBalanceStrictness) {
+    @Test(arguments: [BalanceStrictness.lenient, .relaxed, .normal, .very])
+    func balanceNumberCalculation(strictness: BalanceStrictness) {
         // `totalMatchupsPlayed` = total number of matchups played by a single entry/team in a schedule
         // `value` = number of available times/locations
         let mutateMinimum:(_ value: inout Int) -> Void

@@ -8,7 +8,7 @@ protocol ScheduleExpectations: Sendable {
 // MARK: Expectations
 extension ScheduleExpectations {
     func expectations<Config: ScheduleConfiguration>(
-        settings: borrowing LeagueRequestPayload.Runtime<Config>,
+        settings: borrowing RequestPayload.Runtime<Config>,
         matchupsCount: Int,
         data: LeagueGenerationResult
     ) throws {
@@ -29,11 +29,11 @@ extension ScheduleExpectations {
         let gameDays = settings.gameDays
         let entryMatchupsPerGameDay = settings.general.defaultMaxEntryMatchupsPerGameDay
         let entriesPerLocation = settings.general.entriesPerLocation
-        var maxStartingTimes:LeagueTimeIndex = 0
-        var maxLocations:LeagueLocationIndex = 0
+        var maxStartingTimes:TimeIndex = 0
+        var maxLocations:LocationIndex = 0
         for setting in settings.daySettings {
             if setting.startingTimes.count > maxStartingTimes {
-                maxStartingTimes = LeagueTimeIndex(setting.startingTimes.count)
+                maxStartingTimes = TimeIndex(setting.startingTimes.count)
             }
             if setting.locations > maxLocations {
                 maxLocations = setting.locations
@@ -44,8 +44,8 @@ extension ScheduleExpectations {
         for result in data.results {
             let matchups = result.schedule
             var numberOfAssignedMatchups = [Int](repeating: 0, count: entriesCount)
-            var assignedTimes = LeagueAssignedTimes(repeating: .init(repeating: UInt8(0), count: maxStartingTimes), count: entriesCount)
-            var assignedLocations = LeagueAssignedLocations(repeating: .init(repeating: UInt8(0), count: maxLocations), count: entriesCount)
+            var assignedTimes = AssignedTimes(repeating: .init(repeating: UInt8(0), count: maxStartingTimes), count: entriesCount)
+            var assignedLocations = AssignedLocations(repeating: .init(repeating: UInt8(0), count: maxLocations), count: entriesCount)
             var matchupsPerDay = ContiguousArray(repeating: UInt32(0), count: gameDays)
             var matchupsPlayedPerDay = ContiguousArray(repeating: ContiguousArray(repeating: 0, count: entriesCount), count: gameDays)
             var assignedEntryHomeAways = AssignedEntryHomeAways(repeating: .init(repeating: .init(home: 0, away: 0), count: entriesCount), count: entriesCount)
@@ -55,7 +55,7 @@ extension ScheduleExpectations {
                 matchupsPerDay[unchecked: dayIndex] = UInt32(matchups.count)
 
                 var b2bMatchupsAtDifferentLocations = Set<ValidLeagueMatchup>()
-                var assignedSlots = [Set<LeagueAvailableSlot>](repeating: [], count: entriesCount)
+                var assignedSlots = [Set<AvailableSlot>](repeating: [], count: entriesCount)
                 for matchup in matchups {
                     let home = matchup.home
                     let away = matchup.away
@@ -75,7 +75,7 @@ extension ScheduleExpectations {
                     let homeSlots = assignedSlots[unchecked: home]
                     if homeSlots.count > 1 {
                         insertB2BSlotsAtDifferentLocations(
-                            dayIndex: LeagueDayIndex(dayIndex),
+                            dayIndex: DayIndex(dayIndex),
                             matchup: matchup,
                             slots: homeSlots,
                             b2bMatchupsAtDifferentLocations: &b2bMatchupsAtDifferentLocations
@@ -84,7 +84,7 @@ extension ScheduleExpectations {
                     let awaySlots = assignedSlots[unchecked: away]
                     if awaySlots.count > 1 {
                         insertB2BSlotsAtDifferentLocations(
-                            dayIndex: LeagueDayIndex(dayIndex),
+                            dayIndex: DayIndex(dayIndex),
                             matchup: matchup,
                             slots: awaySlots,
                             b2bMatchupsAtDifferentLocations: &b2bMatchupsAtDifferentLocations
@@ -120,7 +120,7 @@ extension ScheduleExpectations {
             #expect(assignedTimes == result.assignedTimes)
             #endif
 
-            let balanceTimeNumber:LeagueTimeIndex
+            let balanceTimeNumber:TimeIndex
             if !settings.general.balancedTimes.isEmpty {
                 balanceTimeNumber = LeagueSchedule.balanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
@@ -140,7 +140,7 @@ extension ScheduleExpectations {
             #expect(assignedLocations == result.assignedLocations)
             #endif
 
-            let balanceLocationNumber:LeagueLocationIndex
+            let balanceLocationNumber:LocationIndex
             if !settings.general.balancedLocations.isEmpty {
                 balanceLocationNumber = LeagueSchedule.balanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
@@ -190,20 +190,20 @@ extension ScheduleExpectations {
 // MARK: B2B slots at different locations
 extension ScheduleExpectations {
     func insertB2BSlotsAtDifferentLocations(
-        dayIndex: LeagueDayIndex,
-        matchup: LeagueMatchup,
-        slots: Set<LeagueAvailableSlot>,
+        dayIndex: DayIndex,
+        matchup: Matchup,
+        slots: Set<AvailableSlot>,
         b2bMatchupsAtDifferentLocations: inout Set<ValidLeagueMatchup>
     ) {
         for slot in slots {
-            var b2bTimes = Set<LeagueTimeIndex>()
+            var b2bTimes = Set<TimeIndex>()
             if slot.time > 0 {
                 b2bTimes.insert(slot.time-1)
             }
             b2bTimes.insert(slot.time+1)
             let b2bSlotsAtDifferentLocation = slots.filter({ b2bTimes.contains($0.time) && $0.location != slot.location })
             if !b2bSlotsAtDifferentLocation.isEmpty {
-                b2bMatchupsAtDifferentLocations.insert(.init(day: LeagueDayIndex(dayIndex), matchup: matchup))
+                b2bMatchupsAtDifferentLocations.insert(.init(day: DayIndex(dayIndex), matchup: matchup))
             }
         }
     }
@@ -212,13 +212,13 @@ extension ScheduleExpectations {
 // MARK: Assigned times
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceTimeNumber(
-        assignedTimes: LeagueAssignedTimes,
+        assignedTimes: AssignedTimes,
         balancedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
-        balanceTimeNumber: LeagueTimeIndex
+        balanceTimeNumber: TimeIndex
     ) {
         for (entryID, assignedTimes) in assignedTimes.enumerated() {
             for (timeIndex, assignedTime) in assignedTimes.enumerated() {
-                guard balancedTimes.contains(LeagueTimeIndex(timeIndex)) else { continue }
+                guard balancedTimes.contains(TimeIndex(timeIndex)) else { continue }
                 #expect(assignedTime <= balanceTimeNumber, Comment("entryID=\(entryID);timeIndex=\(timeIndex);assignedTime=\(assignedTime);balanceTimeNumber=\(balanceTimeNumber)"))
             }
         }
@@ -228,13 +228,13 @@ extension ScheduleExpectations {
 // MARK: Assigned locations
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceLocationNumber(
-        assignedLocations: LeagueAssignedLocations,
+        assignedLocations: AssignedLocations,
         balancedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
-        balanceLocationNumber: LeagueLocationIndex
+        balanceLocationNumber: LocationIndex
     ) {
         for (entryID, assignedLocations) in assignedLocations.enumerated() {
             for (locationIndex, assignedLocation) in assignedLocations.enumerated() {
-                guard balancedLocations.contains(LeagueLocationIndex(locationIndex)) else { continue }
+                guard balancedLocations.contains(LocationIndex(locationIndex)) else { continue }
                 #expect(assignedLocation <= balanceLocationNumber, Comment("entryID=\(entryID);locationIndex=\(locationIndex);assignedLocation=\(assignedLocation);balanceLocationNumber=\(balanceLocationNumber)"))
             }
         }
@@ -245,7 +245,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     func printMatchups(
         day: Int,
-        _ matchups: Set<LeagueMatchup>
+        _ matchups: Set<Matchup>
     ) {
         return
         let results:String = matchups.sorted(by: {

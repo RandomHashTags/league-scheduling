@@ -31,9 +31,9 @@ syntax = "proto3";
 package lit_leagues.leagues;
 
 message MatchupPair {
-    // LeagueEntry.IDValue (usually the home team)
+    // Entry.IDValue (usually the home team)
     uint32 team1 = 1;
 
-    // LeagueEntry.IDValue (usually the away team)
+    // Entry.IDValue (usually the away team)
     uint32 team2 = 2;
 }

@@ -8,8 +8,8 @@ struct ScheduleMisc: ScheduleTestsProtocol {
     // MARK: 5GD | 4T | 3L | 1D | 8T | 1M
     @Test(.timeLimit(.minutes(1)))
     func schedule5GameDays4Times3Locations1Division8Teams1Matchup() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (5, 4, 3, 8)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (5, 4, 3, 8)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -52,11 +52,11 @@ extension ScheduleMisc {
     // MARK: 5GD | 4T | 3L | 1D | 8T | 1M
     @Test(.timeLimit(.minutes(1)))
     func schedule5GameDays4Times3Locations2Divisions16Teams1Matchup() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (5, 4, 3, 16)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 8))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 8))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (5, 4, 3, 16)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 8))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 8))
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -100,8 +100,8 @@ extension ScheduleMisc {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MjUwOTgxMA==&arg3=MzQ1OTg=
     @Test(.timeLimit(.minutes(1)))
     func schedule6GameDays2Times2Locations1Division6Teams1Matchup() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (6, 2, 2, 6)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (6, 2, 2, 6)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -141,8 +141,8 @@ extension ScheduleMisc {
     // MARK: 8GD | 8T | 3L | 1D | 9T | 4M
     @Test(.timeLimit(.minutes(1)))
     func schedule8GameDays8Times3Locations1Division9Teams4Matchups() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 4
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (8, 8, 3, 9)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 4
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (8, 8, 3, 9)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -199,11 +199,11 @@ extension ScheduleMisc {
     }
 
     static func schedule10GameDays4Times5Locations2Divisions20Teams2Matchups() throws -> UnitTestRuntimeSchedule {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 5, 20)
-        var entryDivisions = [LeagueDivision.IDValue]()
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 0, count: 10))
-        entryDivisions.append(contentsOf: [LeagueDivision.IDValue](repeating: 1, count: 10))
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 5, 20)
+        var entryDivisions = [Division.IDValue]()
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 10))
+        entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 10))
         return getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,

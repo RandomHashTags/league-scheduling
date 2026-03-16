@@ -150,7 +150,7 @@ public struct LitLeagues_Leagues_GeneralSettings: @unchecked Sendable {
   /// Clears the value of `matchupDuration`. Subsequent reads from it will return its default value.
   public mutating func clearMatchupDuration() {_uniqueStorage()._matchupDuration = nil}
 
-  /// - Usage: [`LeagueLocationIndex`: `Set<LeagueTimeIndex>`]
+  /// - Usage: [`LocationIndex`: `Set<TimeIndex>`]
   public var locationTimeExclusivities: LitLeagues_Leagues_LocationTimeExclusivities {
     get {return _storage._locationTimeExclusivities ?? LitLeagues_Leagues_LocationTimeExclusivities()}
     set {_uniqueStorage()._locationTimeExclusivities = newValue}
@@ -160,7 +160,7 @@ public struct LitLeagues_Leagues_GeneralSettings: @unchecked Sendable {
   /// Clears the value of `locationTimeExclusivities`. Subsequent reads from it will return its default value.
   public mutating func clearLocationTimeExclusivities() {_uniqueStorage()._locationTimeExclusivities = nil}
 
-  /// - Usage: [`LeagueLocationIndex`: [`LeagueLocationIndex`: `LeagueMatchupDuration`]]
+  /// - Usage: [`LocationIndex`: [`LocationIndex`: `MatchupDuration`]]
   public var locationTravelDurations: LitLeagues_Leagues_LocationTravelDurations {
     get {return _storage._locationTravelDurations ?? LitLeagues_Leagues_LocationTravelDurations()}
     set {_uniqueStorage()._locationTravelDurations = newValue}

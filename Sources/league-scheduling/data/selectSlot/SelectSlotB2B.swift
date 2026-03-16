@@ -1,16 +1,16 @@
 
 struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
-    let entryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+    let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 
     func select<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>(
-        team1: LeagueEntry.IDValue,
-        team2: LeagueEntry.IDValue,
-        assignedTimes: LeagueAssignedTimes,
-        assignedLocations: LeagueAssignedLocations,
+        team1: Entry.IDValue,
+        team2: Entry.IDValue,
+        assignedTimes: AssignedTimes,
+        assignedLocations: AssignedLocations,
         playsAtTimes: ContiguousArray<TimeSet>,
         playsAtLocations: ContiguousArray<LocationSet>,
-        playableSlots: inout Set<LeagueAvailableSlot>
-    ) -> LeagueAvailableSlot? {
+        playableSlots: inout Set<AvailableSlot>
+    ) -> AvailableSlot? {
         filter(
             team1PlaysAtTimes: playsAtTimes[unchecked: team1],
             team2PlaysAtTimes: playsAtTimes[unchecked: team2],
@@ -31,7 +31,7 @@ extension SelectSlotB2B {
     private func filter<TimeSet: SetOfTimeIndexes>(
         team1PlaysAtTimes: TimeSet,
         team2PlaysAtTimes: TimeSet,
-        playableSlots: inout Set<LeagueAvailableSlot>
+        playableSlots: inout Set<AvailableSlot>
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")
         if team1PlaysAtTimes.isEmpty && team2PlaysAtTimes.isEmpty {

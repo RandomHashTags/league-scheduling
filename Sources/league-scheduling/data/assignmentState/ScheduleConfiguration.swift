@@ -5,8 +5,8 @@ protocol ScheduleConfiguration: Sendable, ~Copyable {
     associatedtype LocationSet:SetOfLocationIndexes
     associatedtype EntryIDSet:SetOfEntryIDs
 
-    typealias DivisionRuntime = LeagueDivision.Runtime<DaySet>
-    typealias EntryRuntime = LeagueEntry.Runtime<DaySet, TimeSet, LocationSet>
+    typealias DivisionRuntime = Division.Runtime<DaySet>
+    typealias EntryRuntime = Entry.Runtime<DaySet, TimeSet, LocationSet>
 }
 
 enum ScheduleConfig<

@@ -31,6 +31,6 @@ syntax = "proto3";
 package lit_leagues.leagues;
 
 message LocationTravelDurationFrom {
-    // - Usage: [`LeagueLocationIndex`: `LeagueMatchupDuration`]
+    // - Usage: [`LocationIndex`: `MatchupDuration`]
     repeated double travelDurationTo = 1;
 }

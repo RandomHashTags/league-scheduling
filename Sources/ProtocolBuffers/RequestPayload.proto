@@ -34,6 +34,7 @@ import "DaySettingsArray.proto";
 import "Divisions.proto";
 import "Entry.proto";
 import "GeneralSettings.proto";
+import "GenerationConstraints.proto";
 
 // The payload sent by clients to the server requesting to generate a schedule with the given settings.
 message RequestPayload {
@@ -54,4 +55,7 @@ message RequestPayload {
 
     // The entries/teams being scheduled, including their settings.
     repeated Entry entries = 6;
+
+    // Constraints that influence the schedule generation process.
+    optional GenerationConstraints generationConstraints = 7;
 }

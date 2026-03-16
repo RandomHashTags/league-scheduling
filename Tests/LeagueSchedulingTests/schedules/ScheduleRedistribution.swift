@@ -12,8 +12,8 @@ extension ScheduleRedistribution {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MzU3MzM1MA==&arg3=NTA5Mzk=
     @Test
     func scheduleRedistribution_11GameDays3Times1Location5Teams12MaxMatchupsPerEntry() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 3, 1, 5)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 3, 1, 5)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -57,8 +57,8 @@ extension ScheduleRedistribution {
     // MARK: 11GD | 3T | 1L | 1D | 7T
     @Test
     func scheduleRedistribution_11GameDays3Times1Location7Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 1
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (11, 3, 1, 7)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 1
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 3, 1, 7)
         let entries = Self.getEntries(
             divisions: .init(repeating: 0, count: teams),
             gameDays: gameDays,
@@ -103,8 +103,8 @@ extension ScheduleRedistribution {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=Mjk3NjYzNA==&arg3=NDEwMjA=
     @Test(.timeLimit(.minutes(1)))
     func scheduleRedistribution_6GameDays4Times4Locations1Division15Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (6, 4, 4, 15)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (6, 4, 4, 15)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -148,8 +148,8 @@ extension ScheduleRedistribution {
     // https://secure.rec1.com/MN/owatonna-mn/leagueschedule.php?arg1=MjUwNTQwNg%3D%3D&arg3=MzI2MjA%3D
     @Test(.timeLimit(.minutes(1)))
     func scheduleRedistribution_10GameDays4Times4Locations1Division9Teams() async throws {
-        let maxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay = 2
-        let (gameDays, times, locations, teams):(LeagueDayIndex, LeagueTimeIndex, LeagueLocationIndex, Int) = (10, 4, 4, 9)
+        let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
+        let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 4, 9)
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,

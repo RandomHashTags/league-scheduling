@@ -5,73 +5,73 @@ import StaticDateTimes
 struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let entries:[Config.EntryRuntime]
     var startingTimes:[StaticTime]
-    var matchupDuration:LeagueMatchupDuration
-    var locationTravelDurations:[[LeagueMatchupDuration]]
+    var matchupDuration:MatchupDuration
+    var locationTravelDurations:[[MatchupDuration]]
 
-    /// - Usage: [`LeagueEntry.IDValue`: `total number of matchups played so far in the schedule`]
+    /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
 
-    /// Remaining allocations allowed for a matchup pair, for a `LeagueDayIndex`.
+    /// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: `the number of remaining allocations`]
+    /// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
     var remainingAllocations:RemainingAllocations
 
     /// When entries can play against each other again.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: [opponent `LeagueEntry.IDValue`: `LeagueRecurringDayLimitInterval`]]
+    /// - Usage: [`Entry.IDValue`: [opponent `Entry.IDValue`: `RecurringDayLimitInterval`]]
     var recurringDayLimits:RecurringDayLimits
 
-    var assignedTimes:LeagueAssignedTimes
-    var assignedLocations:LeagueAssignedLocations
+    var assignedTimes:AssignedTimes
+    var assignedLocations:AssignedLocations
     let maximumPlayableMatchups:[UInt32]
     let maxTimeAllocations:MaximumTimeAllocations
     let maxLocationAllocations:MaximumLocationAllocations
 
     /// Number of times an entry was assigned to play at home or away against another entry.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: [opponent `LeagueEntry.IDValue`: [`home (0) or away (1)`: `total played`]]]
+    /// - Usage: [`Entry.IDValue`: [opponent `Entry.IDValue`: [`home (0) or away (1)`: `total played`]]]
     var assignedEntryHomeAways:AssignedEntryHomeAways
 
     /// Total number of 'home' matchups an entry has played.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: `number of matchups played at 'home'`]
+    /// - Usage: [`Entry.IDValue`: `number of matchups played at 'home'`]
     var homeMatchups:[UInt8]
 
     /// Total number of 'away' matchups an entry has played.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: `number of matchups played at 'away'`]
+    /// - Usage: [`Entry.IDValue`: `number of matchups played at 'away'`]
     var awayMatchups:[UInt8]
 
-    let maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchups
+    let maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled.
-    var allMatchups:Set<LeagueMatchupPair>
+    var allMatchups:Set<MatchupPair>
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
-    /// - Usage: [`LeagueDivision.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<LeagueMatchupPair>>
+    /// - Usage: [`Division.IDValue`: `available matchups`]
+    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<LeagueMatchupPair>
+    var availableMatchups:Set<MatchupPair>
 
     var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<LeagueAvailableSlot>
+    var availableSlots:Set<AvailableSlot>
     
     var playsAt:PlaysAt
     var playsAtTimes:ContiguousArray<Config.TimeSet>
     var playsAtLocations:ContiguousArray<Config.LocationSet>
 
     /// Available matchups that can be scheduled.
-    var matchups:Set<LeagueMatchup>
+    var matchups:Set<Matchup>
 
     var shuffleHistory = [LeagueShuffleAction]()
 
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
@@ -140,15 +140,15 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     let entries:[Config.EntryRuntime]
     let startingTimes:[StaticTime]
-    let matchupDuration:LeagueMatchupDuration
-    let locationTravelDurations:[[LeagueMatchupDuration]]
+    let matchupDuration:MatchupDuration
+    let locationTravelDurations:[[MatchupDuration]]
 
-    /// - Usage: [`LeagueEntry.IDValue`: `total number of matchups played so far in the schedule`]
+    /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
     var remainingAllocations:RemainingAllocations
     var recurringDayLimits:RecurringDayLimits
-    var assignedTimes:LeagueAssignedTimes
-    var assignedLocations:LeagueAssignedLocations
+    var assignedTimes:AssignedTimes
+    var assignedLocations:AssignedLocations
     var maximumPlayableMatchups:[UInt32]
     var maxTimeAllocations:MaximumTimeAllocations
     var maxLocationAllocations:MaximumLocationAllocations
@@ -157,42 +157,42 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
 
     /// Total number of 'home' matchups an entry has played.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: `# of matchups played at 'home'`]
+    /// - Usage: [`Entry.IDValue`: `# of matchups played at 'home'`]
     var homeMatchups:[UInt8]
 
     /// Total number of 'away' matchups an entry has played.
     /// 
-    /// - Usage: [`LeagueEntry.IDValue`: `# of matchups played at 'away'`]
+    /// - Usage: [`Entry.IDValue`: `# of matchups played at 'away'`]
     var awayMatchups:[UInt8]
 
-    var maxSameOpponentMatchups:LeagueMaximumSameOpponentMatchups
+    var maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled
-    var allMatchups:Set<LeagueMatchupPair>
+    var allMatchups:Set<MatchupPair>
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
-    /// - Usage: [`LeagueDivision.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<LeagueMatchupPair>>
+    /// - Usage: [`Division.IDValue`: `available matchups`]
+    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<LeagueMatchupPair>
+    var availableMatchups:Set<MatchupPair>
 
     var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<LeagueAvailableSlot>
+    var availableSlots:Set<AvailableSlot>
 
     var playsAt:PlaysAt
     var playsAtTimes:ContiguousArray<Config.TimeSet>
     var playsAtLocations:ContiguousArray<Config.LocationSet>
-    var matchups:Set<LeagueMatchup>
+    var matchups:Set<Matchup>
 
     var shuffleHistory:[LeagueShuffleAction]
 
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     func noncopyable() -> AssignmentState<Config> {
         return .init(

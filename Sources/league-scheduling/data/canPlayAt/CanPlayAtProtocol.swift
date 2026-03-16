@@ -4,8 +4,8 @@ import StaticDateTimes
 /// Optimized storage that tests whether a team can play at a given `time` and `location` based on its current assignment data and `gameGap`.
 protocol CanPlayAtProtocol: Sendable, ~Copyable {
     func test(
-        time: LeagueTimeIndex,
-        location: LeagueLocationIndex,
+        time: TimeIndex,
+        location: LocationIndex,
         allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         playsAt: PlaysAt.Element,

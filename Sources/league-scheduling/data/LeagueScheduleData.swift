@@ -5,30 +5,30 @@ import StaticDateTimes
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
 struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let clock = ContinuousClock()
-    let entriesPerMatchup:LeagueEntriesPerMatchup
+    let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
-    let entryDivisions:ContiguousArray<LeagueDivision.IDValue>
+    let entryDivisions:ContiguousArray<Division.IDValue>
 
     var expectedMatchupsCount:Int = 0
 
-    var divisionRecurringDayLimitInterval:ContiguousArray<LeagueRecurringDayLimitInterval>
+    var divisionRecurringDayLimitInterval:ContiguousArray<RecurringDayLimitInterval>
 
     /// Day index that is currently being scheduled.
-    private(set) var day:LeagueDayIndex
+    private(set) var day:DayIndex
 
     /// Number of locations currently available.
-    //private(set) var locations:LeagueLocationIndex
+    //private(set) var locations:LocationIndex
 
     /// Maximum number of times a single team can play on `day`.
-    private(set) var defaultMaxEntryMatchupsPerGameDay:LeagueEntryMatchupsPerGameDay
+    private(set) var defaultMaxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay
     private(set) var gameGap:GameGap.TupleValue
     private(set) var sameLocationIfB2B:Bool
 
-    /// - Usage: [`combination index`: [`LeagueDivision.IDValue`: [`combination`]]]
+    /// - Usage: [`combination index`: [`Division.IDValue`: [`combination`]]]
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<LeagueMatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
 
     var assignmentState:AssignmentState<Config>
     var prioritizeEarlierTimes:Bool
@@ -40,8 +40,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var redistributedMatchups = false
 
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     init(
         snapshot: LeagueScheduleDataSnapshot<Config>
@@ -67,8 +67,8 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
 // MARK: Snapshot
 extension LeagueScheduleData {
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
@@ -86,8 +86,8 @@ extension LeagueScheduleData {
     }
 
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     func snapshot() -> LeagueScheduleDataSnapshot<Config> {
         return .init(self)
@@ -100,18 +100,18 @@ extension LeagueScheduleData {
     /// 
     /// - Parameters:
     ///   - day: Day index that will be scheduled.
-    ///   - divisionEntries: Division entries that play on the `day`. (`LeagueDivision.IDValue`: `Set<LeagueEntry.IDValue>`)
+    ///   - divisionEntries: Division entries that play on the `day`. (`Division.IDValue`: `Set<Entry.IDValue>`)
     ///   - entryMatchupsPerGameDay: Number of times a single team will play on `day`.
     #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<LeagueDayIndex>, BitSet64<LeagueTimeIndex>, BitSet64<LeagueLocationIndex>, BitSet64<LeagueEntry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<LeagueDayIndex>, Set<LeagueTimeIndex>, Set<LeagueLocationIndex>, Set<LeagueEntry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     mutating func newDay(
-        day: LeagueDayIndex,
-        daySettings: LeagueGeneralSettings.Runtime<Config>,
+        day: DayIndex,
+        daySettings: GeneralSettings.Runtime<Config>,
         divisionEntries: ContiguousArray<Config.EntryIDSet>,
-        availableSlots: Set<LeagueAvailableSlot>,
-        settings: borrowing LeagueRequestPayload.Runtime<Config>,
+        availableSlots: Set<AvailableSlot>,
+        settings: borrowing RequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
         let now = clock.now
@@ -124,7 +124,7 @@ extension LeagueScheduleData {
         self.prioritizeEarlierTimes = daySettings.prioritizeEarlierTimes
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
-        var availableMatchups = Set<LeagueMatchupPair>()
+        var availableMatchups = Set<MatchupPair>()
         var prioritizedEntries = Config.EntryIDSet()
         prioritizedEntries.reserveCapacity(entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
@@ -206,8 +206,8 @@ extension LeagueScheduleData {
 extension LeagueScheduleData {
     static func recurringDayLimitInterval(
         entries: Int,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay
-    ) -> LeagueRecurringDayLimitInterval {
-        return LeagueRecurringDayLimitInterval(LeagueEntryMatchupsPerGameDay(entries - 1) / entryMatchupsPerGameDay)
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay
+    ) -> RecurringDayLimitInterval {
+        return RecurringDayLimitInterval(EntryMatchupsPerGameDay(entries - 1) / entryMatchupsPerGameDay)
     }
 }

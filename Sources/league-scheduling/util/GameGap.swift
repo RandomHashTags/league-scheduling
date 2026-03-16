@@ -1,13 +1,13 @@
 
-public enum GameGap: Equatable, Sendable {
+enum GameGap: Equatable, Sendable {
     case no
     case always(Int)
     case upTo(Int)
     case minimumOf(Int)
 
-    public typealias TupleValue = (min: Int, max: Int)
+    typealias TupleValue = (min: Int, max: Int)
 
-    public init?(htmlInputValue: some StringProtocol) {
+    init?(htmlInputValue: some StringProtocol) {
         let values = htmlInputValue.lowercased().split(separator: " ")
         switch values.first {
         case "no":
@@ -26,7 +26,7 @@ public enum GameGap: Equatable, Sendable {
         }
     }
 
-    public var minMax: TupleValue {
+    var minMax: TupleValue {
         switch self {
         case .no: (1, 1)
         case .always(let v): (v+1, v+1)

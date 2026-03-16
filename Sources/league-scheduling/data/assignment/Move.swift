@@ -4,10 +4,10 @@
 extension LeagueScheduleData {
     /// Moves the specified matchup to the given slot on the same day.
     mutating func move(
-        matchup: LeagueMatchup,
-        to slot: LeagueAvailableSlot,
-        day: LeagueDayIndex,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        matchup: Matchup,
+        to slot: AvailableSlot,
+        day: DayIndex,
+        allAvailableMatchups: Set<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         assignmentState.move(
@@ -28,15 +28,15 @@ extension LeagueScheduleData {
 // MARK: AssignmentState
 extension AssignmentState {
     mutating func move(
-        matchup: LeagueMatchup,
-        to slot: LeagueAvailableSlot,
-        day: LeagueDayIndex,
+        matchup: Matchup,
+        to slot: AvailableSlot,
+        day: DayIndex,
         entriesCount: Int,
-        entryDivisions: ContiguousArray<LeagueDivision.IDValue>,
+        entryDivisions: ContiguousArray<Division.IDValue>,
         gameGap: GameGap.TupleValue,
-        entryMatchupsPerGameDay: LeagueEntryMatchupsPerGameDay,
-        divisionRecurringDayLimitInterval: ContiguousArray<LeagueRecurringDayLimitInterval>,
-        allAvailableMatchups: Set<LeagueMatchupPair>,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        allAvailableMatchups: Set<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         #if LOG

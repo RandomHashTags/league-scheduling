@@ -2,7 +2,7 @@
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
-    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> LeagueMatchupPair? {
+    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
         return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups)
     }
 }
@@ -11,7 +11,7 @@ extension AssignmentState {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     func selectMatchup(
         prioritizedMatchups: borrowing PrioritizedMatchups<Config>
-    ) -> LeagueMatchupPair? {
+    ) -> MatchupPair? {
         return Self.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
@@ -26,7 +26,7 @@ extension AssignmentState {
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
         remainingAllocations: RemainingAllocations
-    ) -> LeagueMatchupPair? {
+    ) -> MatchupPair? {
         #if LOG
         print("SelectMatchup;selectMatchup;prioritizedMatchups.count=\(prioritizedMatchups.matchups.count);availableMatchupCountForEntry=\(prioritizedMatchups.availableMatchupCountForEntry)")
         #endif
@@ -46,7 +46,7 @@ extension AssignmentState {
         // introduce a pool of matchup pairs of equal priority, and random selection, so that we don't repeat identical assignments when
         // - regenerating a failed day
         // - selecting the last matchup pair out of previous pairs of equal priority
-        var pool = Set<LeagueMatchupPair>()
+        var pool = Set<MatchupPair>()
         for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] {
             let (pairMinMatchupsPlayedSoFar, pairTotalMatchupsPlayedSoFar) = numberOfMatchupsPlayedSoFar(for: pair, numberOfAssignedMatchups: numberOfAssignedMatchups)
             guard pairMinMatchupsPlayedSoFar == selected.minMatchupsPlayedSoFar else {
@@ -164,24 +164,24 @@ extension AssignmentState {
 
 extension AssignmentState {
     private struct SelectedMatchup: Sendable, ~Copyable {
-        var pair:LeagueMatchupPair
+        var pair:MatchupPair
         /// The minimum number of matchups `pair.team1` or `pair.team2` has played so far
         var minMatchupsPlayedSoFar:Int
         /// The sum of the total number of matchups `pair.team1` and `pair.team2` has played so far
         var totalMatchupsPlayedSoFar:Int
         var remainingAllocations:(min: Int, max: Int)
         var remainingMatchupCount:(min: Int, max: Int)
-        var recurringDayLimit:LeagueRecurringDayLimitInterval
+        var recurringDayLimit:RecurringDayLimitInterval
     }
-    private static func numberOfMatchupsPlayedSoFar(for pair: LeagueMatchupPair, numberOfAssignedMatchups: [Int]) -> (minimum: Int, total: Int) {
+    private static func numberOfMatchupsPlayedSoFar(for pair: MatchupPair, numberOfAssignedMatchups: [Int]) -> (minimum: Int, total: Int) {
         let t1 = numberOfAssignedMatchups[unchecked: pair.team1]
         let t2 = numberOfAssignedMatchups[unchecked: pair.team2]
         return (min(t1, t2), t1 + t2)
     }
-    private static func recurringDayLimit(for pair: LeagueMatchupPair, recurringDayLimits: RecurringDayLimits) -> LeagueRecurringDayLimitInterval {
+    private static func recurringDayLimit(for pair: MatchupPair, recurringDayLimits: RecurringDayLimits) -> RecurringDayLimitInterval {
         return recurringDayLimits[unchecked: pair.team1][unchecked: pair.team2]
     }
-    private static func remainingAllocations(for pair: LeagueMatchupPair, remainingAllocations: RemainingAllocations) -> (min: Int, max: Int) {
+    private static func remainingAllocations(for pair: MatchupPair, remainingAllocations: RemainingAllocations) -> (min: Int, max: Int) {
         let team1 = remainingAllocations[unchecked: pair.team1].count
         let team2 = remainingAllocations[unchecked: pair.team2].count
         return (
@@ -189,7 +189,7 @@ extension AssignmentState {
             max(team1, team2)
         )
     }
-    private static func remainingMatchupCount(for pair: LeagueMatchupPair, _ availableMatchupCountForEntry: ContiguousArray<Int>) -> (min: Int, max: Int) {
+    private static func remainingMatchupCount(for pair: MatchupPair, _ availableMatchupCountForEntry: ContiguousArray<Int>) -> (min: Int, max: Int) {
         let team1 = availableMatchupCountForEntry[unchecked: pair.team1]
         let team2 = availableMatchupCountForEntry[unchecked: pair.team2]
         return (
@@ -198,13 +198,13 @@ extension AssignmentState {
         )
     }
     private static func select(
-        pair: LeagueMatchupPair,
+        pair: MatchupPair,
         minMatchupsPlayedSoFar: Int,
         totalMatchupsPlayedSoFar: Int,
-        recurringDayLimit: LeagueRecurringDayLimitInterval,
+        recurringDayLimit: RecurringDayLimitInterval,
         remainingAllocations: (min: Int, max: Int),
         remainingMatchupCount: (min: Int, max: Int),
-        pool: inout Set<LeagueMatchupPair>
+        pool: inout Set<MatchupPair>
     ) -> SelectedMatchup {
         pool.removeAll(keepingCapacity: true)
         pool.insert(pair)

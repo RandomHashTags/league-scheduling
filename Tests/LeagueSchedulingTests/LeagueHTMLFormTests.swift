@@ -68,7 +68,7 @@ extension LeagueHTMLFormTests {
     @Test
     func leagueHTMLFormMatchupsPerGameDay() throws {
         var payload = payload()
-        let matchupsPerGameDay:[LeagueEntryMatchupsPerGameDay] = [2, 4, 2, 2, 3, 2, 2, 5]
+        let matchupsPerGameDay:[EntryMatchupsPerGameDay] = [2, 4, 2, 2, 3, 2, 2, 5]
         for i in 0..<payload.entries.count {
             payload.entries[i].matchupsPerGameDay = .init(gameDayMatchups: matchupsPerGameDay)
         }
@@ -82,13 +82,13 @@ extension LeagueHTMLFormTests {
 
 // MARK: Payload
 extension LeagueHTMLFormTests {
-    func payload() -> LeagueRequestPayload {
-        let gameDays:LeagueDayIndex = 8
+    func payload() -> RequestPayload {
+        let gameDays:DayIndex = 8
         let teamsCount = 9
-        var teams = [LeagueEntry]()
-        var gameTimes = LeagueGameTimes()
+        var teams = [Entry]()
+        var gameTimes = GameTimes()
         gameTimes.times = [0, 1, 2]
-        var gameLocations = LeagueGameLocations()
+        var gameLocations = GameLocations()
         gameLocations.locations = [0, 1, 2]
         for _ in 0..<teamsCount {
             teams.append(.init(
@@ -100,7 +100,7 @@ extension LeagueHTMLFormTests {
                 byes: nil
             ))
         }
-        return LeagueRequestPayload.init(
+        return RequestPayload.init(
             starts: "2024-01-25",
             //ends: "2024-03-14",
             gameDays: gameDays,

@@ -53,7 +53,7 @@ public struct LitLeagues_Leagues_DivisionMatchupDurations: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// - Usage: [`LeagueDayIndex`: `matchup duration for day`]
+  /// - Usage: [`DayIndex`: `matchup duration for day`]
   public var durations: [Double] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

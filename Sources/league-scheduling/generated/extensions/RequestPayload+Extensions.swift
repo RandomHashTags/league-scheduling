@@ -26,25 +26,3 @@ extension RequestPayload {
         self.entries = teams
     }
 }
-
-// MARK: Calculate max playable matchups
-extension RequestPayload {
-    static func calculateMaximumPlayableMatchups(
-        gameDays: DayIndex,
-        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        teamsCount: Int,
-        maximumPlayableMatchups: [UInt32]
-    ) -> [UInt32] {
-        if maximumPlayableMatchups.isEmpty {
-            return .init(repeating: gameDays * entryMatchupsPerGameDay, count: teamsCount)
-        } else if maximumPlayableMatchups.count != teamsCount {
-            var array = [UInt32](repeating: gameDays * entryMatchupsPerGameDay, count: teamsCount)
-            for i in 0..<min(teamsCount, maximumPlayableMatchups.count) {
-                array[i] = maximumPlayableMatchups[i]
-            }
-            return array
-        } else {
-            return maximumPlayableMatchups
-        }
-    }
-}

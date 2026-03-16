@@ -109,7 +109,6 @@ extension RedistributionData {
         while (assigned < minMatchupsRequired || assigned < maxMovableMatchups) && !assignmentState.availableSlots.isEmpty {
             guard var redistributable = selectRedistributable(
                 from: redistributables,
-                assignmentState: assignmentState,
                 generationData: generationData
             ) else { break }
             assigned += 1
@@ -133,7 +132,6 @@ extension RedistributionData {
 extension RedistributionData {
     private func selectRedistributable(
         from redistributables: Set<Redistributable>,
-        assignmentState: borrowing AssignmentState<Config>,
         generationData: LeagueGenerationData
     ) -> Redistributable? {
         var redistributable:Redistributable? = nil

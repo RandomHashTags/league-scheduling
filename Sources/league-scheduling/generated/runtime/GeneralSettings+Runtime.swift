@@ -22,6 +22,7 @@ extension GeneralSettings {
     }
 }
 
+// MARK: Init
 extension GeneralSettings.Runtime {
     init(
         gameGap: GameGap,
@@ -57,6 +58,76 @@ extension GeneralSettings.Runtime {
         flags = protobuf.flags
     }
 
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
+    init(
+        gameGap: GameGap,
+        timeSlots: TimeIndex,
+        startingTimes: [StaticTime],
+        entriesPerLocation: EntriesPerMatchup,
+        locations: LocationIndex,
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        maximumPlayableMatchups: [UInt32],
+        matchupDuration: MatchupDuration,
+        locationTimeExclusivities: [Config.TimeSet]?,
+        locationTravelDurations: [[MatchupDuration]]?,
+        balanceTimeStrictness: BalanceStrictness,
+        balancedTimes: Config.TimeSet,
+        balanceLocationStrictness: BalanceStrictness,
+        balancedLocations: Config.LocationSet,
+        redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
+        flags: UInt32
+    ) {
+        self.gameGap = gameGap
+        self.timeSlots = timeSlots
+        self.startingTimes = startingTimes
+        self.entriesPerLocation = entriesPerLocation
+        self.locations = locations
+        self.defaultMaxEntryMatchupsPerGameDay = entryMatchupsPerGameDay
+        self.maximumPlayableMatchups = maximumPlayableMatchups
+        self.matchupDuration = matchupDuration
+        self.locationTimeExclusivities = locationTimeExclusivities
+        self.locationTravelDurations = locationTravelDurations
+        self.balanceTimeStrictness = balanceTimeStrictness
+        self.balancedTimes = balancedTimes
+        self.balanceLocationStrictness = balanceLocationStrictness
+        self.balancedLocations = balancedLocations
+        self.redistributionSettings = redistributionSettings
+        self.flags = flags
+    }
+}
+
+// MARK: Available slots
+extension GeneralSettings.Runtime {
+    func availableSlots() -> Set<AvailableSlot> {
+        var slots = Set<AvailableSlot>(minimumCapacity: timeSlots * locations)
+        if let exclusivities = locationTimeExclusivities {
+            for location in 0..<locations {
+                if let timeExclusives = exclusivities[uncheckedPositive: location] {
+                    for time in 0..<timeSlots {
+                        if timeExclusives.contains(time) {
+                            let slot = AvailableSlot(time: time, location: location)
+                            slots.insert(slot)
+                        }
+                    }
+                }
+            }
+        } else {
+            for time in 0..<timeSlots {
+                for location in 0..<locations {
+                    let slot = AvailableSlot(time: time, location: location)
+                    slots.insert(slot)
+                }
+            }
+        }
+        return slots
+    }
+}
+
+// MARK: Apply
+extension GeneralSettings.Runtime {
     mutating func apply(
         gameDays: DayIndex,
         entriesCount: Int,
@@ -122,75 +193,70 @@ extension GeneralSettings.Runtime {
             self.flags = customDaySettings.flags
         }
     }
+}
 
-    func availableSlots() -> Set<AvailableSlot> {
-        var slots = Set<AvailableSlot>(minimumCapacity: timeSlots * locations)
-        if let exclusivities = locationTimeExclusivities {
-            for location in 0..<locations {
-                if let timeExclusives = exclusivities[uncheckedPositive: location] {
-                    for time in 0..<timeSlots {
-                        if timeExclusives.contains(time) {
-                            let slot = AvailableSlot(time: time, location: location)
-                            slots.insert(slot)
-                        }
-                    }
+// MARK: Flags
+extension GeneralSettings.Runtime {
+    func isFlag(_ flag: SettingFlags) -> Bool {
+        flags & UInt32(1 << flag.rawValue) != 0
+    }
+
+    var optimizeTimes: Bool {
+        isFlag(.optimizeTimes)
+    }
+
+    var prioritizeEarlierTimes: Bool {
+        isFlag(.prioritizeEarlierTimes)
+    }
+
+    var prioritizeHomeAway: Bool {
+        isFlag(.prioritizeHomeAway)
+    }
+
+    var balanceHomeAway: Bool {
+        isFlag(.balanceHomeAway)
+    }
+
+    var sameLocationIfB2B: Bool {
+        isFlag(.sameLocationIfBackToBack)
+    }
+}
+
+// MARK: Compute settings
+extension GeneralSettings.Runtime {
+    init(
+        protobuf: GeneralSettings
+    ) throws(LeagueError) {
+        guard let gameGap = GameGap(htmlInputValue: protobuf.gameGap) else {
+            throw .malformedInput(msg: "invalid GameGap htmlInputValue: \(protobuf.gameGap)")
+        }
+        self.init(gameGap: gameGap, protobuf: protobuf)
+    }
+
+    /// Modifies `timeSlots` and `startingTimes` taking into account current settings.
+    mutating func computeSettings(
+        day: DayIndex,
+        entries: [Config.EntryRuntime]
+    ) {
+        if optimizeTimes {
+            var maxMatchupsPlayedToday:LocationIndex = 0
+            for entry in entries {
+                if entry.gameDays.contains(day) && !entry.byes.contains(day) {
+                    maxMatchupsPlayedToday += entry.maxMatchupsForGameDay(day: day, fallback: defaultMaxEntryMatchupsPerGameDay)
                 }
             }
-        } else {
-            for time in 0..<timeSlots {
-                for location in 0..<locations {
-                    let slot = AvailableSlot(time: time, location: location)
-                    slots.insert(slot)
-                }
+            maxMatchupsPlayedToday /= entriesPerLocation
+            let filledTimeSlots = optimalTimeSlots(
+                availableTimeSlots: timeSlots,
+                locations: locations,
+                matchupsCount: maxMatchupsPlayedToday
+            )
+            while filledTimeSlots < timeSlots {
+                timeSlots -= 1
+            }
+            while filledTimeSlots < startingTimes.count {
+                startingTimes.removeLast()
             }
         }
-        return slots
-    }
-
-    func containsBalancedTime(_ timeSlot: TimeIndex) -> Bool {
-        balancedTimes.contains(timeSlot)
-    }
-    func containsBalancedLocation(_ location: LocationIndex) -> Bool {
-        balancedLocations.contains(location)
-    }
-
-    #if SpecializeScheduleConfiguration
-    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
-    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
-    #endif
-    init(
-        gameGap: GameGap,
-        timeSlots: TimeIndex,
-        startingTimes: [StaticTime],
-        entriesPerLocation: EntriesPerMatchup,
-        locations: LocationIndex,
-        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        maximumPlayableMatchups: [UInt32],
-        matchupDuration: MatchupDuration,
-        locationTimeExclusivities: [Config.TimeSet]?,
-        locationTravelDurations: [[MatchupDuration]]?,
-        balanceTimeStrictness: BalanceStrictness,
-        balancedTimes: Config.TimeSet,
-        balanceLocationStrictness: BalanceStrictness,
-        balancedLocations: Config.LocationSet,
-        redistributionSettings: LitLeagues_Leagues_RedistributionSettings?,
-        flags: UInt32
-    ) {
-        self.gameGap = gameGap
-        self.timeSlots = timeSlots
-        self.startingTimes = startingTimes
-        self.entriesPerLocation = entriesPerLocation
-        self.locations = locations
-        self.defaultMaxEntryMatchupsPerGameDay = entryMatchupsPerGameDay
-        self.maximumPlayableMatchups = maximumPlayableMatchups
-        self.matchupDuration = matchupDuration
-        self.locationTimeExclusivities = locationTimeExclusivities
-        self.locationTravelDurations = locationTravelDurations
-        self.balanceTimeStrictness = balanceTimeStrictness
-        self.balancedTimes = balancedTimes
-        self.balanceLocationStrictness = balanceLocationStrictness
-        self.balancedLocations = balancedLocations
-        self.redistributionSettings = redistributionSettings
-        self.flags = flags
     }
 }

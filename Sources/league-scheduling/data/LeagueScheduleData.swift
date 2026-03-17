@@ -3,7 +3,7 @@ import StaticDateTimes
 
 // MARK: Data
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
-struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {//
+struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let clock = ContinuousClock()
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int

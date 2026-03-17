@@ -121,7 +121,7 @@ struct BitSet128Tests {
         s.removeAll(where: { $0 % 2 == 0 })
         #expect(s.storage == 0xAAAAAAAAAAAAAAAA_AAAAAAAAAAAAAAAA)
 
-        s.removeAll(where: { $0 % 1 == 0})
+        s.removeAll(where: { $0 % 1 == 0 })
         #expect(s.storage == 0)
     }
 }

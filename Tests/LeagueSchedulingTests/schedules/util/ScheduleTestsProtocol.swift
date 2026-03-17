@@ -17,7 +17,7 @@ extension ScheduleTestsProtocol {
         locations: LocationIndex,
         teams: Int,
         homeLocations: ContiguousArray<UnitTestScheduleConfig.LocationSet> = [],
-        byes: ContiguousArray<UnitTestScheduleConfig.LocationSet> = []
+        byes: ContiguousArray<UnitTestScheduleConfig.DaySet> = []
     ) -> [UnitTestScheduleConfig.EntryRuntime] {
         let playsOn = Array(repeating: UnitTestScheduleConfig.DaySet(0..<gameDays), count: teams)
         let playsAtTimes = Array(repeating: Array(repeating: UnitTestScheduleConfig.TimeSet(0..<times), count: gameDays), count: teams)
@@ -97,8 +97,8 @@ extension ScheduleTestsProtocol {
             maximumPlayableMatchups: maximumPlayableMatchups
         )
         let times:TimeIndex = TimeIndex(startingTimes.count)
-        let timeSlots:BitSet64<TimeIndex> = .init(0..<times)
-        let matchupSlots:BitSet64<LocationIndex> = .init(0..<locations)
+        let timeSlots:UnitTestScheduleConfig.TimeSet = .init(0..<times)
+        let matchupSlots:UnitTestScheduleConfig.LocationSet = .init(0..<locations)
         let generalSettings = GeneralSettings.Runtime<UnitTestScheduleConfig>.init(
             gameGap: gameGaps,
             timeSlots: TimeIndex(startingTimes.count),

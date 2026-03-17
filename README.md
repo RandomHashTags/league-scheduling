@@ -7,6 +7,7 @@ A high-performance, feature-rich league scheduling library.
 
 - [Requirements](#requirements)
 - [Features](#features)
+- [Methodology](#methodology)
 - [Getting started](#getting-started)
 - [Contributing](#contributing)
 
@@ -33,6 +34,9 @@ A high-performance, feature-rich league scheduling library.
 - [x] Fast, scalable schedule generation
 - [x] Protocol Buffers
 
+## Methodology
+
+See [METHODOLOGY.md](./METHODOLOGY.md)
 
 ## Getting Started
 

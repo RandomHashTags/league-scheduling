@@ -247,8 +247,8 @@ extension LeagueScheduleData {
         // successfully assigned
         remainingPrioritizedEntries.removeMember(leagueMatchup.home)
         remainingPrioritizedEntries.removeMember(leagueMatchup.away)
-        selectedEntries.removeMember(leagueMatchup.home)
-        selectedEntries.removeMember(leagueMatchup.away)
+        selectedEntries.insertMember(leagueMatchup.home)
+        selectedEntries.insertMember(leagueMatchup.away)
         return leagueMatchup
     }
     private static func selectAndAssignMatchup(
@@ -286,8 +286,8 @@ extension LeagueScheduleData {
         // successfully assigned
         remainingPrioritizedEntries.removeMember(leagueMatchup.home)
         remainingPrioritizedEntries.removeMember(leagueMatchup.away)
-        selectedEntries.removeMember(leagueMatchup.home)
-        selectedEntries.removeMember(leagueMatchup.away)
+        selectedEntries.insertMember(leagueMatchup.home)
+        selectedEntries.insertMember(leagueMatchup.away)
         return leagueMatchup
     }
 }

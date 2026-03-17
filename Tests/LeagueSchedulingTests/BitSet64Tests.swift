@@ -106,4 +106,14 @@ struct BitSet64Tests {
         s.formUnion(.init(storage: 0x0101010101010101))
         #expect(s == .init(storage: 0x1111111111111111))
     }
+
+    @Test
+    func bitSet64RemoveAllWhere() {
+        var s = BitSet64<UInt32>(storage: .max)
+        s.removeAll(where: { $0 % 2 == 0 })
+        #expect(s.storage == 0xAAAAAAAAAAAAAAAA)
+
+        s.removeAll(where: { $0 % 1 == 0})
+        #expect(s.storage == 0)
+    }
 }

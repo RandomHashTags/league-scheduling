@@ -8,6 +8,10 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
         storage = 0
     }
 
+    init(storage: UInt64) {
+        self.storage = storage
+    }
+
     init(_ collection: some Collection<Element>) {
         storage = 0
         for e in collection {

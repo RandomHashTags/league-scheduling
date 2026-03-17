@@ -15,6 +15,9 @@ extension RequestPayload: Codable {
             divisions = v
         }
         entries = try container.decode([Entry].self, forKey: .teams)
+        if let v = try container.decodeIfPresent(GenerationConstraints.self, forKey: .generationConstraints) {
+            generationConstraints = v
+        }
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -31,6 +34,9 @@ extension RequestPayload: Codable {
             try container.encode(divisions, forKey: .divisions)
         }
         try container.encode(entries, forKey: .teams)
+        if hasGenerationConstraints {
+            try container.encode(generationConstraints, forKey: .generationConstraints)
+        }
     }
 
     enum CodingKeys: CodingKey {
@@ -40,6 +46,7 @@ extension RequestPayload: Codable {
         case individualDaySettings
         case divisions
         case teams
+        case generationConstraints
     }
 }
 #endif

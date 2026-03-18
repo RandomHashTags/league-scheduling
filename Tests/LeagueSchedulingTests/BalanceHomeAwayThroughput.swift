@@ -4,7 +4,7 @@ import Testing
 
 struct BalancedHomeAwayThroughput: ScheduleTestsProtocol {
     //@Test(.timeLimit(.minutes(1)))
-    func balancedHomeAway() async throws {
+    func balanceHomeAwayThroughput() async throws {
         try await withThrowingTaskGroup(of: Output.self) { group in
             for _ in 0..<5 {
                 group.addTask {

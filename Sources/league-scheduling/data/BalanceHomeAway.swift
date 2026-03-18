@@ -52,65 +52,64 @@ extension LeagueScheduleData {
         #endif
 
         let now = clock.now
-        var unbalancedEntries = Set<Entry.IDValue>()
-        unbalancedEntries.reserveCapacity(entriesCount)
+        var unbalancedEntryIDs = Set<Entry.IDValue>()
+        unbalancedEntryIDs.reserveCapacity(entriesCount)
         var neededFlipsToBalance = [(home: UInt8, away: UInt8)](repeating: (0, 0), count: entriesCount)
-        for i in 0..<Entry.IDValue(entriesCount) {
-            let home = assignmentState.homeMatchups[unchecked: i]
-            let away = assignmentState.awayMatchups[unchecked: i]
+        for entryID in 0..<Entry.IDValue(entriesCount) {
+            let home = assignmentState.homeMatchups[unchecked: entryID]
+            let away = assignmentState.awayMatchups[unchecked: entryID]
             guard home != away && (home + away) % 2 == 0 else {
                 continue
             }
-            unbalancedEntries.insert(i)
+            unbalancedEntryIDs.insert(entryID)
             let balanceNumber = (home + away) / 2
             if home > balanceNumber {
-                neededFlipsToBalance[unchecked: i].home = home - balanceNumber
+                neededFlipsToBalance[unchecked: entryID].home = home - balanceNumber
             } else {
-                neededFlipsToBalance[unchecked: i].away = away - balanceNumber
+                neededFlipsToBalance[unchecked: entryID].away = away - balanceNumber
             }
         }
-        guard !unbalancedEntries.isEmpty else {
+        guard !unbalancedEntryIDs.isEmpty else {
             appendExecutionStep(now: now)
             return
         }
         var flippable = Set<FlippableMatchup>()
         for day in 0..<DayIndex(generationData.schedule.count) {
             for matchup in generationData.schedule[unchecked: day] {
-                guard unbalancedEntries.contains(matchup.home) && unbalancedEntries.contains(matchup.away) else { continue }
+                guard unbalancedEntryIDs.contains(matchup.home) && unbalancedEntryIDs.contains(matchup.away) else { continue }
                 let homeAway = assignmentState.assignedEntryHomeAways[unchecked: matchup.home][unchecked: matchup.away]
                 if homeAway.home != homeAway.away {
                     flippable.insert(.init(day: day, matchup: matchup))
                 }
             }
         }
-        while let entry = unbalancedEntries.randomElement() {
-            var f:FlippableMatchup?
-            let isHome = neededFlipsToBalance[unchecked: entry].home > 0
-            if isHome {
-                f = flippable.filter({
-                    $0.matchup.home == entry
+        while let entryID = unbalancedEntryIDs.randomElement() {
+            var flipped:FlippableMatchup?
+            if neededFlipsToBalance[unchecked: entryID].home > 0 {
+                flipped = flippable.filter({
+                    $0.matchup.home == entryID
                     && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
                     && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
                 }).randomElement()
             } else {
-                f = flippable.filter({
-                    $0.matchup.away == entry
+                flipped = flippable.filter({
+                    $0.matchup.away == entryID
                     && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
                     && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
                 }).randomElement()
             }
-            if var f {
-                flippable.remove(f)
-                flipHomeAway(matchup: &f, neededFlipsToBalance: &neededFlipsToBalance, generationData: &generationData)
-                if neededFlipsToBalance[unchecked: f.matchup.home] == (0, 0) {
-                    unbalancedEntries.remove(f.matchup.home)
+            if var flipped {
+                flippable.remove(flipped)
+                flipHomeAway(matchup: &flipped, neededFlipsToBalance: &neededFlipsToBalance, generationData: &generationData)
+                if neededFlipsToBalance[unchecked: flipped.matchup.home] == (0, 0) {
+                    unbalancedEntryIDs.remove(flipped.matchup.home)
                 }
-                if neededFlipsToBalance[unchecked: f.matchup.away] == (0, 0) {
-                    unbalancedEntries.remove(f.matchup.away)
+                if neededFlipsToBalance[unchecked: flipped.matchup.away] == (0, 0) {
+                    unbalancedEntryIDs.remove(flipped.matchup.away)
                 }
             } else {
                 // TODO: improve? for now we can just skip it
-                unbalancedEntries.remove(entry)
+                unbalancedEntryIDs.remove(entryID)
             }
         }
 

@@ -3,6 +3,7 @@
 extension MatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
     mutating func balanceHomeAway(
+        rng: inout some RandomNumberGenerator,
         assignmentState: borrowing AssignmentState
     ) {
         let team1GamesPlayedAgainstTeam2 = assignmentState.assignedEntryHomeAways[unchecked: team1][unchecked: team2]
@@ -10,7 +11,7 @@ extension MatchupPair {
         if team1GamesPlayedAgainstTeam2.home < team1GamesPlayedAgainstTeam2.away {
             // keep `team1` at home and `team2` at away
         } else if team1GamesPlayedAgainstTeam2.home == team1GamesPlayedAgainstTeam2.away {
-            if Self.shouldPlayAtHome(team1: team1, team2: team2, homeMatchups: assignmentState.homeMatchups, awayMatchups: assignmentState.awayMatchups) {
+            if Self.shouldPlayAtHome(team1: team1, team2: team2, homeMatchups: assignmentState.homeMatchups, awayMatchups: assignmentState.awayMatchups, rng: &rng) {
                 // keep `team1` at home and `team2` at away
                 return
             }
@@ -28,7 +29,8 @@ extension MatchupPair {
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         homeMatchups: [UInt8],
-        awayMatchups: [UInt8]
+        awayMatchups: [UInt8],
+        rng: inout some RandomNumberGenerator
     ) -> Bool {
         let home1 = homeMatchups[unchecked: team1]
         let home2 = homeMatchups[unchecked: team2]
@@ -37,7 +39,7 @@ extension MatchupPair {
         let away1 = awayMatchups[unchecked: team1]
         let away2 = awayMatchups[unchecked: team2]
         guard away1 == away2 else { return away1 < away2 }
-        return Bool.random()
+        return Bool.random(using: &rng)
     }
 }
 
@@ -83,20 +85,20 @@ extension LeagueScheduleData {
                 }
             }
         }
-        while let entryID = unbalancedEntryIDs.randomElement() {
+        while let entryID = unbalancedEntryIDs.randomElement(using: &rng) {
             var flipped:FlippableMatchup?
             if neededFlipsToBalance[unchecked: entryID].home > 0 {
                 flipped = flippable.filter({
                     $0.matchup.home == entryID
                     && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
                     && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
-                }).randomElement()
+                }).randomElement(using: &rng)
             } else {
                 flipped = flippable.filter({
                     $0.matchup.away == entryID
                     && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
                     && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
-                }).randomElement()
+                }).randomElement(using: &rng)
             }
             if var flipped {
                 flippable.remove(flipped)

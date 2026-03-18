@@ -61,7 +61,10 @@ extension RequestPayload.Runtime {
             divisionEntries: divisionEntries,
             divisions: divisions
         )
+        let rng = SystemRandomNumberGenerator()
+        //let rng = LCG(seed: 69)
         let dataSnapshot = LeagueScheduleDataSnapshot(
+            rng: rng,
             maxStartingTimes: maxStartingTimes,
             startingTimes: general.startingTimes,
             maxLocations: maxLocations,
@@ -75,12 +78,25 @@ extension RequestPayload.Runtime {
             locationTravelDurations: general.locationTravelDurations ?? .init(repeating: .init(repeating: 0, count: maxLocations), count: maxLocations),
             maxSameOpponentMatchups: maxSameOpponentMatchups
         )
+        return try await generateDivisionSchedulesInParallel(
+            divisionsCount: divisionsCount,
+            divisionEntries: divisionEntries,
+            maxStartingTimes: maxStartingTimes,
+            maxLocations: maxLocations,
+            dataSnapshot: dataSnapshot
+        )
+    }
+    private func generateDivisionSchedulesInParallel<RNG: RandomNumberGenerator>(
+        divisionsCount: Int,
+        divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
+        maxStartingTimes: TimeIndex,
+        maxLocations: LocationIndex,
+        dataSnapshot: LeagueScheduleDataSnapshot<RNG>
+    ) async throws -> [LeagueGenerationData] {
         var grouped = [DayOfWeek:Set<Entry.IDValue>]()
         for (divisionID, division) in divisions.enumerated() {
             grouped[DayOfWeek(division.dayOfWeek), default: []].formUnion(divisionEntries[divisionID])
         }
-        let finalMaxStartingTimes = maxStartingTimes
-        let finalMaxLocations = maxLocations
         guard constraints.timeoutDelay > 0 else {
             return await withTaskGroup { group in
                 for (dow, scheduledEntries) in grouped {
@@ -90,8 +106,8 @@ extension RequestPayload.Runtime {
                             settings: self,
                             dataSnapshot: dataSnapshot,
                             divisionsCount: divisionsCount,
-                            maxStartingTimes: finalMaxStartingTimes,
-                            maxLocations: finalMaxLocations,
+                            maxStartingTimes: maxStartingTimes,
+                            maxLocations: maxLocations,
                             scheduledEntries: scheduledEntries
                         )
                     }
@@ -116,8 +132,8 @@ extension RequestPayload.Runtime {
                         settings: self,
                         dataSnapshot: dataSnapshot,
                         divisionsCount: divisionsCount,
-                        maxStartingTimes: finalMaxStartingTimes,
-                        maxLocations: finalMaxLocations,
+                        maxStartingTimes: maxStartingTimes,
+                        maxLocations: maxLocations,
                         scheduledEntries: scheduledEntries
                     )
                 }
@@ -168,10 +184,10 @@ extension RequestPayload.Runtime {
 
 // MARK: Generate schedule
 extension RequestPayload.Runtime {
-    private static func generateSchedule(
+    private static func generateSchedule<RNG: RandomNumberGenerator>(
         dayOfWeek: DayOfWeek,
         settings: RequestPayload.Runtime,
-        dataSnapshot: LeagueScheduleDataSnapshot,
+        dataSnapshot: LeagueScheduleDataSnapshot<RNG>,
         divisionsCount: Int,
         maxStartingTimes: TimeIndex,
         maxLocations: LocationIndex,
@@ -194,7 +210,7 @@ extension RequestPayload.Runtime {
             scheduledEntries: scheduledEntries
         )
 
-        var snapshots = [LeagueScheduleDataSnapshot]()
+        var snapshots = [LeagueScheduleDataSnapshot<RNG>]()
         snapshots.reserveCapacity(gameDays)
         var gameDayRegenerationAttempt:UInt32 = 0
         var day:DayIndex = 0
@@ -286,9 +302,9 @@ extension RequestPayload.Runtime {
         finalizeGenerationData(generationData: &generationData, data: data)
         return generationData
     }
-    private static func finalizeGenerationData(
+    private static func finalizeGenerationData<RNG: RandomNumberGenerator>(
         generationData: inout LeagueGenerationData,
-        data: borrowing LeagueScheduleData
+        data: borrowing LeagueScheduleData<RNG>
     ) {
         generationData.executionSteps = data.executionSteps
         generationData.shuffleHistory = data.shuffleHistory
@@ -297,8 +313,8 @@ extension RequestPayload.Runtime {
 
 // MARK: Load max allocations
 extension RequestPayload.Runtime {
-    static func loadMaxAllocations(
-        dataSnapshot: inout LeagueScheduleDataSnapshot,
+    static func loadMaxAllocations<RNG: RandomNumberGenerator>(
+        dataSnapshot: inout LeagueScheduleDataSnapshot<RNG>,
         gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Set<Entry.IDValue>>>,
         settings: borrowing RequestPayload.Runtime,
         maxStartingTimes: TimeIndex,

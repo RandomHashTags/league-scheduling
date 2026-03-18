@@ -51,7 +51,7 @@ extension SelectSlotNormal {
         playableSlots: Set<AvailableSlot>
     ) -> AvailableSlot? {
         var selected = getSelectedSlot(playableSlots[playableSlots.startIndex], team1Times, team1Locations, team2Times, team2Locations)
-        for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] {
+        for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] { // TODO: support determinism
             let minimum = getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations)
             if minimum <= selected.minimumAssigned {
                 selected.slot = slot

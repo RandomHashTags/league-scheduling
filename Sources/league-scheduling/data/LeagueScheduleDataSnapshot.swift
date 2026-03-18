@@ -1,7 +1,8 @@
 
 import StaticDateTimes
 
-struct LeagueScheduleDataSnapshot: Sendable {
+struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendable {
+    let rng:RNG
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<Division.IDValue>
@@ -28,6 +29,7 @@ struct LeagueScheduleDataSnapshot: Sendable {
     var shuffleHistory = [LeagueShuffleAction]()
 
     init(
+        rng: RNG,
         maxStartingTimes: TimeIndex,
         startingTimes: [StaticTime],
         maxLocations: LocationIndex,
@@ -41,6 +43,7 @@ struct LeagueScheduleDataSnapshot: Sendable {
         locationTravelDurations: [[MatchupDuration]],
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
     ) {
+        self.rng = rng
         self.entriesPerMatchup = entriesPerMatchup
         self.entriesCount = entries.count
         self.gameGap = gameGap
@@ -87,7 +90,8 @@ struct LeagueScheduleDataSnapshot: Sendable {
         )
     }
     
-    init(_ snapshot: borrowing LeagueScheduleData) {
+    init(_ snapshot: borrowing LeagueScheduleData<RNG>) {
+        rng = snapshot.rng
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions

@@ -3,8 +3,9 @@ import StaticDateTimes
 
 // MARK: Data
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
-struct LeagueScheduleData: Sendable, ~Copyable {
+struct LeagueScheduleData<RNG: RandomNumberGenerator & Sendable>: Sendable, ~Copyable {
     let clock = ContinuousClock()
+    var rng:RNG
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<Division.IDValue>
@@ -40,9 +41,10 @@ struct LeagueScheduleData: Sendable, ~Copyable {
     var redistributedMatchups = false
 
     init(
-        snapshot: LeagueScheduleDataSnapshot
+        snapshot: LeagueScheduleDataSnapshot<RNG>
     ) {
         //locations = snapshot.locations
+        rng = snapshot.rng
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions
@@ -62,8 +64,9 @@ struct LeagueScheduleData: Sendable, ~Copyable {
 
 // MARK: Snapshot
 extension LeagueScheduleData {
-    mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot) {
+    mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<RNG>) {
         //locations = snapshot.locations
+        rng = snapshot.rng
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
         day = snapshot.day
         defaultMaxEntryMatchupsPerGameDay = snapshot.defaultMaxEntryMatchupsPerGameDay
@@ -77,7 +80,7 @@ extension LeagueScheduleData {
         shuffleHistory = snapshot.shuffleHistory
     }
 
-    func snapshot() -> LeagueScheduleDataSnapshot {
+    func snapshot() -> LeagueScheduleDataSnapshot<RNG> {
         return .init(self)
     }
 }
@@ -142,7 +145,7 @@ extension LeagueScheduleData {
         assignmentState.availableSlots = availableSlots
         switch daySettings.gameGap {
         case .no:
-            allowedDivisionCombinations = Self.allowedDivisionMatchupCombinations(
+            allowedDivisionCombinations = calculateAllowedDivisionMatchupCombinations(
                 entriesPerMatchup: entriesPerMatchup,
                 locations: daySettings.locations,
                 entryCountsForDivision: entryCountsForDivision

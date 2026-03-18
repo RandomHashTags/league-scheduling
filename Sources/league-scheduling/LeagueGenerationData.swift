@@ -22,7 +22,7 @@ extension LeagueGenerationData: Codable {
 
     func scheduleSorted() -> ContiguousArray<[Matchup]> {
         var array:ContiguousArray<[Matchup]> = .init(repeating: [], count: schedule.count)
-        for (dayIndex, matchups) in schedule.enumerated() {
+        for (dayIndex, matchups) in schedule.enumerated() { // TODO: support determinism
             array[unchecked: dayIndex] = matchups.sorted(by: {
                 guard $0.time == $1.time else { return $0.time < $1.time }
                 return $0.location < $1.location

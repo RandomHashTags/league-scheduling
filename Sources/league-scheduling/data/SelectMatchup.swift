@@ -2,21 +2,26 @@
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
-    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups) -> MatchupPair? {
-        return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups)
+    mutating func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups) -> MatchupPair? {
+        return assignmentState.selectMatchup(
+            prioritizedMatchups: prioritizedMatchups,
+            rng: &rng
+        )
     }
 }
 
 extension AssignmentState {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups
+        prioritizedMatchups: borrowing PrioritizedMatchups,
+        rng: inout some RandomNumberGenerator
     ) -> MatchupPair? {
         return Self.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
             recurringDayLimits: recurringDayLimits,
-            remainingAllocations: remainingAllocations
+            remainingAllocations: remainingAllocations,
+            rng: &rng
         )
     }
 
@@ -25,7 +30,8 @@ extension AssignmentState {
         prioritizedMatchups: borrowing PrioritizedMatchups,
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
-        remainingAllocations: RemainingAllocations
+        remainingAllocations: RemainingAllocations,
+        rng: inout some RandomNumberGenerator
     ) -> MatchupPair? {
         #if LOG
         print("SelectMatchup;selectMatchup;prioritizedMatchups.count=\(prioritizedMatchups.matchups.count);availableMatchupCountForEntry=\(prioritizedMatchups.availableMatchupCountForEntry)")
@@ -47,7 +53,7 @@ extension AssignmentState {
         // - regenerating a failed day
         // - selecting the last matchup pair out of previous pairs of equal priority
         var pool = Set<MatchupPair>()
-        for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] {
+        for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] { // TODO: support determinism
             let (pairMinMatchupsPlayedSoFar, pairTotalMatchupsPlayedSoFar) = numberOfMatchupsPlayedSoFar(for: pair, numberOfAssignedMatchups: numberOfAssignedMatchups)
             guard pairMinMatchupsPlayedSoFar == selected.minMatchupsPlayedSoFar else {
                 if pairMinMatchupsPlayedSoFar < selected.minMatchupsPlayedSoFar {
@@ -158,7 +164,7 @@ extension AssignmentState {
         #if LOG
         print("SelectMatchup;selectMatchup;selected.pair=\(selected.pair.description);pool=\(pool.map({ $0.description }))")
         #endif
-        return pool.isEmpty ? selected.pair : pool.randomElement()
+        return pool.isEmpty ? selected.pair : pool.randomElement(using: &rng)
     }
 }
 

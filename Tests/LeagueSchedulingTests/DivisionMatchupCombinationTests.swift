@@ -14,7 +14,7 @@ struct DivisionMatchupCombinationTests {
             ]
         ]
         expected += expected
-        var combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        var combos = calculateAllDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [12, 12]
@@ -29,7 +29,7 @@ struct DivisionMatchupCombinationTests {
                 [0, 5], [2, 3], [3, 2], [5, 0]
             ]
         ]
-        combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        combos = calculateAllDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 10]
@@ -45,7 +45,7 @@ struct DivisionMatchupCombinationTests {
                 [0, 5], [2, 3], [3, 2], [5, 0]
             ]
         ]
-        combos = LeagueScheduleData.allDivisionMatchupCombinations(
+        combos = calculateAllDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 0, 10]
@@ -75,7 +75,7 @@ extension DivisionMatchupCombinationTests {
                 [6, 0], [0, 6]
             ]
         ]
-        var combos = LeagueScheduleData.allowedDivisionMatchupCombinations(
+        var combos = calculateAllowedDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [12, 12]
@@ -90,7 +90,7 @@ extension DivisionMatchupCombinationTests {
                 [4, 3], [2, 3]
             ]
         ]
-        combos = LeagueScheduleData.allowedDivisionMatchupCombinations(
+        combos = calculateAllowedDivisionMatchupCombinations(
             entriesPerMatchup: 2,
             locations: 6,
             entryCountsForDivision: [14, 10]

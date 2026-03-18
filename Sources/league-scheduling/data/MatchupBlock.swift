@@ -18,6 +18,7 @@ extension LeagueScheduleData {
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                rng: &rng,
                 assignmentState: &assignmentState,
                 selectSlot: SelectSlotB2B(entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay),
                 canPlayAt: canPlayAt
@@ -33,6 +34,7 @@ extension LeagueScheduleData {
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                rng: &rng,
                 assignmentState: &assignmentState,
                 selectSlot: SelectSlotNormal(),
                 canPlayAt: canPlayAt
@@ -53,6 +55,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        rng: inout some RandomNumberGenerator,
         assignmentState: inout AssignmentState,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
@@ -85,6 +88,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
+            rng: &rng,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: { _ in false },
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
@@ -92,7 +96,7 @@ extension LeagueScheduleData {
             selectSlot: selectSlot,
             canPlayAt: canPlayAt
         ) else { return nil }
-        adjacentTimes = Self.adjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
+        adjacentTimes = calculateAdjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
         localAssignmentState.availableSlots = localAssignmentState.availableSlots.filter { $0.time == firstMatchup.time }
         localAssignmentState.recalculateAllRemainingAllocations(
             day: day,
@@ -112,6 +116,7 @@ extension LeagueScheduleData {
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                 allAvailableMatchups: localAssignmentState.availableMatchups,
+                rng: &rng,
                 localAssignmentState: &localAssignmentState,
                 remainingPrioritizedEntries: &remainingPrioritizedEntries,
                 selectedEntries: &selectedEntries,
@@ -133,7 +138,7 @@ extension LeagueScheduleData {
             let availableMatchups = lastLocalAssignmentStateAvailableMatchups.filter {
                 targetEntries.contains($0.team1) && targetEntries.contains($0.team2)
             }
-            for entryID in targetEntries {
+            for entryID in targetEntries { // TODO: support determinism
                 if availableMatchups.first(where: { $0.team1 == entryID || $0.team2 == entryID }) == nil {
                     #if LOG
                     print("assignBlockOfMatchups;i == lastMatchupIndex;$0=\($0);targetEntries (\(targetEntries.count))=\(targetEntries);entryID=\(entryID);availableMatchups.first of entryID == nil;skipping $0")
@@ -152,6 +157,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
+            rng: &rng,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
@@ -160,7 +166,7 @@ extension LeagueScheduleData {
             canPlayAt: canPlayAt
         ) else { return nil }
         // last matchup was successfully assigned; continue
-        if var time = adjacentTimes.randomElement() { // TODO: pick an adjacent time that needs to be prioritized over others
+        if var time = adjacentTimes.randomElement(using: &rng) { // TODO: pick an adjacent time that needs to be prioritized over others
             // assign matchups from previously scheduled entries until they have played all their games
             localAssignmentState.availableMatchups = localAssignmentState.availableMatchups.filter {
                 selectedEntries.contains($0.team1) && selectedEntries.contains($0.team2)
@@ -184,6 +190,7 @@ extension LeagueScheduleData {
                         entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                         divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                         allAvailableMatchups: localAssignmentState.availableMatchups,
+                        rng: &rng,
                         assignmentState: &localAssignmentState,
                         selectSlot: selectSlot,
                         canPlayAt: canPlayAt
@@ -193,7 +200,7 @@ extension LeagueScheduleData {
                 #if LOG
                 print("assignBlockOfMatchups;j=\(j);finished time \(time)")
                 #endif
-                if let nextTime = adjacentTimes.randomElement() {
+                if let nextTime = adjacentTimes.randomElement(using: &rng) {
                     time = nextTime
                 }
             }
@@ -222,6 +229,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Set<MatchupPair>,
+        rng: inout some RandomNumberGenerator,
         localAssignmentState: inout AssignmentState,
         remainingPrioritizedEntries: inout Set<Entry.IDValue>,
         selectedEntries: inout Set<Entry.IDValue>,
@@ -237,6 +245,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
+            rng: &rng,
             assignmentState: &localAssignmentState,
             selectSlot: selectSlot,
             canPlayAt: canPlayAt
@@ -259,6 +268,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Set<MatchupPair>,
+        rng: inout some RandomNumberGenerator,
         localAssignmentState: inout AssignmentState,
         shouldSkipSelection: (MatchupPair) -> Bool,
         remainingPrioritizedEntries: inout Set<Entry.IDValue>,
@@ -275,6 +285,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
+            rng: &rng,
             assignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
             selectSlot: selectSlot,
@@ -288,31 +299,5 @@ extension LeagueScheduleData {
         selectedEntries.insert(leagueMatchup.home)
         selectedEntries.insert(leagueMatchup.away)
         return leagueMatchup
-    }
-}
-
-// MARK: Adjacent times
-extension LeagueScheduleData {
-    static func adjacentTimes(
-        for time: TimeIndex,
-        entryMatchupsPerGameDay: EntryMatchupsPerGameDay
-    ) -> Set<TimeIndex> {
-        var adjacentTimes = Set<TimeIndex>()
-        let timeIndex = time % entryMatchupsPerGameDay
-        if timeIndex == 0 {
-            for i in 1..<TimeIndex(entryMatchupsPerGameDay) {
-                adjacentTimes.insert(time + i)
-            }
-        } else {
-            for i in 1..<timeIndex+1 {
-                adjacentTimes.insert(time - i)
-            }
-            if timeIndex < entryMatchupsPerGameDay-1 {
-                for i in 1..<entryMatchupsPerGameDay - timeIndex {
-                    adjacentTimes.insert(time + i)
-                }
-            }
-        }
-        return adjacentTimes
     }
 }

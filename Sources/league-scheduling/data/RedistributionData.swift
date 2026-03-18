@@ -14,14 +14,15 @@ struct RedistributionData: Sendable {
         dayIndex: DayIndex,
         startDayIndex: DayIndex,
         settings: RequestPayload.Runtime,
-        data: borrowing LeagueScheduleData
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        entriesPerMatchup: EntriesPerMatchup
     ) {
         self.startDayIndex = startDayIndex
-        self.entryMatchupsPerGameDay = data.defaultMaxEntryMatchupsPerGameDay
-        redistributedEntries = .init(repeating: 0, count: data.entriesCount)
+        self.entryMatchupsPerGameDay = entryMatchupsPerGameDay
+        redistributedEntries = .init(repeating: 0, count: settings.entries.count)
         redistributed = []
 
-        let threshold = (data.entriesCount / data.entriesPerMatchup)// * entryMatchupsPerGameDay
+        let threshold = (settings.entries.count / entriesPerMatchup)// * entryMatchupsPerGameDay
         var minMatchupsRequired = threshold
         var maxMovableMatchups = threshold
         if let r = settings.daySettings[unchecked: dayIndex].general.redistributionSettings ?? settings.general.redistributionSettings {
@@ -134,7 +135,7 @@ extension RedistributionData {
 
         // prioritize entries that have been redistributed the least
         var (cMin, cMax):(UInt16, UInt16) = (.max, .max)
-        for r in redistributables {
+        for r in redistributables { // TODO: support determinism
             if generationData.schedule[unchecked: r.fromDay].count <= minMatchupsRequired {
                 // don't take from the day since the matchups for it will render the day incomplete
                 continue

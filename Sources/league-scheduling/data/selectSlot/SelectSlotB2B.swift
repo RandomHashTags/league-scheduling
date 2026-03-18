@@ -2,13 +2,13 @@
 struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 
-    func select(
+    func select<TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes>(
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: PlaysAtTimes,
-        playsAtLocations: PlaysAtLocations,
+        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtLocations: ContiguousArray<LocationSet>,
         playableSlots: inout Set<AvailableSlot>
     ) -> AvailableSlot? {
         filter(
@@ -29,10 +29,10 @@ struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
 
 extension SelectSlotB2B {
     /// Mutates `playableSlots`, if `team1` AND `team2` haven't played already, so it only contains the first slots applicable for a matchup block.
-    private func filter(
+    private func filter<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,
         team2: Entry.IDValue,
-        playsAtTimes: PlaysAtTimes,
+        playsAtTimes: ContiguousArray<TimeSet>,
         playableSlots: inout Set<AvailableSlot>
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")

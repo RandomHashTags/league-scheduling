@@ -2,13 +2,13 @@
 @testable import LeagueScheduling
 import Testing
 
-struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
+struct BalanceHomeAwayExpectations<Config: ScheduleConfiguration>: ScheduleTestsProtocol {
     func expectations(
         cap: MaximumSameOpponentMatchupsCap,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        divisionEntries: [Entry.Runtime]
+        divisionEntries: [Config.EntryRuntime]
     ) {
         for entry in divisionEntries {
             let entryMatchupsPlayed = matchupsPlayedPerDay.reduce(0, { $0 + $1[unchecked: entry.id] })
@@ -26,7 +26,7 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
                 }
             }
             for opponentEntry in divisionEntries {
-                if entry != opponentEntry {
+                if !entry.isEqual(to: opponentEntry) {
                     let value = assignedEntryHomeAways[unchecked: entry.id][unchecked: opponentEntry.id]
                     let sum = value.sum
                     #expect(sum <= cap)
@@ -40,7 +40,7 @@ struct BalanceHomeAwayExpectations: ScheduleTestsProtocol {
         }
     }
     func isBalanced(
-        entry: Entry.Runtime,
+        entry: Config.EntryRuntime,
         matchupsPlayedPerDay: ContiguousArray<ContiguousArray<Int>>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay
@@ -74,8 +74,15 @@ extension BalanceHomeAwayExpectations {
     }
 }
 
-extension Entry.Runtime: Equatable {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
+extension Entry.Runtime {
+    func isEqual(to rhs: Self) -> Bool {
+        id == rhs.id
+        && division == rhs.division
+        //&& gameDays == rhs.gameDays
+        //&& lhs.gameTimes == rhs.gameTimes
+        //&& lhs.gameLocations == rhs.gameLocations
+        //&& lhs.homeLocations == rhs.homeLocations
+        //&& byes == rhs.byes
+        //&& lhs.matchupsPerGameDay == rhs.matchupsPerGameDay
     }
 }

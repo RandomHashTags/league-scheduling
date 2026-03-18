@@ -2,7 +2,7 @@
 @testable import LeagueScheduling
 import Testing
 
-struct BalancedHomeAwayThroughput {
+struct BalancedHomeAwayThroughput: ScheduleTestsProtocol {
     //@Test(.timeLimit(.minutes(1)))
     func balanceHomeAwayThroughput() async throws {
         try await withThrowingTaskGroup(of: Output.self) { group in
@@ -26,7 +26,7 @@ struct BalancedHomeAwayThroughput {
         let schedule = try ScheduleBack2Back.scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10()
         let entries = schedule.entries
         let entriesCount = entries.count
-        let expectation = BalanceHomeAwayExpectations()
+        let expectation = BalanceHomeAwayExpectations<UnitTestScheduleConfig>()
         while !Task.isCancelled {
             let result = await schedule.generate()
             output.throughput += 1

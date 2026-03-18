@@ -17,7 +17,7 @@ struct BalanceNumberCalculation {
         }
         var minimumRequired = 4
         mutateMinimum(&minimumRequired)
-        var balanceNumber:Int = RequestPayload.Runtime.balanceNumber(
+        var balanceNumber:Int = calculateBalanceNumber(
             totalMatchupsPlayed: 16,
             value: 4,
             strictness: strictness
@@ -26,7 +26,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 6
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 16,
             value: 3,
             strictness: strictness
@@ -35,7 +35,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 8
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 16,
             value: 2,
             strictness: strictness
@@ -44,7 +44,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 5,
             value: 2,
             strictness: strictness
@@ -53,7 +53,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 5
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 5,
             value: 1,
             strictness: strictness
@@ -62,7 +62,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 9,
             value: 3,
             strictness: strictness
@@ -70,7 +70,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 2
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 7,
             value: 4,
             strictness: strictness
@@ -78,7 +78,7 @@ struct BalanceNumberCalculation {
 
         minimumRequired = 3
         mutateMinimum(&minimumRequired)
-        balanceNumber = RequestPayload.Runtime.balanceNumber(
+        balanceNumber = calculateBalanceNumber(
             totalMatchupsPlayed: 7,
             value: 3,
             strictness: strictness

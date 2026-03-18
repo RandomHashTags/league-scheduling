@@ -1,5 +1,5 @@
 
-struct RedistributionData: Sendable {
+struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
     /// The latest `DayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:DayIndex
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
@@ -10,11 +10,15 @@ struct RedistributionData: Sendable {
     private var redistributedEntries:[UInt16]
     private(set) var redistributed:Set<Matchup>
 
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     init(
         dayIndex: DayIndex,
         startDayIndex: DayIndex,
-        settings: RequestPayload.Runtime,
-        data: borrowing LeagueScheduleData
+        settings: LitLeagues_Leagues_RedistributionSettings?,
+        data: borrowing LeagueScheduleData<Config>
     ) {
         self.startDayIndex = startDayIndex
         self.entryMatchupsPerGameDay = data.defaultMaxEntryMatchupsPerGameDay
@@ -24,7 +28,7 @@ struct RedistributionData: Sendable {
         let threshold = (data.entriesCount / data.entriesPerMatchup)// * entryMatchupsPerGameDay
         var minMatchupsRequired = threshold
         var maxMovableMatchups = threshold
-        if let r = settings.daySettings[unchecked: dayIndex].general.redistributionSettings ?? settings.general.redistributionSettings {
+        if let r = settings {
             minMatchupsRequired = r.hasMinMatchupsRequired ? Int(r.minMatchupsRequired) : threshold
             maxMovableMatchups =  r.hasMaxMovableMatchups  ? Int(r.maxMovableMatchups)  : threshold
         }
@@ -42,7 +46,7 @@ extension RedistributionData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         day: DayIndex,
         gameGap: GameGap.TupleValue,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         executionSteps: inout [ExecutionStep],
         generationData: inout LeagueGenerationData
     ) -> Bool {
@@ -173,7 +177,7 @@ extension RedistributionData {
     private mutating func redistribute(
         redistributable: inout Redistributable,
         redistributables: inout Set<Redistributable>,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
         generationData.schedule[unchecked: redistributable.fromDay].remove(redistributable.matchup)

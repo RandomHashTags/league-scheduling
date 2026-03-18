@@ -2,8 +2,8 @@
 import StaticDateTimes
 
 // MARK: Noncopyable
-struct AssignmentState: Sendable, ~Copyable {
-    let entries:[Entry.Runtime]
+struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
+    let entries:[Config.EntryRuntime]
     var startingTimes:[StaticTime]
     var matchupDuration:MatchupDuration
     var locationTravelDurations:[[MatchupDuration]]
@@ -55,21 +55,25 @@ struct AssignmentState: Sendable, ~Copyable {
     /// Remaining available matchup pairs that can be assigned for the `day`.
     var availableMatchups:Set<MatchupPair>
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
     var availableSlots:Set<AvailableSlot>
     
     var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
-    var playsAtLocations:PlaysAtLocations
+    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAtLocations:ContiguousArray<Config.LocationSet>
 
     /// Available matchups that can be scheduled.
     var matchups:Set<Matchup>
 
     var shuffleHistory = [LeagueShuffleAction]()
 
-    func copyable() -> AssignmentStateCopyable {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
+    func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,
@@ -133,8 +137,8 @@ struct AssignmentState: Sendable, ~Copyable {
 }
 
 // MARK: Copyable
-struct AssignmentStateCopyable {
-    let entries:[Entry.Runtime]
+struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
+    let entries:[Config.EntryRuntime]
     let startingTimes:[StaticTime]
     let matchupDuration:MatchupDuration
     let locationTravelDurations:[[MatchupDuration]]
@@ -174,19 +178,23 @@ struct AssignmentStateCopyable {
     /// Remaining available matchup pairs that can be assigned for the `day`.
     var availableMatchups:Set<MatchupPair>
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
     var availableSlots:Set<AvailableSlot>
 
     var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
-    var playsAtLocations:PlaysAtLocations
+    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAtLocations:ContiguousArray<Config.LocationSet>
     var matchups:Set<Matchup>
 
     var shuffleHistory:[LeagueShuffleAction]
 
-    func noncopyable() -> AssignmentState {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
+    func noncopyable() -> AssignmentState<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,

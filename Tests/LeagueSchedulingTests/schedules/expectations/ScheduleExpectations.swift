@@ -7,8 +7,8 @@ protocol ScheduleExpectations: Sendable {
 
 // MARK: Expectations
 extension ScheduleExpectations {
-    func expectations(
-        settings: RequestPayload.Runtime,
+    func expectations<Config: ScheduleConfiguration>(
+        settings: borrowing RequestPayload.Runtime<Config>,
         matchupsCount: Int,
         data: LeagueGenerationResult
     ) throws {
@@ -32,11 +32,11 @@ extension ScheduleExpectations {
         var maxStartingTimes:TimeIndex = 0
         var maxLocations:LocationIndex = 0
         for setting in settings.daySettings {
-            if setting.general.startingTimes.count > maxStartingTimes {
-                maxStartingTimes = TimeIndex(setting.general.startingTimes.count)
+            if setting.startingTimes.count > maxStartingTimes {
+                maxStartingTimes = TimeIndex(setting.startingTimes.count)
             }
-            if setting.general.locations > maxLocations {
-                maxLocations = setting.general.locations
+            if setting.locations > maxLocations {
+                maxLocations = setting.locations
             }
         }
 
@@ -91,12 +91,11 @@ extension ScheduleExpectations {
                         )
                     }
                 }
-                let settings = settings.daySettings[dayIndex].general
-                let dayExpectations = DayExpectations(
-                    settings: settings,
+                let settings = settings.daySettings[dayIndex]
+                let dayExpectations = DayExpectations<Config>(
                     b2bMatchupsAtDifferentLocations: b2bMatchupsAtDifferentLocations
                 )
-                dayExpectations.expectations()
+                dayExpectations.expectations(settings)
 
                 if true {
                     printMatchups(day: dayIndex, matchups)
@@ -105,21 +104,21 @@ extension ScheduleExpectations {
             for (divisionIndex, division) in settings.divisions.enumerated() {
                 let cap = division.maxSameOpponentMatchups
                 let divisionEntries = settings.entries.filter { $0.division == divisionIndex }
-                let divisionEntryExpectations = DivisionEntryExpectations(
+                let divisionEntryExpectations = DivisionEntryExpectations<Config>(
                     cap: cap,
                     matchupsPlayedPerDay: matchupsPlayedPerDay,
                     assignedEntryHomeAways: assignedEntryHomeAways,
-                    entryMatchupsPerGameDay: entryMatchupsPerGameDay,
-                    divisionEntries: divisionEntries
+                    entryMatchupsPerGameDay: entryMatchupsPerGameDay
                 )
                 divisionEntryExpectations.expectations(
-                    balanceHomeAway: settings.general.balanceHomeAway
+                    balanceHomeAway: settings.general.balanceHomeAway,
+                    divisionEntries: divisionEntries
                 )
             }
 
             let balanceTimeNumber:TimeIndex
             if !settings.general.balancedTimes.isEmpty {
-                balanceTimeNumber = RequestPayload.Runtime.balanceNumber(
+                balanceTimeNumber = calculateBalanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedTimes.count,
                     strictness: settings.general.balanceTimeStrictness
@@ -135,7 +134,7 @@ extension ScheduleExpectations {
 
             let balanceLocationNumber:LocationIndex
             if !settings.general.balancedLocations.isEmpty {
-                balanceLocationNumber = RequestPayload.Runtime.balanceNumber(
+                balanceLocationNumber = calculateBalanceNumber(
                     totalMatchupsPlayed: totalMatchupsPlayed,
                     value: settings.general.balancedLocations.count,
                     strictness: settings.general.balanceLocationStrictness
@@ -206,7 +205,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceTimeNumber(
         assignedTimes: AssignedTimes,
-        balancedTimes: Set<TimeIndex>,
+        balancedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         balanceTimeNumber: TimeIndex
     ) {
         for (entryID, assignedTimes) in assignedTimes.enumerated() {
@@ -222,7 +221,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     private func allocatedLessThanOrEqualToBalanceLocationNumber(
         assignedLocations: AssignedLocations,
-        balancedLocations: Set<LocationIndex>,
+        balancedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         balanceLocationNumber: LocationIndex
     ) {
         for (entryID, assignedLocations) in assignedLocations.enumerated() {

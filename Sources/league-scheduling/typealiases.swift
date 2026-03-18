@@ -70,16 +70,6 @@ typealias MaximumTimeAllocations = ContiguousArray<ContiguousArray<TimeIndex>>
 /// - Usage: [`Entry.IDValue`: [`LocationIndex`: `maximum allowed at LocationIndex`]]
 typealias MaximumLocationAllocations = ContiguousArray<ContiguousArray<LocationIndex>>
 
-/// Times where an entry has already played at for the `day`.
-/// 
-/// - Usage: [`Entry.IDValue`: `Set<TimeIndex>`]
-typealias PlaysAtTimes = ContiguousArray<Set<TimeIndex>>
-
-/// Locations where an entry has already played at for the `day`.
-/// 
-/// - Usage: [`Entry.IDValue`: `Set<LocationIndex>`]
-typealias PlaysAtLocations = ContiguousArray<Set<LocationIndex>>
-
 /// Slots where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`Entry.IDValue`: `Set<AvailableSlot>`]

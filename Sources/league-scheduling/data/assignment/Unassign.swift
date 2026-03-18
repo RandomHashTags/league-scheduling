@@ -72,10 +72,10 @@ extension AssignmentState {
     ) {
         playsAt[unchecked: home].remove(slot)
         playsAt[unchecked: away].remove(slot)
-        playsAtTimes[unchecked: home].remove(slot.time)
-        playsAtTimes[unchecked: away].remove(slot.time)
-        playsAtLocations[unchecked: home].remove(slot.location)
-        playsAtLocations[unchecked: away].remove(slot.location)
+        playsAtTimes[unchecked: home].removeMember(slot.time)
+        playsAtTimes[unchecked: away].removeMember(slot.time)
+        playsAtLocations[unchecked: home].removeMember(slot.location)
+        playsAtLocations[unchecked: away].removeMember(slot.location)
     }
 }
 

@@ -2,7 +2,7 @@
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
-    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups) -> MatchupPair? {
+    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
         return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups)
     }
 }
@@ -10,7 +10,7 @@ extension LeagueScheduleData {
 extension AssignmentState {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups
+        prioritizedMatchups: borrowing PrioritizedMatchups<Config>
     ) -> MatchupPair? {
         return Self.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
@@ -22,7 +22,7 @@ extension AssignmentState {
 
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     static func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups,
+        prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
         remainingAllocations: RemainingAllocations

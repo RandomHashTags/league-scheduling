@@ -2,8 +2,12 @@
 // MARK: Matchup pair
 extension MatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
-    mutating func balanceHomeAway(
-        assignmentState: borrowing AssignmentState
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
+    mutating func balanceHomeAway<Config: ScheduleConfiguration>(
+        assignmentState: borrowing AssignmentState<Config>
     ) {
         let team1GamesPlayedAgainstTeam2 = assignmentState.assignedEntryHomeAways[unchecked: team1][unchecked: team2]
         // TODO: fix; more/less opponents than game days can make this unbalanced
@@ -43,6 +47,10 @@ extension MatchupPair {
 
 // MARK: LeagueScheduleData
 extension LeagueScheduleData {
+    #if SpecializeScheduleConfiguration
+    @_specialize(where Config == ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>)
+    @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
+    #endif
     mutating func balanceHomeAway(
         generationData: inout LeagueGenerationData
     ) {
@@ -52,7 +60,7 @@ extension LeagueScheduleData {
         #endif
 
         let now = clock.now
-        var unbalancedEntryIDs = Set<Entry.IDValue>()
+        var unbalancedEntryIDs = Config.EntryIDSet()
         unbalancedEntryIDs.reserveCapacity(entriesCount)
         var neededFlipsToBalance = [(home: UInt8, away: UInt8)](repeating: (0, 0), count: entriesCount)
         for entryID in 0..<Entry.IDValue(entriesCount) {
@@ -61,7 +69,7 @@ extension LeagueScheduleData {
             guard home != away && (home + away) % 2 == 0 else {
                 continue
             }
-            unbalancedEntryIDs.insert(entryID)
+            unbalancedEntryIDs.insertMember(entryID)
             let balanceNumber = (home + away) / 2
             if home > balanceNumber {
                 neededFlipsToBalance[unchecked: entryID].home = home - balanceNumber
@@ -102,14 +110,14 @@ extension LeagueScheduleData {
                 flippable.remove(flipped)
                 flipHomeAway(matchup: &flipped, neededFlipsToBalance: &neededFlipsToBalance, generationData: &generationData)
                 if neededFlipsToBalance[unchecked: flipped.matchup.home] == (0, 0) {
-                    unbalancedEntryIDs.remove(flipped.matchup.home)
+                    unbalancedEntryIDs.removeMember(flipped.matchup.home)
                 }
                 if neededFlipsToBalance[unchecked: flipped.matchup.away] == (0, 0) {
-                    unbalancedEntryIDs.remove(flipped.matchup.away)
+                    unbalancedEntryIDs.removeMember(flipped.matchup.away)
                 }
             } else {
                 // TODO: improve? for now we can just skip it
-                unbalancedEntryIDs.remove(entryID)
+                unbalancedEntryIDs.removeMember(entryID)
             }
         }
 

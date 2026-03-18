@@ -57,7 +57,7 @@ extension ScheduleBack2Back {
         let data = await schedule.generate()
         try expectations(settings: schedule, matchupsCount: 264, data: data)
     }
-    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> RequestPayload.Runtime {
+    static func scheduleB2B_11GameDays4Times6Locations2Divisions24Teams14_10() throws -> UnitTestRuntimeSchedule {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 6, 24)
         var entryDivisions = [Division.IDValue]()

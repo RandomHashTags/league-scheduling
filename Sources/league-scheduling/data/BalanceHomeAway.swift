@@ -1,4 +1,5 @@
 
+// MARK: Matchup pair
 extension MatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
     mutating func balanceHomeAway(
@@ -37,5 +38,122 @@ extension MatchupPair {
         let away2 = awayMatchups[unchecked: team2]
         guard away1 == away2 else { return away1 < away2 }
         return Bool.random()
+    }
+}
+
+// MARK: LeagueScheduleData
+extension LeagueScheduleData {
+    mutating func balanceHomeAway(
+        generationData: inout LeagueGenerationData
+    ) {
+        //return
+        #if LOG
+        print("BalanceHomeAway;LeagueScheduleData;balanceHomeAway;before;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
+        #endif
+
+        let now = clock.now
+        var unbalancedEntries = Set<Entry.IDValue>()
+        unbalancedEntries.reserveCapacity(entriesCount)
+        var neededFlipsToBalance = [(home: UInt8, away: UInt8)](repeating: (0, 0), count: entriesCount)
+        for i in 0..<Entry.IDValue(entriesCount) {
+            let home = assignmentState.homeMatchups[unchecked: i]
+            let away = assignmentState.awayMatchups[unchecked: i]
+            guard home != away && (home + away) % 2 == 0 else {
+                continue
+            }
+            unbalancedEntries.insert(i)
+            let balanceNumber = (home + away) / 2
+            if home > balanceNumber {
+                neededFlipsToBalance[unchecked: i].home = home - balanceNumber
+            } else {
+                neededFlipsToBalance[unchecked: i].away = away - balanceNumber
+            }
+        }
+        guard unbalancedEntries.count > 0 else {
+            appendExecutionStep(now: now)
+            return
+        }
+        var flippable = Set<FlippableMatchup>()
+        for day in 0..<DayIndex(generationData.schedule.count) {
+            let s = generationData.schedule[unchecked: day].filter({
+                guard unbalancedEntries.contains($0.home) && unbalancedEntries.contains($0.away) else { return false }
+                let homeAway = assignmentState.assignedEntryHomeAways[unchecked: $0.home][unchecked: $0.away]
+                return homeAway.home != homeAway.away
+            })
+            for m in s {
+                flippable.insert(.init(day: day, matchup: m))
+            }
+        }
+        while let entry = unbalancedEntries.randomElement() {
+            var f:FlippableMatchup?
+            let isHome = neededFlipsToBalance[unchecked: entry].home > 0
+            if isHome {
+                f = flippable.filter({
+                    $0.matchup.home == entry
+                    && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
+                    && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
+                }).randomElement()
+            } else {
+                f = flippable.filter({
+                    $0.matchup.away == entry
+                    && neededFlipsToBalance[unchecked: $0.matchup.home].home > 0
+                    && neededFlipsToBalance[unchecked: $0.matchup.away].away > 0
+                }).randomElement()
+            }
+            if var f {
+                flippable.remove(f)
+                flipHomeAway(matchup: &f, neededFlipsToBalance: &neededFlipsToBalance, generationData: &generationData)
+                if neededFlipsToBalance[unchecked: f.matchup.home] == (0, 0) {
+                    unbalancedEntries.remove(f.matchup.home)
+                }
+                if neededFlipsToBalance[unchecked: f.matchup.away] == (0, 0) {
+                    unbalancedEntries.remove(f.matchup.away)
+                }
+            } else {
+                // TODO: improve? for now we can just skip it
+                unbalancedEntries.remove(entry)
+            }
+        }
+
+        #if LOG
+        print("BalanceHomeAway;LeagueScheduleData;balanceHomeAway;after;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
+        #endif
+
+        appendExecutionStep(now: now)
+    }
+    private mutating func flipHomeAway(
+        matchup: inout FlippableMatchup,
+        neededFlipsToBalance: inout [(home: UInt8, away: UInt8)],
+        generationData: inout LeagueGenerationData
+    ) {
+        #if LOG
+        print("BalanceHomeAway;flipHomeAway;day=\(matchup.day);matchup=\(matchup.matchup.description);neededFlipsToBalance[home]=\(neededFlipsToBalance[unchecked: matchup.matchup.home]);neededFlipsToBalance[away]=\(neededFlipsToBalance[unchecked: matchup.matchup.away])")
+        #endif
+
+        generationData.schedule[unchecked: matchup.day].remove(matchup.matchup)
+        let home = matchup.matchup.home
+        let away = matchup.matchup.away
+        neededFlipsToBalance[unchecked: home].home -= 1
+        neededFlipsToBalance[unchecked: away].away -= 1
+
+        #if LOG
+        assignmentState.homeMatchups[unchecked: home] -= 1
+        assignmentState.awayMatchups[unchecked: home] += 1
+        assignmentState.homeMatchups[unchecked: away] += 1
+        assignmentState.awayMatchups[unchecked: away] -= 1
+        #endif
+
+        matchup.matchup.home = away
+        matchup.matchup.away = home
+        generationData.schedule[unchecked: matchup.day].insert(matchup.matchup)
+    }
+    private struct FlippableMatchup: Hashable, Sendable {
+        let day:DayIndex
+        var matchup:Matchup
+    }
+
+    private mutating func appendExecutionStep(now: ContinuousClock.Instant) {
+        let elapsed = clock.now - now
+        executionSteps.append(.init(key: "final balanceHomeAway", duration: elapsed))
     }
 }

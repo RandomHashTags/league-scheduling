@@ -48,7 +48,7 @@ extension LeagueScheduleData {
     ) {
         //return
         #if LOG
-        print("BalanceHomeAway;LeagueScheduleData;balanceHomeAway;before;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
+        print("BalanceHomeAway;LeagueScheduleData;before;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
         #endif
 
         let now = clock.now
@@ -69,19 +69,18 @@ extension LeagueScheduleData {
                 neededFlipsToBalance[unchecked: i].away = away - balanceNumber
             }
         }
-        guard unbalancedEntries.count > 0 else {
+        guard !unbalancedEntries.isEmpty else {
             appendExecutionStep(now: now)
             return
         }
         var flippable = Set<FlippableMatchup>()
         for day in 0..<DayIndex(generationData.schedule.count) {
-            let s = generationData.schedule[unchecked: day].filter({
-                guard unbalancedEntries.contains($0.home) && unbalancedEntries.contains($0.away) else { return false }
-                let homeAway = assignmentState.assignedEntryHomeAways[unchecked: $0.home][unchecked: $0.away]
-                return homeAway.home != homeAway.away
-            })
-            for m in s {
-                flippable.insert(.init(day: day, matchup: m))
+            for matchup in generationData.schedule[unchecked: day] {
+                guard unbalancedEntries.contains(matchup.home) && unbalancedEntries.contains(matchup.away) else { continue }
+                let homeAway = assignmentState.assignedEntryHomeAways[unchecked: matchup.home][unchecked: matchup.away]
+                if homeAway.home != homeAway.away {
+                    flippable.insert(.init(day: day, matchup: matchup))
+                }
             }
         }
         while let entry = unbalancedEntries.randomElement() {
@@ -116,7 +115,7 @@ extension LeagueScheduleData {
         }
 
         #if LOG
-        print("BalanceHomeAway;LeagueScheduleData;balanceHomeAway;after;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
+        print("BalanceHomeAway;LeagueScheduleData;after;home=\(assignmentState.homeMatchups);away=\(assignmentState.awayMatchups)")
         #endif
 
         appendExecutionStep(now: now)

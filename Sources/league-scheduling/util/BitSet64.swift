@@ -128,13 +128,11 @@ extension BitSet64: SetOfEntryIDs where Element == Entry.IDValue {
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
     ) -> Set<MatchupPair> {
         var pairs = Set<MatchupPair>(minimumCapacity: (count-1) * 2)
-        var index = 0
         forEach { home in
             let assignedHome = assignedEntryHomeAways[unchecked: home]
             let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
-            index += 1
             forEach { away in
-                if away >= index, assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
+                if away > home, assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
                     pairs.insert(.init(team1: home, team2: away))
                 }
             }

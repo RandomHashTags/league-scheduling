@@ -282,6 +282,7 @@ extension RequestPayload.Runtime {
                 gameDayRegenerationAttempt = 0
             }
         }
+        data.balanceHomeAway(generationData: &generationData)
         finalizeGenerationData(generationData: &generationData, data: data)
         return generationData
     }

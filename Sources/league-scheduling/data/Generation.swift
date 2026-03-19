@@ -76,7 +76,7 @@ extension RequestPayload.Runtime {
         }
         switch constraints.determinism.technique {
         default:
-            let seed = constraints.determinism.hasSeed ? constraints.determinism.seed : UInt64.random(in: 0..<UInt64.max)
+            let seed = constraints.determinism.hasSeed ? constraints.determinism.seed : UInt64.random(in: 0...UInt64.max)
             return try await generateSchedules(
                 divisionsCount: divisionsCount,
                 divisionEntries: divisionEntries,

@@ -63,8 +63,38 @@ extension RequestPayload.Runtime {
             divisionEntries: divisionEntries,
             divisions: divisions
         )
-        let rng = SystemRandomNumberGenerator()
-        //let rng = LCG(seed: 69)
+
+        guard constraints.hasDeterminism else {
+            return try await generateSchedules(
+                divisionsCount: divisionsCount,
+                divisionEntries: divisionEntries,
+                maxStartingTimes: maxStartingTimes,
+                maxLocations: maxLocations,
+                maxSameOpponentMatchups: maxSameOpponentMatchups,
+                rng: SystemRandomNumberGenerator()
+            )
+        }
+        switch constraints.determinism.technique {
+        default:
+            let seed = constraints.determinism.hasSeed ? constraints.determinism.seed : UInt64.random(in: 0..<UInt64.max)
+            return try await generateSchedules(
+                divisionsCount: divisionsCount,
+                divisionEntries: divisionEntries,
+                maxStartingTimes: maxStartingTimes,
+                maxLocations: maxLocations,
+                maxSameOpponentMatchups: maxSameOpponentMatchups,
+                rng: LCG(seed: seed)
+            )
+        }
+    }
+    private func generateSchedules<RNG: RandomNumberGenerator & Sendable>(
+        divisionsCount: Int,
+        divisionEntries: ContiguousArray<OrderedSet<Entry.IDValue>>,
+        maxStartingTimes: TimeIndex,
+        maxLocations: LocationIndex,
+        maxSameOpponentMatchups: MaximumSameOpponentMatchups,
+        rng: RNG
+    ) async throws -> [LeagueGenerationData] {
         let dataSnapshot = LeagueScheduleDataSnapshot(
             rng: rng,
             maxStartingTimes: maxStartingTimes,

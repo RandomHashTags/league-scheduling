@@ -72,12 +72,32 @@ public struct LitLeagues_Leagues_Determinism: Sendable {
   /// Clears the value of `seed`. Subsequent reads from it will return its default value.
   public mutating func clearSeed() {self._seed = nil}
 
+  public var multiplier: UInt64 {
+    get {return _multiplier ?? 0}
+    set {_multiplier = newValue}
+  }
+  /// Returns true if `multiplier` has been explicitly set.
+  public var hasMultiplier: Bool {return self._multiplier != nil}
+  /// Clears the value of `multiplier`. Subsequent reads from it will return its default value.
+  public mutating func clearMultiplier() {self._multiplier = nil}
+
+  public var increment: UInt64 {
+    get {return _increment ?? 0}
+    set {_increment = newValue}
+  }
+  /// Returns true if `increment` has been explicitly set.
+  public var hasIncrement: Bool {return self._increment != nil}
+  /// Clears the value of `increment`. Subsequent reads from it will return its default value.
+  public mutating func clearIncrement() {self._increment = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _technique: UInt32? = nil
   fileprivate var _seed: UInt64? = nil
+  fileprivate var _multiplier: UInt64? = nil
+  fileprivate var _increment: UInt64? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -86,7 +106,7 @@ fileprivate let _protobuf_package = "lit_leagues.leagues"
 
 extension LitLeagues_Leagues_Determinism: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Determinism"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}technique\0\u{1}seed\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}technique\0\u{1}seed\0\u{1}multiplier\0\u{1}increment\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -96,6 +116,8 @@ extension LitLeagues_Leagues_Determinism: SwiftProtobuf.Message, SwiftProtobuf._
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self._technique) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self._seed) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self._multiplier) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self._increment) }()
       default: break
       }
     }
@@ -112,12 +134,20 @@ extension LitLeagues_Leagues_Determinism: SwiftProtobuf.Message, SwiftProtobuf._
     try { if let v = self._seed {
       try visitor.visitSingularUInt64Field(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._multiplier {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._increment {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: LitLeagues_Leagues_Determinism, rhs: LitLeagues_Leagues_Determinism) -> Bool {
     if lhs._technique != rhs._technique {return false}
     if lhs._seed != rhs._seed {return false}
+    if lhs._multiplier != rhs._multiplier {return false}
+    if lhs._increment != rhs._increment {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

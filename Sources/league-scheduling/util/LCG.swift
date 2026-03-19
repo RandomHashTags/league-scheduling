@@ -7,8 +7,8 @@ struct LCG: RandomNumberGenerator, Sendable {
 
     init(
         seed: UInt64,
-        multiplier: UInt64 = 6364136223846793005,
-        increment: UInt64 = 1442695040888963407
+        multiplier: UInt64,
+        increment: UInt64
     ) {
         self.state = seed == 0 ? 1 : seed
         self.multiplier = multiplier

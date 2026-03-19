@@ -9,6 +9,12 @@ extension LitLeagues_Leagues_Determinism: Codable {
         if let v = try container.decodeIfPresent(UInt64.self, forKey: .seed) {
             seed = v
         }
+        if let v = try container.decodeIfPresent(UInt64.self, forKey: .multiplier) {
+            multiplier = v
+        }
+        if let v = try container.decodeIfPresent(UInt64.self, forKey: .increment) {
+            increment = v
+        }
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -19,11 +25,19 @@ extension LitLeagues_Leagues_Determinism: Codable {
         if hasSeed {
             try container.encode(seed, forKey: .seed)
         }
+        if hasMultiplier {
+            try container.encode(multiplier, forKey: .multiplier)
+        }
+        if hasIncrement {
+            try container.encode(increment, forKey: .increment)
+        }
     }
 
     enum CodingKeys: CodingKey {
         case technique
         case seed
+        case multiplier
+        case increment
     }
 }
 #endif

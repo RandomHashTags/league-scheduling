@@ -76,14 +76,20 @@ extension RequestPayload.Runtime {
         }
         switch constraints.determinism.technique {
         default:
-            let seed = constraints.determinism.hasSeed ? constraints.determinism.seed : UInt64.random(in: 0...UInt64.max)
+            let seed = constraints.determinism.hasSeed ? constraints.determinism.seed : 1
+            let multiplier = constraints.determinism.hasMultiplier ? constraints.determinism.multiplier : 6364136223846793005
+            let increment = constraints.determinism.hasIncrement ? constraints.determinism.increment : 1442695040888963407
             return try await generateSchedules(
                 divisionsCount: divisionsCount,
                 divisionEntries: divisionEntries,
                 maxStartingTimes: maxStartingTimes,
                 maxLocations: maxLocations,
                 maxSameOpponentMatchups: maxSameOpponentMatchups,
-                rng: LCG(seed: seed)
+                rng: LCG(
+                    seed: seed,
+                    multiplier: multiplier,
+                    increment: increment
+                )
             )
         }
     }

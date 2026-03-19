@@ -34,4 +34,6 @@ package lit_leagues.leagues;
 message Determinism {
     optional uint32 technique = 1;
     optional uint64 seed = 2;
+    optional uint64 multiplier = 3;
+    optional uint64 increment = 4;
 }

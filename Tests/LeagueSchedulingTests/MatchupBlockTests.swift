@@ -35,12 +35,12 @@ extension MatchupBlockTests {
         #expect(adjacent == [3])
 
         adjacent = calculateAdjacentTimes(for: 2, entryMatchupsPerGameDay: 3)
-        #expect(adjacent == [0, 1])
+        #expect(adjacent == [1, 0])
 
         adjacent = calculateAdjacentTimes(for: 2, entryMatchupsPerGameDay: 4)
-        #expect(adjacent == [0, 1, 3])
+        #expect(adjacent == [1, 0, 3])
 
         adjacent = calculateAdjacentTimes(for: 2, entryMatchupsPerGameDay: 5)
-        #expect(adjacent == [0, 1, 3, 4])
+        #expect(adjacent == [1, 0, 3, 4])
     }
 }

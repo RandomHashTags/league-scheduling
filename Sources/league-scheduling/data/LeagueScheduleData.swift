@@ -215,6 +215,7 @@ extension LeagueScheduleData {
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
     ) -> OrderedSet<MatchupPair> {
+        guard !entries.isEmpty else { return [] } // https://github.com/apple/swift-collections/issues/608
         var pairs = OrderedSet<MatchupPair>(minimumCapacity: (entries.count-1) * 2)
         let sortedEntries = entries.sorted()
 

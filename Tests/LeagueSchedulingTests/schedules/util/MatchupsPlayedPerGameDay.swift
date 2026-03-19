@@ -1,11 +1,12 @@
 
 @testable import LeagueScheduling
+import OrderedCollections
 
 struct MatchupsPlayedPerGameDay {
     static func get(
         gameDays: DayIndex,
         entriesCount: Int,
-        schedule: ContiguousArray<Set<Matchup>>
+        schedule: ContiguousArray<OrderedSet<Matchup>>
     ) -> ContiguousArray<ContiguousArray<Int>> {
         var matchupsPlayedPerDay = ContiguousArray(
             repeating: ContiguousArray(repeating: 0, count: entriesCount),

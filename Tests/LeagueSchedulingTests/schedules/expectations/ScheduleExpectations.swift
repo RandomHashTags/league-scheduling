@@ -1,5 +1,6 @@
 
 @testable import LeagueScheduling
+import OrderedCollections
 import Testing
 
 protocol ScheduleExpectations: Sendable {
@@ -238,7 +239,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     func printMatchups(
         day: Int,
-        _ matchups: Set<Matchup>
+        _ matchups: OrderedSet<Matchup>
     ) {
         return
         let results:String = matchups.sorted(by: {

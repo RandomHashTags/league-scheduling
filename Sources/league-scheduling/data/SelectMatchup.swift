@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
@@ -52,8 +54,8 @@ extension AssignmentState {
         // introduce a pool of matchup pairs of equal priority, and random selection, so that we don't repeat identical assignments when
         // - regenerating a failed day
         // - selecting the last matchup pair out of previous pairs of equal priority
-        var pool = Set<MatchupPair>()
-        for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] { // TODO: support determinism
+        var pool = OrderedSet<MatchupPair>()
+        for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] {
             let (pairMinMatchupsPlayedSoFar, pairTotalMatchupsPlayedSoFar) = numberOfMatchupsPlayedSoFar(for: pair, numberOfAssignedMatchups: numberOfAssignedMatchups)
             guard pairMinMatchupsPlayedSoFar == selected.minMatchupsPlayedSoFar else {
                 if pairMinMatchupsPlayedSoFar < selected.minMatchupsPlayedSoFar {
@@ -159,7 +161,7 @@ extension AssignmentState {
                 continue
             }
 
-            pool.insert(pair)
+            pool.append(pair)
         }
         #if LOG
         print("SelectMatchup;selectMatchup;selected.pair=\(selected.pair.description);pool=\(pool.map({ $0.description }))")
@@ -210,10 +212,10 @@ extension AssignmentState {
         recurringDayLimit: RecurringDayLimitInterval,
         remainingAllocations: (min: Int, max: Int),
         remainingMatchupCount: (min: Int, max: Int),
-        pool: inout Set<MatchupPair>
+        pool: inout OrderedSet<MatchupPair>
     ) -> SelectedMatchup {
         pool.removeAll(keepingCapacity: true)
-        pool.insert(pair)
+        pool.append(pair)
         return .init(
             pair: pair,
             minMatchupsPlayedSoFar: minMatchupsPlayedSoFar,

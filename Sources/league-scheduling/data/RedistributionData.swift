@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 struct RedistributionData: Sendable {
     /// The latest `DayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:DayIndex
@@ -53,7 +55,7 @@ extension RedistributionData {
         #endif
 
         var assigned = 0
-        var redistributables = Set<Redistributable>()
+        var redistributables = OrderedSet<Redistributable>()
         for fromDayIndex in stride(from: startDayIndex, through: 0, by: -1) {
             for matchup in generationData.schedule[unchecked: fromDayIndex] {
                 guard !redistributed.contains(matchup) else { continue }
@@ -97,7 +99,7 @@ extension RedistributionData {
                         maxLocationNumber: UInt8(awayMaxAssignedLocations[unchecked: slot.location]),
                         gameGap: gameGap
                     ) {
-                        redistributables.insert(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
+                        redistributables.append(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
                     }
                     assignmentState.incrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
                 }
@@ -128,14 +130,14 @@ extension RedistributionData {
 // MARK: Select redistributable
 extension RedistributionData {
     private func selectRedistributable(
-        from redistributables: Set<Redistributable>,
+        from redistributables: OrderedSet<Redistributable>,
         generationData: LeagueGenerationData
     ) -> Redistributable? {
         var redistributable:Redistributable? = nil
 
         // prioritize entries that have been redistributed the least
         var (cMin, cMax):(UInt16, UInt16) = (.max, .max)
-        for r in redistributables { // TODO: support determinism
+        for r in redistributables {
             if generationData.schedule[unchecked: r.fromDay].count <= minMatchupsRequired {
                 // don't take from the day since the matchups for it will render the day incomplete
                 continue
@@ -173,7 +175,7 @@ extension RedistributionData {
 extension RedistributionData {
     private mutating func redistribute(
         redistributable: inout Redistributable,
-        redistributables: inout Set<Redistributable>,
+        redistributables: inout OrderedSet<Redistributable>,
         assignmentState: inout AssignmentState,
         generationData: inout LeagueGenerationData
     ) {
@@ -193,7 +195,7 @@ extension RedistributionData {
 
         redistributable.matchup.time = redistributable.toSlot.time
         redistributable.matchup.location = redistributable.toSlot.location
-        assignmentState.matchups.insert(redistributable.matchup)
+        assignmentState.matchups.append(redistributable.matchup)
         assignmentState.availableSlots.remove(redistributable.toSlot)
         assignmentState.incrementAssignData(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
         assignmentState.insertPlaysAt(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)

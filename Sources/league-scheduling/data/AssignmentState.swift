@@ -1,4 +1,5 @@
 
+import OrderedCollections
 import StaticDateTimes
 
 // MARK: Noncopyable
@@ -45,27 +46,27 @@ struct AssignmentState: Sendable, ~Copyable {
     let maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled.
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:OrderedSet<MatchupPair>
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<OrderedSet<MatchupPair>>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:OrderedSet<MatchupPair>
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:OrderedSet<Entry.IDValue>
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:OrderedSet<AvailableSlot>
     
     var playsAt:PlaysAt
     var playsAtTimes:PlaysAtTimes
     var playsAtLocations:PlaysAtLocations
 
     /// Available matchups that can be scheduled.
-    var matchups:Set<Matchup>
+    var matchups:OrderedSet<Matchup>
 
     var shuffleHistory = [LeagueShuffleAction]()
 
@@ -164,25 +165,25 @@ struct AssignmentStateCopyable {
     var maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:OrderedSet<MatchupPair>
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<OrderedSet<MatchupPair>>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:OrderedSet<MatchupPair>
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:OrderedSet<Entry.IDValue>
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:OrderedSet<AvailableSlot>
 
     var playsAt:PlaysAt
     var playsAtTimes:PlaysAtTimes
     var playsAtLocations:PlaysAtLocations
-    var matchups:Set<Matchup>
+    var matchups:OrderedSet<Matchup>
 
     var shuffleHistory:[LeagueShuffleAction]
 

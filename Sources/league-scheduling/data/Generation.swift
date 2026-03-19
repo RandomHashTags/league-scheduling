@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 #if canImport(SwiftGlibc)
 import SwiftGlibc
 #elseif canImport(Foundation)
@@ -36,12 +38,12 @@ extension RequestPayload.Runtime {
 extension RequestPayload.Runtime {
     private func generateSchedules() async throws -> [LeagueGenerationData] {
         let divisionsCount = divisions.count
-        var divisionEntries:ContiguousArray<Set<Entry.IDValue>> = .init(repeating: Set(), count: divisionsCount)
+        var divisionEntries:ContiguousArray<OrderedSet<Entry.IDValue>> = .init(repeating: OrderedSet(), count: divisionsCount)
         #if LOG
         print("LeagueSchedule;generateSchedules;divisionsCount=\(divisionsCount);entries.count=\(entries.count)")
         #endif
         for entryIndex in 0..<entries.count {
-            divisionEntries[unchecked: entries[entryIndex].division].insert(entries[entryIndex].id)
+            divisionEntries[unchecked: entries[entryIndex].division].append(entries[entryIndex].id)
         }
 
         var maxStartingTimes:TimeIndex = 0
@@ -88,7 +90,7 @@ extension RequestPayload.Runtime {
     }
     private func generateDivisionSchedulesInParallel<RNG: RandomNumberGenerator>(
         divisionsCount: Int,
-        divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
+        divisionEntries: ContiguousArray<OrderedSet<Entry.IDValue>>,
         maxStartingTimes: TimeIndex,
         maxLocations: LocationIndex,
         dataSnapshot: LeagueScheduleDataSnapshot<RNG>
@@ -197,7 +199,7 @@ extension RequestPayload.Runtime {
         var generationData = LeagueGenerationData()
         generationData.assignLocationTimeRegenerationAttempts = 0
         generationData.negativeDayIndexRegenerationAttempts = 0
-        generationData.schedule = .init(repeating: Set(), count: gameDays)
+        generationData.schedule = .init(repeating: OrderedSet(), count: gameDays)
 
         var dataSnapshot = copy dataSnapshot
         var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Set<Entry.IDValue>>> = .init(repeating: .init(repeating: Set(), count: divisionsCount), count: gameDays)
@@ -433,15 +435,15 @@ extension RequestPayload.Runtime {
         times: TimeIndex,
         locations: LocationIndex,
         locationTimeExclusivity: [Set<TimeIndex>]?
-    ) -> Set<AvailableSlot> {
-        var slots = Set<AvailableSlot>(minimumCapacity: times * locations)
+    ) -> OrderedSet<AvailableSlot> {
+        var slots = OrderedSet<AvailableSlot>(minimumCapacity: Int(times) * locations)
         if let exclusivities = locationTimeExclusivity {
             for location in 0..<locations {
                 if let timeExclusives = exclusivities[uncheckedPositive: location] {
                     for time in 0..<times {
                         if timeExclusives.contains(time) {
                             let slot = AvailableSlot(time: time, location: location)
-                            slots.insert(slot)
+                            slots.append(slot)
                         }
                     }
                 }
@@ -450,7 +452,7 @@ extension RequestPayload.Runtime {
             for time in 0..<times {
                 for location in 0..<locations {
                     let slot = AvailableSlot(time: time, location: location)
-                    slots.insert(slot)
+                    slots.append(slot)
                 }
             }
         }
@@ -483,7 +485,7 @@ extension RequestPayload.Runtime {
     static func maximumSameOpponentMatchups(
         gameDays: DayIndex,
         entriesCount: Int,
-        divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
+        divisionEntries: ContiguousArray<OrderedSet<Entry.IDValue>>,
         divisions: [Division.Runtime]
     ) -> MaximumSameOpponentMatchups {
         var maxSameOpponentMatchups:MaximumSameOpponentMatchups = .init(repeating: .init(repeating: .max, count: entriesCount), count: entriesCount)

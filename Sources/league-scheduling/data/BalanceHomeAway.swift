@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 // MARK: Matchup pair
 extension MatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
@@ -54,7 +56,7 @@ extension LeagueScheduleData {
         #endif
 
         let now = clock.now
-        var unbalancedEntryIDs = Set<Entry.IDValue>()
+        var unbalancedEntryIDs = OrderedSet<Entry.IDValue>()
         unbalancedEntryIDs.reserveCapacity(entriesCount)
         var neededFlipsToBalance = [(home: UInt8, away: UInt8)](repeating: (0, 0), count: entriesCount)
         for entryID in 0..<Entry.IDValue(entriesCount) {
@@ -63,7 +65,7 @@ extension LeagueScheduleData {
             guard home != away && (home + away) % 2 == 0 else {
                 continue
             }
-            unbalancedEntryIDs.insert(entryID)
+            unbalancedEntryIDs.append(entryID)
             let balanceNumber = (home + away) / 2
             if home > balanceNumber {
                 neededFlipsToBalance[unchecked: entryID].home = home - balanceNumber
@@ -75,13 +77,13 @@ extension LeagueScheduleData {
             appendExecutionStep(now: now)
             return
         }
-        var flippable = Set<FlippableMatchup>()
+        var flippable = OrderedSet<FlippableMatchup>()
         for day in 0..<DayIndex(generationData.schedule.count) {
             for matchup in generationData.schedule[unchecked: day] {
                 guard unbalancedEntryIDs.contains(matchup.home) && unbalancedEntryIDs.contains(matchup.away) else { continue }
                 let homeAway = assignmentState.assignedEntryHomeAways[unchecked: matchup.home][unchecked: matchup.away]
                 if homeAway.home != homeAway.away {
-                    flippable.insert(.init(day: day, matchup: matchup))
+                    flippable.append(.init(day: day, matchup: matchup))
                 }
             }
         }
@@ -145,7 +147,7 @@ extension LeagueScheduleData {
 
         matchup.matchup.home = away
         matchup.matchup.away = home
-        generationData.schedule[unchecked: matchup.day].insert(matchup.matchup)
+        generationData.schedule[unchecked: matchup.day].append(matchup.matchup)
     }
     private struct FlippableMatchup: Hashable, Sendable {
         let day:DayIndex

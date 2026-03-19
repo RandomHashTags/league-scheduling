@@ -1,5 +1,6 @@
 
 @testable import LeagueScheduling
+import OrderedCollections
 import StaticDateTimes
 import Testing
 
@@ -46,8 +47,8 @@ struct CanPlayAtTests {
             ))
         }
 
-        playsAt.insert(AvailableSlot(time: 0, location: location))
-        playsAtTimes.insert(0)
+        playsAt.append(AvailableSlot(time: 0, location: location))
+        playsAtTimes.append(0)
         #expect(!CanPlayAtNormal.test(
             time: 0,
             location: location,
@@ -98,7 +99,7 @@ extension CanPlayAtTests {
         ]
         var time:TimeIndex = 0
         var location:LocationIndex = 0
-        var playsAt:Set<AvailableSlot> = []
+        var playsAt:PlaysAt.Element = []
         var gameGap = GameGap.upTo(5).minMax
         
         #expect(CanPlayAtWithTravelDurations.test(

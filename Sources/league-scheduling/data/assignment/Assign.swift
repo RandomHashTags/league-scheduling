@@ -56,7 +56,7 @@ extension AssignmentState {
             home: home,
             away: away
         )
-        matchups.insert(leagueMatchup)
+        matchups.append(leagueMatchup)
 
         availableMatchups.remove(matchup)
         // TODO: fix (why is the following line necessary | it fixes an issue that allowed matchups to exceed the maximumSameOpponentsMatchupsCap, but availableMatchups still contains matchups that shouldn't be scheduled when scheduling b2b)
@@ -133,10 +133,10 @@ extension AssignmentState {
         away: Entry.IDValue,
         slot: AvailableSlot
     ) {
-        playsAt[unchecked: home].insert(slot)
-        playsAt[unchecked: away].insert(slot)
-        playsAtTimes[unchecked: home].insert(slot.time)
-        playsAtTimes[unchecked: away].insert(slot.time)
+        playsAt[unchecked: home].append(slot)
+        playsAt[unchecked: away].append(slot)
+        playsAtTimes[unchecked: home].remove(slot.time)
+        playsAtTimes[unchecked: away].remove(slot.time)
         playsAtLocations[unchecked: home].insert(slot.location)
         playsAtLocations[unchecked: away].insert(slot.location)
     }

@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 protocol SelectSlotProtocol: Sendable, ~Copyable {
     func select(
         team1: Entry.IDValue,
@@ -7,6 +9,6 @@ protocol SelectSlotProtocol: Sendable, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot?
 }

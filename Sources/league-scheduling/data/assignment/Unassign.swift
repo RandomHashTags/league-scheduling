@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 // MARK: Unassign
 extension AssignmentState {
     mutating func unassign(
@@ -9,7 +11,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: matchup.home]]
@@ -17,7 +19,7 @@ extension AssignmentState {
         recurringDayLimits[unchecked: matchup.away][unchecked: matchup.home] -= recurringDayLimitInterval
         decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
         removePlaysAt(home: matchup.home, away: matchup.away, slot: matchup.slot)
-        availableSlots.insert(matchup.slot)
+        availableSlots.append(matchup.slot)
         matchups.remove(matchup)
 
         recalculateAvailableMatchups(
@@ -84,7 +86,7 @@ extension AssignmentState {
     mutating func recalculateAvailableMatchups(
         day: DayIndex,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        allAvailableMatchups: Set<MatchupPair>
+        allAvailableMatchups: OrderedSet<MatchupPair>
     ) {
         availableMatchups = allAvailableMatchups.filter({
             guard assignedEntryHomeAways[unchecked: $0.team1][unchecked: $0.team2].sum < maxSameOpponentMatchups[unchecked: $0.team1][unchecked: $0.team2]

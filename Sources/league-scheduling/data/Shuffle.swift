@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 // MARK: Shuffle
 extension AssignmentState {
     /// - Returns: The slot a matchup was sucessfully moved from.
@@ -10,7 +12,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> AvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)
@@ -32,7 +34,7 @@ extension AssignmentState {
         let team2LocationNumbers = assignedLocations[unchecked: matchup.team2]
         let team2MaxTimeNumbers = maxTimeAllocations[unchecked: matchup.team2]
         let team2MaxLocationNumbers = maxLocationAllocations[unchecked: matchup.team2]
-        for swapped in matchups { // TODO: support determinism
+        for swapped in matchups {
             // make sure the failed assigned matchup is allowed to go where the assigned matchup is
             guard canPlayAt.test(
                 time: swapped.time,
@@ -96,7 +98,7 @@ extension AssignmentState {
             let maxHomeLocationNumbers = maxLocationAllocations[unchecked: swapped.home]
             let maxAwayTimeNumbers = maxTimeAllocations[unchecked: swapped.away]
             let maxAwayLocationNumbers = maxLocationAllocations[unchecked: swapped.away]
-            guard let slot = availableSlots.first(where: { // TODO: support determinism
+            guard let slot = availableSlots.first(where: {
                 return canPlayAt.test(
                     time: $0.time,
                     location: $0.location,

@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
     func select(
         team1: Entry.IDValue,
@@ -7,7 +9,7 @@ struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         return Self.select(
             team1: team1,
@@ -26,7 +28,7 @@ extension SelectSlotNormal {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playableSlots: Set<AvailableSlot>
+        playableSlots: OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let team1Times = assignedTimes[unchecked: team1]
@@ -48,10 +50,10 @@ extension SelectSlotNormal {
         team1Locations: AssignedLocations.Element,
         team2Times: AssignedTimes.Element,
         team2Locations: AssignedLocations.Element,
-        playableSlots: Set<AvailableSlot>
+        playableSlots: OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         var selected = getSelectedSlot(playableSlots[playableSlots.startIndex], team1Times, team1Locations, team2Times, team2Locations)
-        for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] { // TODO: support determinism
+        for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] {
             let minimum = getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations)
             if minimum <= selected.minimumAssigned {
                 selected.slot = slot

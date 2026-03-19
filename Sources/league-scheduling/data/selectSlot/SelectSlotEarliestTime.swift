@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 struct SelectSlotEarliestTime: SelectSlotProtocol, ~Copyable {
     func select(
         team1: Entry.IDValue,
@@ -7,7 +9,7 @@ struct SelectSlotEarliestTime: SelectSlotProtocol, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         return Self.select(
             team1: team1,
@@ -25,7 +27,7 @@ extension SelectSlotEarliestTime {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         filter(playableSlots: &playableSlots)
         return SelectSlotNormal.select(
@@ -38,7 +40,7 @@ extension SelectSlotEarliestTime {
     }
 
     /// Mutates `playableSlots` so it only contains the slots at the earliest available time.
-    static func filter(playableSlots: inout Set<AvailableSlot>) {
+    static func filter(playableSlots: inout OrderedSet<AvailableSlot>) {
         var earliestTime = TimeIndex.max
         for slot in playableSlots {
             if slot.time < earliestTime {

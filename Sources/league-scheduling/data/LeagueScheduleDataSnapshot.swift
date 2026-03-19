@@ -1,4 +1,5 @@
 
+import OrderedCollections
 import StaticDateTimes
 
 struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendable {
@@ -36,7 +37,7 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
         entriesPerMatchup: EntriesPerMatchup,
         maximumPlayableMatchups: [UInt32],
         entries: [Entry.Runtime],
-        divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
+        divisionEntries: ContiguousArray<OrderedSet<Entry.IDValue>>,
         matchupDuration: MatchupDuration,
         gameGap: (Int, Int),
         sameLocationIfB2B: Bool,
@@ -49,7 +50,7 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
         self.gameGap = gameGap
         self.sameLocationIfB2B = sameLocationIfB2B
 
-        var prioritizedEntries = Set<Entry.IDValue>(minimumCapacity: entriesCount)
+        var prioritizedEntries = OrderedSet<Entry.IDValue>(minimumCapacity: entriesCount)
         var entryDivisions = ContiguousArray<Division.IDValue>(repeating: 0, count: entriesCount)
         for (index, entries) in divisionEntries.enumerated() {
             prioritizedEntries.formUnion(entries)
@@ -82,8 +83,8 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
             availableMatchups: [],
             prioritizedEntries: prioritizedEntries,
             availableSlots: [],
-            playsAt: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtTimes: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
+            playsAt: .init(repeating: OrderedSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount),
+            playsAtTimes: .init(repeating: OrderedSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount),
             playsAtLocations: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
             matchups: [],
             shuffleHistory: []

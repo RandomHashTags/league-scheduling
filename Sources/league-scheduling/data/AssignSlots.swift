@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 // MARK: Assign slots
 extension LeagueScheduleData {
     /// Assigns available slots for the day, taking into account all schedule settings, previously assigned matchups and generation data.
@@ -147,8 +149,8 @@ extension LeagueScheduleData {
                     assignmentState.availableMatchups = divisionMatchups
                     assignmentState.prioritizedEntries.removeAll(keepingCapacity: true)
                     for matchup in assignmentState.availableMatchups {
-                        assignmentState.prioritizedEntries.insert(matchup.team1)
-                        assignmentState.prioritizedEntries.insert(matchup.team2)
+                        assignmentState.prioritizedEntries.append(matchup.team1)
+                        assignmentState.prioritizedEntries.append(matchup.team2)
                     }
                     assignmentState.recalculateAllRemainingAllocations(
                         day: day,
@@ -245,7 +247,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         rng: inout some RandomNumberGenerator,
         assignmentState: inout AssignmentState,
         shouldSkipSelection: (MatchupPair) -> Bool,
@@ -296,7 +298,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         rng: inout some RandomNumberGenerator,
         assignmentState: inout AssignmentState,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,

@@ -1,11 +1,13 @@
 
+import OrderedCollections
+
 // MARK: Assign Matchup
 extension LeagueScheduleData {
     /// - Returns: The `Matchup` that was successfully assigned.
     @discardableResult
     mutating func assignMatchupPair(
         _ pair: MatchupPair,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -34,7 +36,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: OrderedSet<MatchupPair>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -91,13 +93,13 @@ extension AssignmentState {
 
 // MARK: Playable slots
 extension AssignmentState {
-    func playableSlots(for pair: MatchupPair) -> Set<AvailableSlot> {
+    func playableSlots(for pair: MatchupPair) -> OrderedSet<AvailableSlot> {
         return Self.playableSlots(for: pair, remainingAllocations: remainingAllocations)
     }
     static func playableSlots(
         for pair: MatchupPair,
         remainingAllocations: RemainingAllocations
-    ) -> Set<AvailableSlot> {
+    ) -> OrderedSet<AvailableSlot> {
         return remainingAllocations[unchecked: pair.team1].intersection(remainingAllocations[unchecked: pair.team2])
     }
 }

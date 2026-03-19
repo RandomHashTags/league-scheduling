@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable {
     func select(
         team1: Entry.IDValue,
@@ -7,7 +9,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]

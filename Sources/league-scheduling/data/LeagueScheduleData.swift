@@ -1,4 +1,5 @@
 
+import OrderedCollections
 import StaticDateTimes
 
 // MARK: Data
@@ -97,7 +98,7 @@ extension LeagueScheduleData {
         day: DayIndex,
         daySettings: GeneralSettings.Runtime,
         divisionEntries: ContiguousArray<Set<Entry.IDValue>>,
-        availableSlots: Set<AvailableSlot>,
+        availableSlots: OrderedSet<AvailableSlot>,
         settings: RequestPayload.Runtime,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
@@ -111,8 +112,8 @@ extension LeagueScheduleData {
         self.prioritizeEarlierTimes = daySettings.prioritizeEarlierTimes
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
-        var availableMatchups = Set<MatchupPair>()
-        var prioritizedEntries = Set<Entry.IDValue>(minimumCapacity: entriesCount)
+        var availableMatchups = OrderedSet<MatchupPair>()
+        var prioritizedEntries = OrderedSet<Entry.IDValue>(minimumCapacity: entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
         expectedMatchupsCount = 0
         assignmentState.allDivisionMatchups = .init(repeating: [], count: divisionEntries.count)
@@ -157,7 +158,7 @@ extension LeagueScheduleData {
         assignmentState.allMatchups = availableMatchups
         assignmentState.availableMatchups = availableMatchups
         assignmentState.prioritizedEntries = prioritizedEntries
-        assignmentState.matchups = Set(minimumCapacity: availableSlots.count)
+        assignmentState.matchups = OrderedSet(minimumCapacity: availableSlots.count)
         for i in 0..<assignmentState.playsAt.count {
             assignmentState.playsAt[unchecked: i].removeAll(keepingCapacity: true)
         }
@@ -198,7 +199,7 @@ extension LeagueScheduleData {
     /// - Returns: The available matchup pairs that can play for the `day`.
     func availableMatchupPairs(
         for entries: Set<Entry.IDValue>
-    ) -> Set<MatchupPair> {
+    ) -> OrderedSet<MatchupPair> {
         return Self.availableMatchupPairs(
             for: entries,
             assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
@@ -213,8 +214,8 @@ extension LeagueScheduleData {
         for entries: Set<Entry.IDValue>,
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
-    ) -> Set<MatchupPair> {
-        var pairs = Set<MatchupPair>(minimumCapacity: (entries.count-1) * 2)
+    ) -> OrderedSet<MatchupPair> {
+        var pairs = OrderedSet<MatchupPair>(minimumCapacity: (entries.count-1) * 2)
         let sortedEntries = entries.sorted()
 
         var index = 0
@@ -225,7 +226,7 @@ extension LeagueScheduleData {
             let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
             for away in sortedEntries[index...] {
                 if assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
-                    pairs.insert(.init(team1: home, team2: away))
+                    pairs.append(.init(team1: home, team2: away))
                 }
             }
         }

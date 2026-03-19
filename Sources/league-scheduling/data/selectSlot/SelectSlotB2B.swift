@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 
@@ -9,7 +11,7 @@ struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: PlaysAtTimes,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) -> AvailableSlot? {
         filter(
             team1: team1,
@@ -33,7 +35,7 @@ extension SelectSlotB2B {
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         playsAtTimes: PlaysAtTimes,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout OrderedSet<AvailableSlot>
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")
         if playsAtTimes[unchecked: team1].isEmpty && playsAtTimes[unchecked: team2].isEmpty {

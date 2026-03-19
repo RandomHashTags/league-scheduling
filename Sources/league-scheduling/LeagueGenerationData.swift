@@ -1,9 +1,11 @@
 
+import OrderedCollections
+
 public struct LeagueGenerationData: Sendable {
     public var error:LeagueError? = nil
     public var assignLocationTimeRegenerationAttempts:UInt32 = 0
     public var negativeDayIndexRegenerationAttempts:UInt32 = 0
-    public var schedule:ContiguousArray<Set<LitLeagues_Leagues_Matchup>> = []
+    public var schedule:ContiguousArray<OrderedSet<LitLeagues_Leagues_Matchup>> = []
     public var executionSteps = [ExecutionStep]()
     public var shuffleHistory = [LeagueShuffleAction]()
 }
@@ -22,7 +24,7 @@ extension LeagueGenerationData: Codable {
 
     func scheduleSorted() -> ContiguousArray<[Matchup]> {
         var array:ContiguousArray<[Matchup]> = .init(repeating: [], count: schedule.count)
-        for (dayIndex, matchups) in schedule.enumerated() { // TODO: support determinism
+        for (dayIndex, matchups) in schedule.enumerated() {
             array[unchecked: dayIndex] = matchups.sorted(by: {
                 guard $0.time == $1.time else { return $0.time < $1.time }
                 return $0.location < $1.location

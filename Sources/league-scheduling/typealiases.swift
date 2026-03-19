@@ -1,4 +1,6 @@
 
+import OrderedCollections
+
 typealias DayIndex = UInt32
 typealias TimeIndex = UInt32
 typealias LocationIndex = UInt32
@@ -43,7 +45,7 @@ typealias MaximumSameOpponentMatchupsCap = UInt32
 /// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
 /// 
 /// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
-typealias RemainingAllocations = ContiguousArray<Set<AvailableSlot>>
+typealias RemainingAllocations = ContiguousArray<OrderedSet<AvailableSlot>>
 
 /// When entries can play against each other again.
 /// 
@@ -73,7 +75,7 @@ typealias MaximumLocationAllocations = ContiguousArray<ContiguousArray<LocationI
 /// Times where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`Entry.IDValue`: `Set<TimeIndex>`]
-typealias PlaysAtTimes = ContiguousArray<Set<TimeIndex>>
+typealias PlaysAtTimes = ContiguousArray<OrderedSet<TimeIndex>>
 
 /// Locations where an entry has already played at for the `day`.
 /// 
@@ -83,4 +85,4 @@ typealias PlaysAtLocations = ContiguousArray<Set<LocationIndex>>
 /// Slots where an entry has already played at for the `day`.
 /// 
 /// - Usage: [`Entry.IDValue`: `Set<AvailableSlot>`]
-typealias PlaysAt = ContiguousArray<Set<AvailableSlot>>
+typealias PlaysAt = ContiguousArray<OrderedSet<AvailableSlot>>

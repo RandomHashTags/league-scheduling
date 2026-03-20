@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
 

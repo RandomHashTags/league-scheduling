@@ -1,5 +1,4 @@
 
-import OrderedCollections
 import StaticDateTimes
 
 struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {

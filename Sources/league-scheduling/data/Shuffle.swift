@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Shuffle
 extension AssignmentState {
     /// - Returns: The slot a matchup was sucessfully moved from.

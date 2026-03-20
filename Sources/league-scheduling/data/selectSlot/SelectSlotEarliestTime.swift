@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 struct SelectSlotEarliestTime: SelectSlotProtocol, ~Copyable {
     func select<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,

@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.

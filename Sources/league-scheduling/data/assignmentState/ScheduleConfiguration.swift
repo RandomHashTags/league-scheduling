@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 protocol ScheduleConfiguration: Sendable, ~Copyable {
     associatedtype RNG:RandomNumberGenerator & Sendable
     associatedtype TimeSet:SetOfTimeIndexes

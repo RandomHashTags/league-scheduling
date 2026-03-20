@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: adjacent times
 func calculateAdjacentTimes<TimeSet: SetOfTimeIndexes>(
     for time: TimeIndex,

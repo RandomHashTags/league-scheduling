@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: LeagueScheduleData
 extension LeagueScheduleData {
     /// Moves the specified matchup to the given slot on the same day.

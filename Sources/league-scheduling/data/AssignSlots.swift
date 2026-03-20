@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Assign slots
 extension LeagueScheduleData {
     /// Assigns available slots for the day, taking into account all schedule settings, previously assigned matchups and generation data.

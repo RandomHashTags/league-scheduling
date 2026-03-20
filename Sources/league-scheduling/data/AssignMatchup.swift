@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Assign Matchup
 extension LeagueScheduleData {
     /// - Returns: The `Matchup` that was successfully assigned.

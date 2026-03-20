@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     private(set) var matchups:Config.MatchupPairSet
     private(set) var availableMatchupCountForEntry:ContiguousArray<Int>

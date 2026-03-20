@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 protocol SelectSlotProtocol: Sendable, ~Copyable {
     func select<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,

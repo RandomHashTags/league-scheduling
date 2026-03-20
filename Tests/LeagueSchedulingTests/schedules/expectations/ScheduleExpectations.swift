@@ -1,6 +1,5 @@
 
 @testable import LeagueScheduling
-import OrderedCollections
 import Testing
 
 protocol ScheduleExpectations: Sendable {

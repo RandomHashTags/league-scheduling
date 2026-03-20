@@ -1,7 +1,7 @@
 
 import OrderedCollections
 
-struct RedistributionData: Sendable {
+struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
     /// The latest `DayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:DayIndex
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
@@ -45,7 +45,7 @@ extension RedistributionData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         day: DayIndex,
         gameGap: GameGap.TupleValue,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         executionSteps: inout [ExecutionStep],
         generationData: inout LeagueGenerationData
     ) -> Bool {
@@ -70,7 +70,7 @@ extension RedistributionData {
 
                 let homeMaxAssignedLocations = assignmentState.maxLocationAllocations[unchecked: matchup.home]
                 let awayMaxAssignedLocations = assignmentState.maxLocationAllocations[unchecked: matchup.away]
-                for slot in assignmentState.availableSlots {
+                assignmentState.availableSlots.forEach { slot in
                     assignmentState.decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
                     if canPlayAt.test(
                         time: slot.time,
@@ -176,7 +176,7 @@ extension RedistributionData {
     private mutating func redistribute(
         redistributable: inout Redistributable,
         redistributables: inout OrderedSet<Redistributable>,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
         generationData.schedule[unchecked: redistributable.fromDay].remove(redistributable.matchup)
@@ -196,7 +196,7 @@ extension RedistributionData {
         redistributable.matchup.time = redistributable.toSlot.time
         redistributable.matchup.location = redistributable.toSlot.location
         assignmentState.matchups.append(redistributable.matchup)
-        assignmentState.availableSlots.remove(redistributable.toSlot)
+        assignmentState.availableSlots.removeMember(redistributable.toSlot)
         assignmentState.incrementAssignData(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
         assignmentState.insertPlaysAt(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
     }

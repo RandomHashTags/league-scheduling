@@ -11,8 +11,8 @@ struct CanPlayAtWithTravelDurations: CanPlayAtProtocol, ~Copyable {
         location: LocationIndex,
         allowedTimes: Set<TimeIndex>,
         allowedLocations: Set<LocationIndex>,
-        playsAt: PlaysAt.Element,
-        playsAtTimes: PlaysAtTimes.Element,
+        playsAt: borrowing some SetOfAvailableSlots & ~Copyable,
+        playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         playsAtLocations: PlaysAtLocations.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,
@@ -50,12 +50,12 @@ extension CanPlayAtWithTravelDurations {
         travelDurations: [[MatchupDuration]],
         time: TimeIndex,
         location: LocationIndex,
-        playsAt: PlaysAt.Element,
+        playsAt: borrowing some SetOfAvailableSlots & ~Copyable,
         gameGap: GameGap.TupleValue
     ) -> Bool {
         var closestSlot:AvailableSlot? = nil
         var closestDistance:TimeIndex? = nil
-        for slot in playsAt {
+        playsAt.forEach { slot in
             let distance = abs(slot.time.distance(to: time))
             if closestSlot == nil || distance < closestSlot!.time {
                 closestSlot = slot

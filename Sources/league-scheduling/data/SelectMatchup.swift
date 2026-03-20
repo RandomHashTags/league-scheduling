@@ -4,7 +4,7 @@ import OrderedCollections
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
-    mutating func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups) -> MatchupPair? {
+    mutating func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
         return assignmentState.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
             rng: &rng
@@ -15,7 +15,7 @@ extension LeagueScheduleData {
 extension AssignmentState {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups,
+        prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         rng: inout some RandomNumberGenerator
     ) -> MatchupPair? {
         return Self.selectMatchup(
@@ -29,144 +29,143 @@ extension AssignmentState {
 
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     static func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups,
+        prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
-        remainingAllocations: RemainingAllocations,
+        remainingAllocations: Config.RemainingAllocations,
         rng: inout some RandomNumberGenerator
     ) -> MatchupPair? {
         #if LOG
         print("SelectMatchup;selectMatchup;prioritizedMatchups.count=\(prioritizedMatchups.matchups.count);availableMatchupCountForEntry=\(prioritizedMatchups.availableMatchupCountForEntry)")
         #endif
-        guard let first = prioritizedMatchups.matchups.first else { return nil }
-        guard prioritizedMatchups.matchups.count > 1 else {
-            return first//recurringDayLimit(for: first) <= day ? first : nil
-        }
-        let firstNumberOfMatchupsPlayedSoFar = numberOfMatchupsPlayedSoFar(for: first, numberOfAssignedMatchups: numberOfAssignedMatchups)
-        var selected = SelectedMatchup(
-            pair: first,
-            minMatchupsPlayedSoFar: firstNumberOfMatchupsPlayedSoFar.minimum,
-            totalMatchupsPlayedSoFar: firstNumberOfMatchupsPlayedSoFar.total,
-            remainingAllocations: Self.remainingAllocations(for: first, remainingAllocations: remainingAllocations),
-            remainingMatchupCount: remainingMatchupCount(for: first, prioritizedMatchups.availableMatchupCountForEntry),
-            recurringDayLimit: recurringDayLimit(for: first, recurringDayLimits: recurringDayLimits)
-        )
+        var selected:SelectedMatchup! = nil
         // introduce a pool of matchup pairs of equal priority, and random selection, so that we don't repeat identical assignments when
         // - regenerating a failed day
         // - selecting the last matchup pair out of previous pairs of equal priority
-        var pool = OrderedSet<MatchupPair>()
-        for pair in prioritizedMatchups.matchups[prioritizedMatchups.matchups.index(after: prioritizedMatchups.matchups.startIndex)...] {
+        var pool = Config.DeterministicMatchupPairSet()
+        prioritizedMatchups.matchups.forEach { pair in
             let (pairMinMatchupsPlayedSoFar, pairTotalMatchupsPlayedSoFar) = numberOfMatchupsPlayedSoFar(for: pair, numberOfAssignedMatchups: numberOfAssignedMatchups)
-            guard pairMinMatchupsPlayedSoFar == selected.minMatchupsPlayedSoFar else {
-                if pairMinMatchupsPlayedSoFar < selected.minMatchupsPlayedSoFar {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
-                        remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
-                        remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
-                        pool: &pool
-                    )
+            if selected == nil {
+                selected = select(
+                    pair: pair,
+                    minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                    totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                    recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
+                    remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                    remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                    pool: &pool
+                )
+            } else {
+                guard pairMinMatchupsPlayedSoFar == selected.minMatchupsPlayedSoFar else {
+                    if pairMinMatchupsPlayedSoFar < selected.minMatchupsPlayedSoFar {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
+                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
-            guard pairTotalMatchupsPlayedSoFar == selected.totalMatchupsPlayedSoFar else {
-                if pairTotalMatchupsPlayedSoFar < selected.totalMatchupsPlayedSoFar {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
-                        remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
-                        remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
-                        pool: &pool
-                    )
+                guard pairTotalMatchupsPlayedSoFar == selected.totalMatchupsPlayedSoFar else {
+                    if pairTotalMatchupsPlayedSoFar < selected.totalMatchupsPlayedSoFar {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
+                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
-            let pairRecurringDayLimit = recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits)
-            guard pairRecurringDayLimit == selected.recurringDayLimit else {
-                if pairRecurringDayLimit < selected.recurringDayLimit {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: pairRecurringDayLimit,
-                        remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
-                        remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
-                        pool: &pool
-                    )
+                let pairRecurringDayLimit = recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits)
+                guard pairRecurringDayLimit == selected.recurringDayLimit else {
+                    if pairRecurringDayLimit < selected.recurringDayLimit {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: pairRecurringDayLimit,
+                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
 
-            let pairRemainingAllocations = Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations)
-            guard pairRemainingAllocations.min == selected.remainingAllocations.min else {
-                if pairRemainingAllocations.min < selected.remainingAllocations.min {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: pairRecurringDayLimit,
-                        remainingAllocations: pairRemainingAllocations,
-                        remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
-                        pool: &pool
-                    )
+                let pairRemainingAllocations = Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations)
+                guard pairRemainingAllocations.min == selected.remainingAllocations.min else {
+                    if pairRemainingAllocations.min < selected.remainingAllocations.min {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: pairRecurringDayLimit,
+                            remainingAllocations: pairRemainingAllocations,
+                            remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
-            guard pairRemainingAllocations.max == selected.remainingAllocations.max else {
-                if pairRemainingAllocations.max < selected.remainingAllocations.max {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: pairRecurringDayLimit,
-                        remainingAllocations: pairRemainingAllocations,
-                        remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
-                        pool: &pool
-                    )
+                guard pairRemainingAllocations.max == selected.remainingAllocations.max else {
+                    if pairRemainingAllocations.max < selected.remainingAllocations.max {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: pairRecurringDayLimit,
+                            remainingAllocations: pairRemainingAllocations,
+                            remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
 
-            let pairRemainingMatchupCount = Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry)
-            guard pairRemainingMatchupCount.min == selected.remainingMatchupCount.min else {
-                if pairRemainingMatchupCount.min < selected.remainingMatchupCount.min {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: pairRecurringDayLimit,
-                        remainingAllocations: pairRemainingAllocations,
-                        remainingMatchupCount: pairRemainingMatchupCount,
-                        pool: &pool
-                    )
+                let pairRemainingMatchupCount = Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry)
+                guard pairRemainingMatchupCount.min == selected.remainingMatchupCount.min else {
+                    if pairRemainingMatchupCount.min < selected.remainingMatchupCount.min {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: pairRecurringDayLimit,
+                            remainingAllocations: pairRemainingAllocations,
+                            remainingMatchupCount: pairRemainingMatchupCount,
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
-            }
-            guard pairRemainingMatchupCount.max == selected.remainingMatchupCount.max else {
-                if pairRemainingMatchupCount.max < selected.remainingMatchupCount.max {
-                    selected = select(
-                        pair: pair,
-                        minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
-                        totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
-                        recurringDayLimit: pairRecurringDayLimit,
-                        remainingAllocations: pairRemainingAllocations,
-                        remainingMatchupCount: pairRemainingMatchupCount,
-                        pool: &pool
-                    )
+                guard pairRemainingMatchupCount.max == selected.remainingMatchupCount.max else {
+                    if pairRemainingMatchupCount.max < selected.remainingMatchupCount.max {
+                        selected = select(
+                            pair: pair,
+                            minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
+                            totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
+                            recurringDayLimit: pairRecurringDayLimit,
+                            remainingAllocations: pairRemainingAllocations,
+                            remainingMatchupCount: pairRemainingMatchupCount,
+                            pool: &pool
+                        )
+                    }
+                    return
                 }
-                continue
+                pool.insertMember(pair)
             }
-
-            pool.append(pair)
         }
         #if LOG
         print("SelectMatchup;selectMatchup;selected.pair=\(selected.pair.description);pool=\(pool.map({ $0.description }))")
         #endif
-        return pool.isEmpty ? selected.pair : pool.randomElement(using: &rng)
+        return pool.isEmpty ? selected?.pair : pool.randomElement(using: &rng)
     }
 }
 
@@ -189,7 +188,7 @@ extension AssignmentState {
     private static func recurringDayLimit(for pair: MatchupPair, recurringDayLimits: RecurringDayLimits) -> RecurringDayLimitInterval {
         return recurringDayLimits[unchecked: pair.team1][unchecked: pair.team2]
     }
-    private static func remainingAllocations(for pair: MatchupPair, remainingAllocations: RemainingAllocations) -> (min: Int, max: Int) {
+    private static func remainingAllocations(for pair: MatchupPair, remainingAllocations: Config.RemainingAllocations) -> (min: Int, max: Int) {
         let team1 = remainingAllocations[unchecked: pair.team1].count
         let team2 = remainingAllocations[unchecked: pair.team2].count
         return (
@@ -212,10 +211,10 @@ extension AssignmentState {
         recurringDayLimit: RecurringDayLimitInterval,
         remainingAllocations: (min: Int, max: Int),
         remainingMatchupCount: (min: Int, max: Int),
-        pool: inout OrderedSet<MatchupPair>
+        pool: inout Config.DeterministicMatchupPairSet
     ) -> SelectedMatchup {
-        pool.removeAll(keepingCapacity: true)
-        pool.append(pair)
+        pool.removeAllKeepingCapacity()
+        pool.insertMember(pair)
         return .init(
             pair: pair,
             minMatchupsPlayedSoFar: minMatchupsPlayedSoFar,

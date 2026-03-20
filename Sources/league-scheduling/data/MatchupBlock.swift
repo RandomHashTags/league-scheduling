@@ -58,7 +58,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         rng: inout some RandomNumberGenerator,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> OrderedSet<Matchup>? {
@@ -77,8 +77,9 @@ extension LeagueScheduleData {
         print("assignedEntryHomeAways=\(localAssignmentState.assignedEntryHomeAways.map { $0.map { $0.sum } })")
         #endif
         // assign initial matchups
-        var adjacentTimes = OrderedSet<TimeIndex>()
-        var selectedEntries = OrderedSet<Entry.IDValue>(minimumCapacity: amount * entriesPerMatchup)
+        var adjacentTimes = Config.TimeSet()
+        var selectedEntries = Config.DeterministicEntryIDSet()
+        selectedEntries.reserveCapacity(amount * entriesPerMatchup)
         
         // assign the first matchup, prioritizing the matchup's time
         guard let firstMatchup = selectAndAssignMatchup(
@@ -133,22 +134,22 @@ extension LeagueScheduleData {
         // assign the last matchup
         let lastLocalAssignmentStateAvailableMatchups = localAssignmentState.availableMatchups
         let lastSelectedEntries = selectedEntries
-        let shouldSkipSelection:(MatchupPair) -> Bool = entryMatchupsPerGameDay % 2 == 0 ? {
+        let shouldSkipSelection:(MatchupPair) -> Bool = entryMatchupsPerGameDay % 2 == 0 ? { pair in
             var targetEntries = lastSelectedEntries
-            targetEntries.append($0.team1)
-            targetEntries.append($0.team2)
+            targetEntries.insertMember(pair.team1)
+            targetEntries.insertMember(pair.team2)
             let availableMatchups = lastLocalAssignmentStateAvailableMatchups.filter {
                 targetEntries.contains($0.team1) && targetEntries.contains($0.team2)
             }
-            for entryID in targetEntries {
+            return targetEntries.forEachWithReturn { entryID in
                 if availableMatchups.first(where: { $0.team1 == entryID || $0.team2 == entryID }) == nil {
                     #if LOG
-                    print("assignBlockOfMatchups;i == lastMatchupIndex;$0=\($0);targetEntries (\(targetEntries.count))=\(targetEntries);entryID=\(entryID);availableMatchups.first of entryID == nil;skipping $0")
+                    print("assignBlockOfMatchups;i == lastMatchupIndex;pair=\(pair);targetEntries (\(targetEntries.count))=\(targetEntries);entryID=\(entryID);availableMatchups.first of entryID == nil;skipping $0")
                     #endif
                     return true
                 }
-            }
-            return false
+                return nil
+            } ?? false
         } : { _ in false }
         guard let _ = selectAndAssignMatchup(
             day: day,
@@ -198,7 +199,7 @@ extension LeagueScheduleData {
                         canPlayAt: canPlayAt
                     ) else { return nil }
                 }
-                adjacentTimes.remove(time)
+                adjacentTimes.removeMember(time)
                 #if LOG
                 print("assignBlockOfMatchups;j=\(j);finished time \(time)")
                 #endif
@@ -212,7 +213,7 @@ extension LeagueScheduleData {
         assignmentState = localAssignmentState.copy()
         assignmentState.matchups.formUnion(previousMatchups)
         for matchup in localAssignmentState.matchups {
-            remainingAvailableSlots.remove(matchup.slot)
+            remainingAvailableSlots.removeMember(matchup.slot)
         }
         assignmentState.availableSlots = remainingAvailableSlots
         assignmentState.prioritizedEntries = remainingPrioritizedEntries
@@ -230,11 +231,11 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: OrderedSet<MatchupPair>,
+        allAvailableMatchups: Config.DeterministicMatchupPairSet,
         rng: inout some RandomNumberGenerator,
-        localAssignmentState: inout AssignmentState,
-        remainingPrioritizedEntries: inout OrderedSet<Entry.IDValue>,
-        selectedEntries: inout OrderedSet<Entry.IDValue>,
+        localAssignmentState: inout AssignmentState<Config>,
+        remainingPrioritizedEntries: inout Config.DeterministicEntryIDSet,
+        selectedEntries: inout Config.DeterministicEntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -255,10 +256,10 @@ extension LeagueScheduleData {
             return nil
         }
         // successfully assigned
-        remainingPrioritizedEntries.remove(leagueMatchup.home)
-        remainingPrioritizedEntries.remove(leagueMatchup.away)
-        selectedEntries.append(leagueMatchup.home)
-        selectedEntries.append(leagueMatchup.away)
+        remainingPrioritizedEntries.removeMember(leagueMatchup.home)
+        remainingPrioritizedEntries.removeMember(leagueMatchup.away)
+        selectedEntries.insertMember(leagueMatchup.home)
+        selectedEntries.insertMember(leagueMatchup.away)
         return leagueMatchup
     }
     private static func selectAndAssignMatchup(
@@ -269,12 +270,12 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: OrderedSet<MatchupPair>,
+        allAvailableMatchups: Config.DeterministicMatchupPairSet,
         rng: inout some RandomNumberGenerator,
-        localAssignmentState: inout AssignmentState,
+        localAssignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
-        remainingPrioritizedEntries: inout OrderedSet<Entry.IDValue>,
-        selectedEntries: inout OrderedSet<Entry.IDValue>,
+        remainingPrioritizedEntries: inout Config.DeterministicEntryIDSet,
+        selectedEntries: inout Config.DeterministicEntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -296,10 +297,10 @@ extension LeagueScheduleData {
             return nil
         }
         // successfully assigned
-        remainingPrioritizedEntries.remove(leagueMatchup.home)
-        remainingPrioritizedEntries.remove(leagueMatchup.away)
-        selectedEntries.append(leagueMatchup.home)
-        selectedEntries.append(leagueMatchup.away)
+        remainingPrioritizedEntries.removeMember(leagueMatchup.home)
+        remainingPrioritizedEntries.removeMember(leagueMatchup.away)
+        selectedEntries.insertMember(leagueMatchup.home)
+        selectedEntries.insertMember(leagueMatchup.away)
         return leagueMatchup
     }
 }

@@ -11,7 +11,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: OrderedSet<MatchupPair>,
+        allAvailableMatchups: Config.DeterministicMatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: matchup.home]]
@@ -19,7 +19,7 @@ extension AssignmentState {
         recurringDayLimits[unchecked: matchup.away][unchecked: matchup.home] -= recurringDayLimitInterval
         decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
         removePlaysAt(home: matchup.home, away: matchup.away, slot: matchup.slot)
-        availableSlots.append(matchup.slot)
+        availableSlots.insertMember(matchup.slot)
         matchups.remove(matchup)
 
         recalculateAvailableMatchups(
@@ -72,10 +72,10 @@ extension AssignmentState {
         away: Entry.IDValue,
         slot: AvailableSlot
     ) {
-        playsAt[unchecked: home].remove(slot)
-        playsAt[unchecked: away].remove(slot)
-        playsAtTimes[unchecked: home].remove(slot.time)
-        playsAtTimes[unchecked: away].remove(slot.time)
+        playsAt[unchecked: home].removeMember(slot)
+        playsAt[unchecked: away].removeMember(slot)
+        playsAtTimes.removeMember(entryID: home, member: slot.time)
+        playsAtTimes.removeMember(entryID: away, member: slot.time)
         playsAtLocations[unchecked: home].remove(slot.location)
         playsAtLocations[unchecked: away].remove(slot.location)
     }
@@ -86,7 +86,7 @@ extension AssignmentState {
     mutating func recalculateAvailableMatchups(
         day: DayIndex,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        allAvailableMatchups: OrderedSet<MatchupPair>
+        allAvailableMatchups: Config.DeterministicMatchupPairSet
     ) {
         availableMatchups = allAvailableMatchups.filter({
             guard assignedEntryHomeAways[unchecked: $0.team1][unchecked: $0.team2].sum < maxSameOpponentMatchups[unchecked: $0.team1][unchecked: $0.team2]

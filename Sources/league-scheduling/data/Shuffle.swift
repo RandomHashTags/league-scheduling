@@ -12,7 +12,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: OrderedSet<MatchupPair>,
+        allAvailableMatchups: Config.DeterministicMatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> AvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)
@@ -69,8 +69,8 @@ extension AssignmentState {
             let swappedSlot = swapped.slot
             var homePlaysAt = playsAt[unchecked: swapped.home]
             var awayPlaysAt = playsAt[unchecked: swapped.away]
-            homePlaysAt.remove(swappedSlot)
-            awayPlaysAt.remove(swappedSlot)
+            homePlaysAt.removeMember(swappedSlot)
+            awayPlaysAt.removeMember(swappedSlot)
 
             let homeAllowedTimes = entries[unchecked: swapped.home].gameTimes[unchecked: day]
             let awayAllowedTimes = entries[unchecked: swapped.away].gameTimes[unchecked: day]
@@ -80,8 +80,8 @@ extension AssignmentState {
 
             var homePlaysAtTimes = playsAtTimes[unchecked: swapped.home]
             var awayPlaysAtTimes = playsAtTimes[unchecked: swapped.away]
-            homePlaysAtTimes.remove(swapped.time)
-            awayPlaysAtTimes.remove(swapped.time)
+            homePlaysAtTimes.removeMember(swapped.time)
+            awayPlaysAtTimes.removeMember(swapped.time)
 
             var homePlaysAtLocations = playsAtLocations[unchecked: swapped.home]
             var awayPlaysAtLocations = playsAtLocations[unchecked: swapped.away]

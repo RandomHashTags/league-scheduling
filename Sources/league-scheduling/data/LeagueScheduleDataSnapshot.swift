@@ -2,8 +2,8 @@
 import OrderedCollections
 import StaticDateTimes
 
-struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendable {
-    let rng:RNG
+struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
+    let rng:Config.RNG
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<Division.IDValue>
@@ -23,21 +23,21 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
     var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
 
-    var assignmentState:AssignmentStateCopyable
+    var assignmentState:AssignmentStateCopyable<Config>
     var prioritizeEarlierTimes = false
 
     var executionSteps = [ExecutionStep]()
     var shuffleHistory = [LeagueShuffleAction]()
 
     init(
-        rng: RNG,
+        rng: Config.RNG,
         maxStartingTimes: TimeIndex,
         startingTimes: [StaticTime],
         maxLocations: LocationIndex,
         entriesPerMatchup: EntriesPerMatchup,
         maximumPlayableMatchups: [UInt32],
         entries: [Entry.Runtime],
-        divisionEntries: ContiguousArray<OrderedSet<Entry.IDValue>>,
+        divisionEntries: ContiguousArray<Config.DeterministicEntryIDSet>,
         matchupDuration: MatchupDuration,
         gameGap: (Int, Int),
         sameLocationIfB2B: Bool,
@@ -50,17 +50,24 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
         self.gameGap = gameGap
         self.sameLocationIfB2B = sameLocationIfB2B
 
-        var prioritizedEntries = OrderedSet<Entry.IDValue>(minimumCapacity: entriesCount)
+        var prioritizedEntries = Config.DeterministicEntryIDSet()
+        prioritizedEntries.reserveCapacity(entriesCount)
         var entryDivisions = ContiguousArray<Division.IDValue>(repeating: 0, count: entriesCount)
         for (index, entries) in divisionEntries.enumerated() {
             prioritizedEntries.formUnion(entries)
-            for entry in entries {
+            entries.forEach { entry in
                 entryDivisions[unchecked: entry] = Division.IDValue(index)
             }
         }
         self.entryDivisions = entryDivisions
 
         failedMatchupSelections = .init(repeating: Set(), count: entriesCount)
+        let playsAt = ContiguousArray<Config.DeterministicAvailableSlotSet>(
+            repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount
+        )
+        let playsAtTimes = PlaysAtTimesArray<Config.TimeSet>(
+            times: .init(repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount)
+        )
         assignmentState = .init(
             entries: entries,
             startingTimes: startingTimes,
@@ -78,20 +85,20 @@ struct LeagueScheduleDataSnapshot<RNG: RandomNumberGenerator & Sendable>: Sendab
             homeMatchups: .init(repeating: 0, count: entriesCount),
             awayMatchups: .init(repeating: 0, count: entriesCount),
             maxSameOpponentMatchups: maxSameOpponentMatchups,
-            allMatchups: [],
+            allMatchups: .init(),
             allDivisionMatchups: [],
-            availableMatchups: [],
+            availableMatchups: .init(),
             prioritizedEntries: prioritizedEntries,
-            availableSlots: [],
-            playsAt: .init(repeating: OrderedSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount),
-            playsAtTimes: .init(repeating: OrderedSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount),
+            availableSlots: .init(),
+            playsAt: playsAt,
+            playsAtTimes: playsAtTimes,
             playsAtLocations: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
             matchups: [],
             shuffleHistory: []
         )
     }
     
-    init(_ snapshot: borrowing LeagueScheduleData<RNG>) {
+    init(_ snapshot: borrowing LeagueScheduleData<Config>) {
         rng = snapshot.rng
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount

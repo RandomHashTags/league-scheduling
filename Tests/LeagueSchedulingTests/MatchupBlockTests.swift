@@ -1,5 +1,6 @@
 
 @testable import LeagueScheduling
+import OrderedCollections
 import StaticDateTimes
 import Testing
 
@@ -11,7 +12,7 @@ struct MatchupBlockTests: ScheduleExpectations {
 extension MatchupBlockTests {
     @Test(.timeLimit(.minutes(1)))
     func adjacentTimes() {
-        var adjacent = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 2)
+        var adjacent:OrderedSet<TimeIndex> = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 2)
         #expect(adjacent == [1])
 
         adjacent = calculateAdjacentTimes(for: 0, entryMatchupsPerGameDay: 3)

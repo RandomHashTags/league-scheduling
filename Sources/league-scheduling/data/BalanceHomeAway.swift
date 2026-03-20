@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Matchup pair
 extension MatchupPair {
     /// Balances home/away allocations, mutating `team1` (home) and `team2` (away) if necessary.
@@ -77,13 +75,13 @@ extension LeagueScheduleData {
             appendExecutionStep(now: now)
             return
         }
-        var flippable = OrderedSet<FlippableMatchup>()
+        var flippable = Config.FlippableMatchupSet()
         for day in 0..<DayIndex(generationData.schedule.count) {
             for matchup in generationData.schedule[unchecked: day] {
                 guard unbalancedEntryIDs.contains(matchup.home) && unbalancedEntryIDs.contains(matchup.away) else { continue }
                 let homeAway = assignmentState.assignedEntryHomeAways[unchecked: matchup.home][unchecked: matchup.away]
                 if homeAway.home != homeAway.away {
-                    flippable.append(.init(day: day, matchup: matchup))
+                    flippable.insertMember(.init(day: day, matchup: matchup))
                 }
             }
         }
@@ -103,7 +101,7 @@ extension LeagueScheduleData {
                 }).randomElement(using: &rng)
             }
             if var flipped {
-                flippable.remove(flipped)
+                flippable.removeMember(flipped)
                 flipHomeAway(matchup: &flipped, neededFlipsToBalance: &neededFlipsToBalance, generationData: &generationData)
                 if neededFlipsToBalance[unchecked: flipped.matchup.home] == (0, 0) {
                     unbalancedEntryIDs.removeMember(flipped.matchup.home)
@@ -148,10 +146,6 @@ extension LeagueScheduleData {
         matchup.matchup.home = away
         matchup.matchup.away = home
         generationData.schedule[unchecked: matchup.day].insertMember(matchup.matchup)
-    }
-    private struct FlippableMatchup: Hashable, Sendable {
-        let day:DayIndex
-        var matchup:Matchup
     }
 
     private mutating func appendExecutionStep(now: ContinuousClock.Instant) {

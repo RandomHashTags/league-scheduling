@@ -63,7 +63,8 @@ extension RequestPayload.Runtime {
                     Set<Entry.IDValue>,
                     Set<AvailableSlot>,
                     Set<MatchupPair>,
-                    Set<Matchup>
+                    Set<Matchup>,
+                    Set<FlippableMatchup>
                 >.self
             )
         }
@@ -86,7 +87,8 @@ extension RequestPayload.Runtime {
                     OrderedSet<Entry.IDValue>,
                     OrderedSet<AvailableSlot>,
                     OrderedSet<MatchupPair>,
-                    OrderedSet<Matchup>
+                    OrderedSet<Matchup>,
+                    OrderedSet<FlippableMatchup>
                 >.self
             )
         }

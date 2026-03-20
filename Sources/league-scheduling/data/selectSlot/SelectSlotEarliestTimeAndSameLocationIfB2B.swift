@@ -7,7 +7,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         assignedLocations: AssignedLocations,
         playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout some SetOfAvailableSlots
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]

@@ -7,7 +7,7 @@ struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout some SetOfAvailableSlots
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         return Self.select(
             team1: team1,
@@ -26,7 +26,7 @@ extension SelectSlotNormal {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playableSlots: some SetOfAvailableSlots
+        playableSlots: borrowing some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let team1Times = assignedTimes[unchecked: team1]
@@ -48,7 +48,7 @@ extension SelectSlotNormal {
         team1Locations: AssignedLocations.Element,
         team2Times: AssignedTimes.Element,
         team2Locations: AssignedLocations.Element,
-        playableSlots: some SetOfAvailableSlots
+        playableSlots: borrowing some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         var selected:SelectedSlot! = nil
         playableSlots.forEach { slot in

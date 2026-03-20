@@ -7,6 +7,6 @@ protocol SelectSlotProtocol: Sendable, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout some SetOfAvailableSlots
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot?
 }

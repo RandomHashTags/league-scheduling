@@ -9,7 +9,7 @@ struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
         assignedLocations: AssignedLocations,
         playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout some SetOfAvailableSlots
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         filter(
             team1: team1,
@@ -33,7 +33,7 @@ extension SelectSlotB2B {
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
-        playableSlots: inout some SetOfAvailableSlots
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")
         if playsAtTimes[unchecked: team1].isEmpty && playsAtTimes[unchecked: team2].isEmpty {

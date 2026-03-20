@@ -6,6 +6,7 @@ protocol ScheduleConfiguration: Sendable, ~Copyable {
     associatedtype AvailableSlotSet:SetOfAvailableSlots
     associatedtype MatchupPairSet:AbstractSet where MatchupPairSet.Element == MatchupPair
     associatedtype MatchupSet:AbstractSet where MatchupSet.Element == Matchup
+    associatedtype RedistributableMatchupSet:AbstractSet where RedistributableMatchupSet.Element == RedistributableMatchup
     associatedtype FlippableMatchupSet:AbstractSet where FlippableMatchupSet.Element == FlippableMatchup
 
     typealias RemainingAllocations = ContiguousArray<AvailableSlotSet>
@@ -20,10 +21,12 @@ enum ScheduleConfig<
         AvailableSlotSet: SetOfAvailableSlots,
         MatchupPairSet: AbstractSet,
         MatchupSet: AbstractSet,
+        RedistributableMatchupSet: AbstractSet,
         FlippableMatchupSet: AbstractSet
     >: ScheduleConfiguration where
         MatchupPairSet.Element == MatchupPair,
         MatchupSet.Element == Matchup,
+        RedistributableMatchupSet.Element == RedistributableMatchup,
         FlippableMatchupSet.Element == FlippableMatchup
     {
 }

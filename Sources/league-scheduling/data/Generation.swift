@@ -64,6 +64,7 @@ extension RequestPayload.Runtime {
                     Set<AvailableSlot>,
                     Set<MatchupPair>,
                     Set<Matchup>,
+                    Set<RedistributableMatchup>,
                     Set<FlippableMatchup>
                 >.self
             )
@@ -88,6 +89,7 @@ extension RequestPayload.Runtime {
                     OrderedSet<AvailableSlot>,
                     OrderedSet<MatchupPair>,
                     OrderedSet<Matchup>,
+                    OrderedSet<RedistributableMatchup>,
                     OrderedSet<FlippableMatchup>
                 >.self
             )

@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
     /// The latest `DayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:DayIndex
@@ -55,7 +53,7 @@ extension RedistributionData {
         #endif
 
         var assigned = 0
-        var redistributables = OrderedSet<Redistributable>()
+        var redistributables = Config.RedistributableMatchupSet()
         for fromDayIndex in stride(from: startDayIndex, through: 0, by: -1) {
             for matchup in generationData.schedule[unchecked: fromDayIndex] {
                 guard !redistributed.contains(matchup) else { continue }
@@ -99,7 +97,7 @@ extension RedistributionData {
                         maxLocationNumber: UInt8(awayMaxAssignedLocations[unchecked: slot.location]),
                         gameGap: gameGap
                     ) {
-                        redistributables.append(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
+                        redistributables.insertMember(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
                     }
                     assignmentState.incrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
                 }
@@ -130,17 +128,17 @@ extension RedistributionData {
 // MARK: Select redistributable
 extension RedistributionData {
     private func selectRedistributable(
-        from redistributables: OrderedSet<Redistributable>,
+        from redistributables: Config.RedistributableMatchupSet,
         generationData: LeagueGenerationData
-    ) -> Redistributable? {
-        var redistributable:Redistributable? = nil
+    ) -> RedistributableMatchup? {
+        var redistributable:RedistributableMatchup? = nil
 
         // prioritize entries that have been redistributed the least
         var (cMin, cMax):(UInt16, UInt16) = (.max, .max)
-        for r in redistributables {
+        redistributables.forEach { r in
             if generationData.schedule[unchecked: r.fromDay].count <= minMatchupsRequired {
                 // don't take from the day since the matchups for it will render the day incomplete
-                continue
+                return
             }
             let (rMin, rMax) = calculateMinMax(matchup: r.matchup)
             if rMin < cMin {
@@ -174,8 +172,8 @@ extension RedistributionData {
 // MARK: Redistribute
 extension RedistributionData {
     private mutating func redistribute(
-        redistributable: inout Redistributable,
-        redistributables: inout OrderedSet<Redistributable>,
+        redistributable: inout RedistributableMatchup,
+        redistributables: inout Config.RedistributableMatchupSet,
         assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
@@ -199,14 +197,5 @@ extension RedistributionData {
         assignmentState.availableSlots.removeMember(redistributable.toSlot)
         assignmentState.incrementAssignData(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
         assignmentState.insertPlaysAt(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
-    }
-}
-
-// MARK: Redistributable
-extension RedistributionData {
-    private struct Redistributable: Hashable, Sendable {
-        let fromDay:DayIndex
-        var matchup:Matchup
-        let toSlot:AvailableSlot
     }
 }

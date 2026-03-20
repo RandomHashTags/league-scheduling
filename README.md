@@ -66,4 +66,6 @@ See [METHODOLOGY.md](./METHODOLOGY.md)
 
 ## Contributing
 
+**Your contributions to this project requires agreement to its [CLA](./CLA.md) before they can be merged.**
+
 This project is owned and maintained by Evan Anderson. All contributions are welcome under the terms of the AGPLv3.

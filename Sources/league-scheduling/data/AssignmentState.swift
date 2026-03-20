@@ -46,20 +46,20 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled.
-    var allMatchups:Config.DeterministicMatchupPairSet
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Config.DeterministicMatchupPairSet>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Config.DeterministicMatchupPairSet
+    var availableMatchups:Config.MatchupPairSet
 
-    var prioritizedEntries:Config.DeterministicEntryIDSet
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Config.DeterministicAvailableSlotSet
+    var availableSlots:Config.AvailableSlotSet
     
     var playsAt:Config.PlaysAt
     var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
@@ -165,20 +165,20 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     var maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled
-    var allMatchups:Config.DeterministicMatchupPairSet
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Config.DeterministicMatchupPairSet>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Config.DeterministicMatchupPairSet
+    var availableMatchups:Config.MatchupPairSet
 
-    var prioritizedEntries:Config.DeterministicEntryIDSet
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Config.DeterministicAvailableSlotSet
+    var availableSlots:Config.AvailableSlotSet
 
     var playsAt:Config.PlaysAt
     var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>

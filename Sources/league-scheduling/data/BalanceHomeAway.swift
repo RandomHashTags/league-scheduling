@@ -56,7 +56,7 @@ extension LeagueScheduleData {
         #endif
 
         let now = clock.now
-        var unbalancedEntryIDs = Config.DeterministicEntryIDSet()
+        var unbalancedEntryIDs = Config.EntryIDSet()
         unbalancedEntryIDs.reserveCapacity(entriesCount)
         var neededFlipsToBalance = [(home: UInt8, away: UInt8)](repeating: (0, 0), count: entriesCount)
         for entryID in 0..<Entry.IDValue(entriesCount) {

@@ -3,19 +3,19 @@ import OrderedCollections
 
 protocol SetOfEntryIDs: AbstractSet, ~Copyable where Element == Entry.IDValue {
     /// - Returns: The available matchup pairs that can play for the `day`.
-    func availableMatchupPairs<DeterministicMatchupPairSet: SetOfMatchupPair>(
+    func availableMatchupPairs<MatchupPairSet: SetOfMatchupPair>(
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
-    ) -> DeterministicMatchupPairSet
+    ) -> MatchupPairSet
 }
 
 extension Set<Entry.IDValue>: SetOfEntryIDs {
-    func availableMatchupPairs<DeterministicMatchupPairSet: SetOfMatchupPair>(
+    func availableMatchupPairs<MatchupPairSet: SetOfMatchupPair>(
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
-    ) -> DeterministicMatchupPairSet {
+    ) -> MatchupPairSet {
         guard !isEmpty else { return .init() } // https://github.com/apple/swift-collections/issues/608
-        var pairs = DeterministicMatchupPairSet()
+        var pairs = MatchupPairSet()
         pairs.reserveCapacity((count-1) * 2)
         let sortedEntries = sorted()
         var index = 0
@@ -35,12 +35,12 @@ extension Set<Entry.IDValue>: SetOfEntryIDs {
 }
 
 extension OrderedSet<Entry.IDValue>: SetOfEntryIDs {
-    func availableMatchupPairs<DeterministicMatchupPairSet: SetOfMatchupPair>(
+    func availableMatchupPairs<MatchupPairSet: SetOfMatchupPair>(
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
-    ) -> DeterministicMatchupPairSet {
+    ) -> MatchupPairSet {
         guard !isEmpty else { return .init() } // https://github.com/apple/swift-collections/issues/608
-        var pairs = DeterministicMatchupPairSet()
+        var pairs = MatchupPairSet()
         pairs.reserveCapacity((count-1) * 2)
         let sortedEntries = sorted()
         var index = 0

@@ -7,7 +7,7 @@ extension LeagueScheduleData {
     @discardableResult
     mutating func assignMatchupPair(
         _ pair: MatchupPair,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -36,7 +36,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -93,13 +93,13 @@ extension AssignmentState {
 
 // MARK: Playable slots
 extension AssignmentState {
-    func playableSlots(for pair: MatchupPair) -> Config.DeterministicAvailableSlotSet {
+    func playableSlots(for pair: MatchupPair) -> Config.AvailableSlotSet {
         return Self.playableSlots(for: pair, remainingAllocations: remainingAllocations)
     }
     static func playableSlots(
         for pair: MatchupPair,
         remainingAllocations: Config.RemainingAllocations
-    ) -> Config.DeterministicAvailableSlotSet {
+    ) -> Config.AvailableSlotSet {
         return remainingAllocations[unchecked: pair.team1].intersection(remainingAllocations[unchecked: pair.team2])
     }
 }

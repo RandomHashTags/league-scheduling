@@ -78,7 +78,7 @@ extension LeagueScheduleData {
         #endif
         // assign initial matchups
         var adjacentTimes = Config.TimeSet()
-        var selectedEntries = Config.DeterministicEntryIDSet()
+        var selectedEntries = Config.EntryIDSet()
         selectedEntries.reserveCapacity(amount * entriesPerMatchup)
         
         // assign the first matchup, prioritizing the matchup's time
@@ -231,11 +231,11 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         rng: inout some RandomNumberGenerator,
         localAssignmentState: inout AssignmentState<Config>,
-        remainingPrioritizedEntries: inout Config.DeterministicEntryIDSet,
-        selectedEntries: inout Config.DeterministicEntryIDSet,
+        remainingPrioritizedEntries: inout Config.EntryIDSet,
+        selectedEntries: inout Config.EntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
@@ -270,12 +270,12 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         rng: inout some RandomNumberGenerator,
         localAssignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
-        remainingPrioritizedEntries: inout Config.DeterministicEntryIDSet,
-        selectedEntries: inout Config.DeterministicEntryIDSet,
+        remainingPrioritizedEntries: inout Config.EntryIDSet,
+        selectedEntries: inout Config.EntryIDSet,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {

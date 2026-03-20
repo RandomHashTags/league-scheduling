@@ -2,13 +2,13 @@
 import OrderedCollections
 
 struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
-    private(set) var matchups:Config.DeterministicMatchupPairSet
+    private(set) var matchups:Config.MatchupPairSet
     private(set) var availableMatchupCountForEntry:ContiguousArray<Int>
 
     init(
         entriesCount: Int,
-        prioritizedEntries: Config.DeterministicEntryIDSet,
-        availableMatchups: Config.DeterministicMatchupPairSet
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
     ) {
         let matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         var availableMatchupCountForEntry = ContiguousArray<Int>(repeating: 0, count: entriesCount)
@@ -21,8 +21,8 @@ struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     }
 
     mutating func update(
-        prioritizedEntries: Config.DeterministicEntryIDSet,
-        availableMatchups: Config.DeterministicMatchupPairSet
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
     ) {
         matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         for i in availableMatchupCountForEntry.indices {
@@ -40,9 +40,9 @@ struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     }
 
     private static func filterMatchups(
-        prioritizedEntries: Config.DeterministicEntryIDSet,
-        availableMatchups: Config.DeterministicMatchupPairSet
-    ) -> Config.DeterministicMatchupPairSet {
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
+    ) -> Config.MatchupPairSet {
         if prioritizedEntries.isEmpty {
             return availableMatchups
         }

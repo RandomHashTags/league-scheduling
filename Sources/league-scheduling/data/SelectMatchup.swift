@@ -42,7 +42,7 @@ extension AssignmentState {
         // introduce a pool of matchup pairs of equal priority, and random selection, so that we don't repeat identical assignments when
         // - regenerating a failed day
         // - selecting the last matchup pair out of previous pairs of equal priority
-        var pool = Config.DeterministicMatchupPairSet()
+        var pool = Config.MatchupPairSet()
         prioritizedMatchups.matchups.forEach { pair in
             let (pairMinMatchupsPlayedSoFar, pairTotalMatchupsPlayedSoFar) = numberOfMatchupsPlayedSoFar(for: pair, numberOfAssignedMatchups: numberOfAssignedMatchups)
             if selected == nil {
@@ -211,7 +211,7 @@ extension AssignmentState {
         recurringDayLimit: RecurringDayLimitInterval,
         remainingAllocations: (min: Int, max: Int),
         remainingMatchupCount: (min: Int, max: Int),
-        pool: inout Config.DeterministicMatchupPairSet
+        pool: inout Config.MatchupPairSet
     ) -> SelectedMatchup {
         pool.removeAllKeepingCapacity()
         pool.insertMember(pair)

@@ -37,7 +37,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         entriesPerMatchup: EntriesPerMatchup,
         maximumPlayableMatchups: [UInt32],
         entries: [Entry.Runtime],
-        divisionEntries: ContiguousArray<Config.DeterministicEntryIDSet>,
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
         matchupDuration: MatchupDuration,
         gameGap: (Int, Int),
         sameLocationIfB2B: Bool,
@@ -50,7 +50,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         self.gameGap = gameGap
         self.sameLocationIfB2B = sameLocationIfB2B
 
-        var prioritizedEntries = Config.DeterministicEntryIDSet()
+        var prioritizedEntries = Config.EntryIDSet()
         prioritizedEntries.reserveCapacity(entriesCount)
         var entryDivisions = ContiguousArray<Division.IDValue>(repeating: 0, count: entriesCount)
         for (index, entries) in divisionEntries.enumerated() {
@@ -62,7 +62,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         self.entryDivisions = entryDivisions
 
         failedMatchupSelections = .init(repeating: Set(), count: entriesCount)
-        let playsAt = ContiguousArray<Config.DeterministicAvailableSlotSet>(
+        let playsAt = ContiguousArray<Config.AvailableSlotSet>(
             repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount
         )
         let playsAtTimes = PlaysAtTimesArray<Config.TimeSet>(

@@ -11,7 +11,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         let recurringDayLimitInterval = divisionRecurringDayLimitInterval[unchecked: entryDivisions[unchecked: matchup.home]]
@@ -86,7 +86,7 @@ extension AssignmentState {
     mutating func recalculateAvailableMatchups(
         day: DayIndex,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet
+        allAvailableMatchups: Config.MatchupPairSet
     ) {
         availableMatchups = allAvailableMatchups.filter({
             guard assignedEntryHomeAways[unchecked: $0.team1][unchecked: $0.team2].sum < maxSameOpponentMatchups[unchecked: $0.team1][unchecked: $0.team2]

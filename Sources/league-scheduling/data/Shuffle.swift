@@ -12,7 +12,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> AvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)

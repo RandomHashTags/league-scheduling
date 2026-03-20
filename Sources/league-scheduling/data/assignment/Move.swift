@@ -8,7 +8,7 @@ extension LeagueScheduleData {
         matchup: Matchup,
         to slot: AvailableSlot,
         day: DayIndex,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         assignmentState.move(
@@ -37,7 +37,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Config.DeterministicMatchupPairSet,
+        allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         #if LOG

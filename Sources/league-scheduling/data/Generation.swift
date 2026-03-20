@@ -95,7 +95,7 @@ extension RequestPayload.Runtime {
         rng: Config.RNG,
         _ config: Config.Type
     ) async throws -> [LeagueGenerationData] {
-        var divisionEntries:ContiguousArray<Config.DeterministicEntryIDSet> = .init(repeating: .init(), count: divisions.count)
+        var divisionEntries:ContiguousArray<Config.EntryIDSet> = .init(repeating: .init(), count: divisions.count)
         for entryIndex in 0..<entries.count {
             divisionEntries[unchecked: entries[entryIndex].division].insertMember(entries[entryIndex].id)
         }
@@ -130,12 +130,12 @@ extension RequestPayload.Runtime {
     }
     private func generateDivisionSchedulesInParallel<Config: ScheduleConfiguration>(
         divisionsCount: Int,
-        divisionEntries: ContiguousArray<Config.DeterministicEntryIDSet>,
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
         maxStartingTimes: TimeIndex,
         maxLocations: LocationIndex,
         dataSnapshot: LeagueScheduleDataSnapshot<Config>
     ) async throws -> [LeagueGenerationData] {
-        var grouped = [DayOfWeek:Config.DeterministicEntryIDSet]()
+        var grouped = [DayOfWeek:Config.EntryIDSet]()
         for (divisionID, division) in divisions.enumerated() {
             grouped[DayOfWeek(division.dayOfWeek), default: .init()].formUnion(divisionEntries[divisionID])
         }
@@ -233,7 +233,7 @@ extension RequestPayload.Runtime {
         divisionsCount: Int,
         maxStartingTimes: TimeIndex,
         maxLocations: LocationIndex,
-        scheduledEntries: Config.DeterministicEntryIDSet
+        scheduledEntries: Config.EntryIDSet
     ) -> LeagueGenerationData {
         let gameDays = settings.gameDays
         var generationData = LeagueGenerationData()
@@ -242,7 +242,7 @@ extension RequestPayload.Runtime {
         generationData.schedule = .init(repeating: OrderedSet(), count: gameDays)
 
         var dataSnapshot = copy dataSnapshot
-        var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Config.DeterministicEntryIDSet>> = .init(repeating: .init(repeating: .init(), count: divisionsCount), count: gameDays)
+        var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Config.EntryIDSet>> = .init(repeating: .init(repeating: .init(), count: divisionsCount), count: gameDays)
         loadMaxAllocations(
             dataSnapshot: &dataSnapshot,
             gameDayDivisionEntries: &gameDayDivisionEntries,
@@ -262,7 +262,7 @@ extension RequestPayload.Runtime {
             if gameDaySettingValuesCount <= day {
                 gameDaySettingValuesCount += 1
                 let daySettings = settings.daySettings[unchecked: day].general
-                let availableSlots:Config.DeterministicAvailableSlotSet = Self.availableSlots(
+                let availableSlots:Config.AvailableSlotSet = Self.availableSlots(
                     times: daySettings.timeSlots,
                     locations: daySettings.locations,
                     locationTimeExclusivity: daySettings.locationTimeExclusivities
@@ -357,11 +357,11 @@ extension RequestPayload.Runtime {
 extension RequestPayload.Runtime {
     static func loadMaxAllocations<Config: ScheduleConfiguration>(
         dataSnapshot: inout LeagueScheduleDataSnapshot<Config>,
-        gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Config.DeterministicEntryIDSet>>,
+        gameDayDivisionEntries: inout ContiguousArray<ContiguousArray<Config.EntryIDSet>>,
         settings: borrowing RequestPayload.Runtime,
         maxStartingTimes: TimeIndex,
         maxLocations: LocationIndex,
-        scheduledEntries: Config.DeterministicEntryIDSet
+        scheduledEntries: Config.EntryIDSet
     ) {
         scheduledEntries.forEach { entryIndex in
             let entry = settings.entries[unchecked: entryIndex]
@@ -471,12 +471,12 @@ extension RequestPayload.Runtime {
 
 // MARK: Get available slots
 extension RequestPayload.Runtime {
-    static func availableSlots<DeterministicAvailableSlotSet: SetOfAvailableSlots>(
+    static func availableSlots<AvailableSlotSet: SetOfAvailableSlots>(
         times: TimeIndex,
         locations: LocationIndex,
         locationTimeExclusivity: [Set<TimeIndex>]?
-    ) -> DeterministicAvailableSlotSet {
-        var slots = DeterministicAvailableSlotSet()
+    ) -> AvailableSlotSet {
+        var slots = AvailableSlotSet()
         slots.reserveCapacity(Int(times) * locations)
         if let exclusivities = locationTimeExclusivity {
             for location in 0..<locations {

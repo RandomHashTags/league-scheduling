@@ -97,8 +97,8 @@ extension LeagueScheduleData {
     mutating func newDay(
         day: DayIndex,
         daySettings: GeneralSettings.Runtime,
-        divisionEntries: ContiguousArray<Config.DeterministicEntryIDSet>,
-        availableSlots: Config.DeterministicAvailableSlotSet,
+        divisionEntries: ContiguousArray<Config.EntryIDSet>,
+        availableSlots: Config.AvailableSlotSet,
         settings: RequestPayload.Runtime,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
@@ -112,8 +112,8 @@ extension LeagueScheduleData {
         self.prioritizeEarlierTimes = daySettings.prioritizeEarlierTimes
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
-        var availableMatchups = Config.DeterministicMatchupPairSet()
-        var prioritizedEntries = Config.DeterministicEntryIDSet()
+        var availableMatchups = Config.MatchupPairSet()
+        var prioritizedEntries = Config.EntryIDSet()
         prioritizedEntries.reserveCapacity(entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
         expectedMatchupsCount = 0
@@ -135,7 +135,7 @@ extension LeagueScheduleData {
                 #if LOG
                 print("LeagueScheduleData;newDay;day=\(day);expectedMatchupsCount=\(expectedMatchupsCount);divisionIndex=\(divisionIndex);entryCountsForDivision=\(entriesInDivision.count);divisionRecurringDayLimitInterval=\(divisionRecurringDayLimitInterval[divisionIndex])")
                 #endif
-                let availableDivisionMatchups:Config.DeterministicMatchupPairSet = entriesInDivision.availableMatchupPairs(
+                let availableDivisionMatchups:Config.MatchupPairSet = entriesInDivision.availableMatchupPairs(
                     assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
                     maxSameOpponentMatchups: assignmentState.maxSameOpponentMatchups
                 )

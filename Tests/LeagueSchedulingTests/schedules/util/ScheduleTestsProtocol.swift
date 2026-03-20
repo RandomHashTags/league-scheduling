@@ -83,8 +83,6 @@ extension ScheduleTestsProtocol {
         balanceLocationStrictness: BalanceStrictness,
         gameGaps: GameGap,
         divisions: [Division.Runtime],
-        divisionsCanPlayOnSameDay: Bool = true,
-        divisionsCanPlayAtSameTime: Bool = true,
         entries: [Entry.Runtime],
         constraints: GenerationConstraints = .unitTestDefault
     ) -> RequestPayload.Runtime {
@@ -133,8 +131,6 @@ extension ScheduleTestsProtocol {
             constraints: constraints,
             gameDays: gameDays,
             divisions: divisions,
-            //divisionsCanPlayOnSameDay: divisionsCanPlayOnSameDay,
-            //divisionsCanPlayAtSameTime: divisionsCanPlayAtSameTime,
             entries: entries,
             general: generalSettings,
             daySettings: daySettings

@@ -346,13 +346,38 @@ extension ScheduleBeanBagToss {
 
 extension ScheduleBeanBagToss {
     // MARK: 11GD | 4T | 8L | 2D | 12x12T
-    //@Test(.timeLimit(.minutes(1))) // TODO: support
+    @Test(.timeLimit(.minutes(1)))
     func scheduleB2B_11GameDays4Times8Locations2DivisionsDifferentTimes24Teams() async throws {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (11, 4, 8, 24)
         var entryDivisions = [Division.IDValue]()
         entryDivisions.append(contentsOf: [Division.IDValue](repeating: 0, count: 12))
         entryDivisions.append(contentsOf: [Division.IDValue](repeating: 1, count: 12))
+        var entries = Self.getEntries(
+            divisions: entryDivisions,
+            gameDays: gameDays,
+            times: times,
+            locations: locations,
+            teams: teams
+        )
+        for i in 0..<teams/2 {
+            let entry = entries[i]
+            var gameTimes = entry.gameTimes
+            for j in 0..<gameDays {
+                gameTimes[unchecked: j].remove(0)
+                gameTimes[unchecked: j].remove(1)
+            }
+            entries[i] = .init(
+                id: entry.id,
+                division: entry.division,
+                gameDays: entry.gameDays,
+                gameTimes: gameTimes,
+                gameLocations: entry.gameLocations,
+                homeLocations: entry.homeLocations,
+                byes: entry.byes,
+                matchupsPerGameDay: entry.matchupsPerGameDay
+            )
+        }
         let schedule = Self.getSchedule(
             gameDays: gameDays,
             entryMatchupsPerGameDay: maxEntryMatchupsPerGameDay,
@@ -373,14 +398,7 @@ extension ScheduleBeanBagToss {
                 try Self.getDivision(dayOfWeek: .wednesday, values: (gameDays, maxEntryMatchupsPerGameDay, 12)),
                 try Self.getDivision(dayOfWeek: .wednesday, values: (gameDays, maxEntryMatchupsPerGameDay, 12))
             ],
-            divisionsCanPlayAtSameTime: false,
-            entries: Self.getEntries(
-                divisions: entryDivisions,
-                gameDays: gameDays,
-                times: times,
-                locations: locations,
-                teams: teams
-            )
+            entries: entries
         )
         let data = await schedule.generate()
         try expectations(settings: schedule, matchupsCount: 253, data: data)

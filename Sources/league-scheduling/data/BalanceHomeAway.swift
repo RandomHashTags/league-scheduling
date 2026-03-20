@@ -7,7 +7,6 @@ extension MatchupPair {
         assignmentState: borrowing AssignmentState<Config>
     ) {
         let team1GamesPlayedAgainstTeam2 = assignmentState.assignedEntryHomeAways[unchecked: team1][unchecked: team2]
-        // TODO: fix; more/less opponents than game days can make this unbalanced
         if team1GamesPlayedAgainstTeam2.home < team1GamesPlayedAgainstTeam2.away {
             // keep `team1` at home and `team2` at away
         } else if team1GamesPlayedAgainstTeam2.home == team1GamesPlayedAgainstTeam2.away {

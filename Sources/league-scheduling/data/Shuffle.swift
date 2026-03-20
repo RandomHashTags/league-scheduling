@@ -13,7 +13,6 @@ extension AssignmentState {
         allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> AvailableSlot? {
-        // TODO: fix (can get stuck shuffling the same matchup to the same slot)
         let team1AllowedTimes = entries[unchecked: matchup.team1].gameTimes[unchecked: day]
         let team1AllowedLocations = entries[unchecked: matchup.team1].gameLocations[unchecked: day]
         let team1PlaysAt = playsAt[unchecked: matchup.team1]

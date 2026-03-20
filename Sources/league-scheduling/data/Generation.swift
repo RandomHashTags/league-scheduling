@@ -7,7 +7,6 @@ import SwiftGlibc
 import Foundation
 #endif
 
-// TODO: support divisions on the same day with different times
 extension RequestPayload.Runtime {
     // MARK: Generate
     func generate() async -> LeagueGenerationResult {

@@ -18,7 +18,7 @@ extension AssignmentState {
         decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
         removePlaysAt(home: matchup.home, away: matchup.away, slot: matchup.slot)
         availableSlots.insertMember(matchup.slot)
-        matchups.remove(matchup)
+        matchups.removeMember(matchup)
 
         recalculateAvailableMatchups(
             day: day,

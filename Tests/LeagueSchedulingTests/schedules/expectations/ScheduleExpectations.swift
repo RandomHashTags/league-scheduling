@@ -250,7 +250,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     func printMatchups(
         day: Int,
-        _ matchups: OrderedSet<Matchup>
+        _ matchups: Set<Matchup>
     ) {
         return
         let results:String = matchups.sorted(by: {

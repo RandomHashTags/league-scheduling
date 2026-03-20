@@ -62,7 +62,8 @@ extension RequestPayload.Runtime {
                     Set<TimeIndex>,
                     Set<Entry.IDValue>,
                     Set<AvailableSlot>,
-                    Set<MatchupPair>
+                    Set<MatchupPair>,
+                    Set<Matchup>
                 >.self
             )
         }
@@ -84,7 +85,8 @@ extension RequestPayload.Runtime {
                     OrderedSet<TimeIndex>,
                     OrderedSet<Entry.IDValue>,
                     OrderedSet<AvailableSlot>,
-                    OrderedSet<MatchupPair>
+                    OrderedSet<MatchupPair>,
+                    OrderedSet<Matchup>
                 >.self
             )
         }
@@ -239,7 +241,7 @@ extension RequestPayload.Runtime {
         var generationData = LeagueGenerationData()
         generationData.assignLocationTimeRegenerationAttempts = 0
         generationData.negativeDayIndexRegenerationAttempts = 0
-        generationData.schedule = .init(repeating: OrderedSet(), count: gameDays)
+        generationData.schedule = .init(repeating: .init(), count: gameDays)
 
         var dataSnapshot = copy dataSnapshot
         var gameDayDivisionEntries:ContiguousArray<ContiguousArray<Config.EntryIDSet>> = .init(repeating: .init(repeating: .init(), count: divisionsCount), count: gameDays)
@@ -334,7 +336,9 @@ extension RequestPayload.Runtime {
                     data.loadSnapshot(todayData)
                 }
             } else {
-                generationData.schedule[unchecked: day] = data.assignmentState.matchups
+                var set = Set<Matchup>(minimumCapacity: data.assignmentState.matchups.count)
+                data.assignmentState.matchups.forEach { set.insert($0) } // TODO: optimize
+                generationData.schedule[unchecked: day] = set
                 snapshots.append(todayData)
                 day += 1
                 gameDayRegenerationAttempt = 0

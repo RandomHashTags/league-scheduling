@@ -195,7 +195,7 @@ extension RedistributionData {
 
         redistributable.matchup.time = redistributable.toSlot.time
         redistributable.matchup.location = redistributable.toSlot.location
-        assignmentState.matchups.append(redistributable.matchup)
+        assignmentState.matchups.insertMember(redistributable.matchup)
         assignmentState.availableSlots.removeMember(redistributable.toSlot)
         assignmentState.incrementAssignData(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
         assignmentState.insertPlaysAt(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)

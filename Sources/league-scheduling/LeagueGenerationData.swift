@@ -1,11 +1,9 @@
 
-import OrderedCollections
-
 public struct LeagueGenerationData: Sendable {
     public var error:LeagueError? = nil
     public var assignLocationTimeRegenerationAttempts:UInt32 = 0
     public var negativeDayIndexRegenerationAttempts:UInt32 = 0
-    public var schedule:ContiguousArray<OrderedSet<LitLeagues_Leagues_Matchup>> = []
+    public var schedule:ContiguousArray<Set<LitLeagues_Leagues_Matchup>> = []
     public var executionSteps = [ExecutionStep]()
     public var shuffleHistory = [LeagueShuffleAction]()
 }

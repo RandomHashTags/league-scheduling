@@ -6,7 +6,7 @@ struct MatchupsPlayedPerGameDay {
     static func get(
         gameDays: DayIndex,
         entriesCount: Int,
-        schedule: ContiguousArray<OrderedSet<Matchup>>
+        schedule: ContiguousArray<Set<Matchup>>
     ) -> ContiguousArray<ContiguousArray<Int>> {
         var matchupsPlayedPerDay = ContiguousArray(
             repeating: ContiguousArray(repeating: 0, count: entriesCount),

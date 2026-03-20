@@ -56,7 +56,7 @@ extension AssignmentState {
             home: home,
             away: away
         )
-        matchups.append(leagueMatchup)
+        matchups.insertMember(leagueMatchup)
 
         availableMatchups.removeMember(matchup)
         // TODO: fix (why is the following line necessary | it fixes an issue that allowed matchups to exceed the maximumSameOpponentsMatchupsCap, but availableMatchups still contains matchups that shouldn't be scheduled when scheduling b2b)

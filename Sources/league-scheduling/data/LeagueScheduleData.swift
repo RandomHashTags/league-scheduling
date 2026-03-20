@@ -1,5 +1,4 @@
 
-import OrderedCollections
 import StaticDateTimes
 
 // MARK: Data
@@ -30,7 +29,7 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Config.MatchupPairSet>
 
     var assignmentState:AssignmentState<Config>
     var prioritizeEarlierTimes:Bool
@@ -155,11 +154,11 @@ extension LeagueScheduleData {
         default:
             break
         }
-        failedMatchupSelections = .init(repeating: Set(), count: expectedMatchupsCount)
+        failedMatchupSelections = .init(repeating: .init(), count: expectedMatchupsCount)
         assignmentState.allMatchups = availableMatchups
         assignmentState.availableMatchups = availableMatchups
         assignmentState.prioritizedEntries = prioritizedEntries
-        assignmentState.matchups = OrderedSet(minimumCapacity: availableSlots.count)
+        assignmentState.matchups = Config.MatchupSet(minimumCapacity: availableSlots.count)
         for i in 0..<assignmentState.playsAt.count {
             assignmentState.playsAt[unchecked: i].removeAllKeepingCapacity()
         }

@@ -1,6 +1,4 @@
 
-import OrderedCollections
-
 // MARK: Assign block
 extension LeagueScheduleData {
     /// - Returns: The assigned block of matchups
@@ -8,7 +6,7 @@ extension LeagueScheduleData {
         amount: Int,
         division: Division.IDValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> OrderedSet<Matchup>? {
+    ) -> Config.MatchupSet? {
         if gameGap.min == 1 && gameGap.max == 1 {
             return Self.assignBlockOfMatchups(
                 amount: amount,
@@ -61,12 +59,12 @@ extension LeagueScheduleData {
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> OrderedSet<Matchup>? {
+    ) -> Config.MatchupSet? {
         let limit = amount * entryMatchupsPerGameDay
         var remainingPrioritizedEntries = assignmentState.prioritizedEntries
         var remainingAvailableSlots = assignmentState.availableSlots
         var localAssignmentState = assignmentState.copy()
-        localAssignmentState.matchups.removeAll(keepingCapacity: true)
+        localAssignmentState.matchups.removeAllKeepingCapacity()
         localAssignmentState.recalculateAvailableMatchups(
             day: day,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
@@ -212,7 +210,7 @@ extension LeagueScheduleData {
         let previousMatchups = assignmentState.matchups
         assignmentState = localAssignmentState.copy()
         assignmentState.matchups.formUnion(previousMatchups)
-        for matchup in localAssignmentState.matchups {
+        localAssignmentState.matchups.forEach { matchup in
             remainingAvailableSlots.removeMember(matchup.slot)
         }
         assignmentState.availableSlots = remainingAvailableSlots

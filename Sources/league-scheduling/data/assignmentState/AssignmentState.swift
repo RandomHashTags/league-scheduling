@@ -66,7 +66,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var playsAtLocations:PlaysAtLocations
 
     /// Available matchups that can be scheduled.
-    var matchups:OrderedSet<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory = [LeagueShuffleAction]()
 
@@ -183,7 +183,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     var playsAt:Config.PlaysAt
     var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
     var playsAtLocations:PlaysAtLocations
-    var matchups:OrderedSet<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory:[LeagueShuffleAction]
 

@@ -147,7 +147,7 @@ extension LeagueScheduleData {
 
         matchup.matchup.home = away
         matchup.matchup.away = home
-        generationData.schedule[unchecked: matchup.day].append(matchup.matchup)
+        generationData.schedule[unchecked: matchup.day].insertMember(matchup.matchup)
     }
     private struct FlippableMatchup: Hashable, Sendable {
         let day:DayIndex

@@ -87,7 +87,7 @@ extension LeagueScheduleData {
                 canPlayAt: canPlayAt
             ) else {
                 // failed to assign matchup, skip it for now
-                failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
+                failedMatchupSelections[unchecked: assignmentIndex].insertMember(originalPair)
                 prioritizedMatchups.remove(originalPair)
                 assignmentState.availableMatchups.removeMember(originalPair)
                 continue
@@ -136,9 +136,9 @@ extension LeagueScheduleData {
             }
             // TODO: pick the optimal combination that should be selected?
             combinationLoop: for combination in allowedDivisionCombinations {
-                var assignedSlots = Set<AvailableSlot>()
-                var combinationTimeAllocations:ContiguousArray<Set<TimeIndex>> = .init(
-                    repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay),
+                var assignedSlots = Config.AvailableSlotSet()
+                var combinationTimeAllocations:ContiguousArray<Config.TimeSet> = .init(
+                    repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)),
                     count: combination.first?.count ?? 10
                 )
                 for (divisionIndex, divisionCombination) in combination.enumerated() {
@@ -159,7 +159,7 @@ extension LeagueScheduleData {
                     #if LOG
                     print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
                     #endif
-                    var disallowedTimes = Set<TimeIndex>(minimumCapacity: defaultMaxEntryMatchupsPerGameDay)
+                    var disallowedTimes = Config.TimeSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay))
                     for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
                         guard amount > 0 else { continue }
                         let combinationTimeAllocation = combinationTimeAllocations[divisionCombinationIndex]
@@ -188,10 +188,10 @@ extension LeagueScheduleData {
                             #endif
                             continue combinationLoop
                         }
-                        for matchup in matchups {
-                            disallowedTimes.insert(matchup.time)
-                            combinationTimeAllocations[divisionCombinationIndex].insert(matchup.time)
-                            assignedSlots.insert(matchup.slot)
+                        matchups.forEach { matchup in
+                            disallowedTimes.insertMember(matchup.time)
+                            combinationTimeAllocations[divisionCombinationIndex].insertMember(matchup.time)
+                            assignedSlots.insertMember(matchup.slot)
                         }
                         assignmentState.availableSlots = slots.filter { !disallowedTimes.contains($0.time) }
                         assignmentState.recalculateAvailableMatchups(

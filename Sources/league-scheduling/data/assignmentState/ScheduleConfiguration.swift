@@ -5,6 +5,7 @@ protocol ScheduleConfiguration: Sendable, ~Copyable {
     associatedtype EntryIDSet:SetOfEntryIDs
     associatedtype AvailableSlotSet:SetOfAvailableSlots
     associatedtype MatchupPairSet:SetOfMatchupPair
+    associatedtype MatchupSet:SetOfMatchup
 
     typealias RemainingAllocations = ContiguousArray<AvailableSlotSet>
     typealias PlaysAt = ContiguousArray<AvailableSlotSet>
@@ -16,6 +17,7 @@ enum ScheduleConfig<
         TimeSet: SetOfTimeIndexes,
         EntryIDSet: SetOfEntryIDs,
         AvailableSlotSet: SetOfAvailableSlots,
-        MatchupPairSet: SetOfMatchupPair
+        MatchupPairSet: SetOfMatchupPair,
+        MatchupSet: SetOfMatchup
     >: ScheduleConfiguration {
 }

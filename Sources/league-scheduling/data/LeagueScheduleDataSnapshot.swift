@@ -20,7 +20,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Config.MatchupPairSet>
 
     var assignmentState:AssignmentStateCopyable<Config>
     var prioritizeEarlierTimes = false
@@ -60,7 +60,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         }
         self.entryDivisions = entryDivisions
 
-        failedMatchupSelections = .init(repeating: Set(), count: entriesCount)
+        failedMatchupSelections = .init(repeating: .init(), count: entriesCount)
         let playsAt = ContiguousArray<Config.AvailableSlotSet>(
             repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount
         )
@@ -92,7 +92,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
             playsAt: playsAt,
             playsAtTimes: playsAtTimes,
             playsAtLocations: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            matchups: [],
+            matchups: .init(),
             shuffleHistory: []
         )
     }

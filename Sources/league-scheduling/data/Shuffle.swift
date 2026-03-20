@@ -32,7 +32,7 @@ extension AssignmentState {
         let team2LocationNumbers = assignedLocations[unchecked: matchup.team2]
         let team2MaxTimeNumbers = maxTimeAllocations[unchecked: matchup.team2]
         let team2MaxLocationNumbers = maxLocationAllocations[unchecked: matchup.team2]
-        for swapped in matchups {
+        return matchups.forEachWithReturn { swapped in
             // make sure the failed assigned matchup is allowed to go where the assigned matchup is
             guard canPlayAt.test(
                 time: swapped.time,
@@ -61,7 +61,7 @@ extension AssignmentState {
                 maxLocationNumber: UInt8(team2MaxLocationNumbers[unchecked: swapped.location]),
                 gameGap: gameGap
             ) else {
-                continue
+                return nil
             }
 
             let swappedSlot = swapped.slot
@@ -124,7 +124,7 @@ extension AssignmentState {
                     maxLocationNumber: UInt8(maxAwayLocationNumbers[unchecked: $0.location]),
                     gameGap: gameGap
                 )
-            }) else { continue }
+            }) else { return nil }
 
             #if LOG
             print("shuffle;day=\(day);moved \(swapped) to \(slot) to make room for \(matchup)")
@@ -144,6 +144,5 @@ extension AssignmentState {
             shuffleHistory.append(.init(day: day, from: swappedSlot, to: slot, pair: swapped.pair))
             return swappedSlot
         }
-        return nil
     }
 }

@@ -81,7 +81,7 @@ extension AssignmentState {
         }
 
         #if LOG
-        for av in availableMatchups {
+        availableMatchups.forEach { av in
             if assignedEntryHomeAways[unchecked: av.team1][unchecked: av.team2].sum == maxSameOpponentMatchups[unchecked: av.team1][unchecked: av.team2] {
                 fatalError("assign;day=\(day);gameGap=\(gameGap);matchup=\(matchup);av=\(av);availableSlots.count=\(availableSlots.count);matchups.count=\(matchups.count)")
             } else if assignedEntryHomeAways[unchecked: av.team2][unchecked: av.team1].sum == maxSameOpponentMatchups[unchecked: av.team2][unchecked: av.team1] {

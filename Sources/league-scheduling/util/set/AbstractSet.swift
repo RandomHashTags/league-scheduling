@@ -58,4 +58,6 @@ protocol AbstractSet: Sendable, ~Copyable {
     /// - Parameter other: Another set.
     /// - Returns: A new set.
     func intersection(_ other: borrowing Self) -> Self
+
+    func map<Result>(_ body: (Element) throws -> Result) rethrows -> [Result]
 }

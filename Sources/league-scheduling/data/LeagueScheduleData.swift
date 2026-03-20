@@ -125,11 +125,9 @@ extension LeagueScheduleData {
                     entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay
                 )
 
-                entriesInDivision.forEach { entryID in
-                    if assignmentState.numberOfAssignedMatchups[unchecked: entryID] >= daySettings.maximumPlayableMatchups[unchecked: entryID] {
-                        entriesInDivision.removeMember(entryID)
-                    }
-                }
+                entriesInDivision.removeAll(where: { entryID in
+                    assignmentState.numberOfAssignedMatchups[unchecked: entryID] >= daySettings.maximumPlayableMatchups[unchecked: entryID]
+                })
 
                 entryCountsForDivision[divisionIndex] = entriesInDivision.count
                 expectedMatchupsCount += (entriesInDivision.count * defaultMaxEntryMatchupsPerGameDay) / entriesPerMatchup

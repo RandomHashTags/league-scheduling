@@ -12,7 +12,7 @@ extension GenerationConstraints {
         regenerationAttemptsForFirstDay: Self.default.regenerationAttemptsForFirstDay,
         regenerationAttemptsForConsecutiveDay: Self.default.regenerationAttemptsForConsecutiveDay,
         regenerationAttemptsThreshold: Self.default.regenerationAttemptsThreshold,
-        determinism: .init(seed: 69_420)
+        determinism: .init(seed: 69)
     )
 }
 

@@ -1,5 +1,5 @@
 
-struct PlaysAtTimesArray<TimeSet: SetOfTimeIndexes> {
+struct PlaysAtTimesArray<TimeSet: SetOfTimeIndexes>: Sendable {
     internal private(set) var times:ContiguousArray<TimeSet>
 
     subscript(unchecked index: some FixedWidthInteger) -> TimeSet {

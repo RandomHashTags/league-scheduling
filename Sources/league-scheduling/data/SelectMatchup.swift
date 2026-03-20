@@ -163,7 +163,7 @@ extension AssignmentState {
             }
         }
         #if LOG
-        print("SelectMatchup;selectMatchup;selected.pair=\(selected.pair.description);pool=\(pool.map({ $0.description }))")
+        print("SelectMatchup;selectMatchup;selected.pair=\(selected?.pair.description);pool=\(pool.map({ $0.description }))")
         #endif
         return pool.isEmpty ? selected?.pair : pool.randomElement(using: &rng)
     }

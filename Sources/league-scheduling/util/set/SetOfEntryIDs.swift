@@ -20,7 +20,7 @@ extension Set<Entry.IDValue>: SetOfEntryIDs {
         let sortedEntries = sorted()
         var index = 0
         while index < sortedEntries.count - 1 {
-            let home = sortedEntries[index]
+            let home = sortedEntries[unchecked: index]
             index += 1
             let assignedHome = assignedEntryHomeAways[unchecked: home]
             let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
@@ -45,7 +45,7 @@ extension OrderedSet<Entry.IDValue>: SetOfEntryIDs {
         let sortedEntries = sorted()
         var index = 0
         while index < sortedEntries.count - 1 {
-            let home = sortedEntries[index]
+            let home = sortedEntries[unchecked: index]
             index += 1
             let assignedHome = assignedEntryHomeAways[unchecked: home]
             let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]

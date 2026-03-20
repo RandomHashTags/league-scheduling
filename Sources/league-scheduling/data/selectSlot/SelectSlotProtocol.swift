@@ -1,12 +1,12 @@
 
 protocol SelectSlotProtocol: Sendable, ~Copyable {
-    func select(
+    func select<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: PlaysAtTimes,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot?
 }

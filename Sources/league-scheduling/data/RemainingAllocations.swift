@@ -6,7 +6,7 @@ extension AssignmentState {
     ) {
         remainingAllocations = .init(repeating: availableSlots, count: entriesCount)
         var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
-        for matchup in availableMatchups {
+        availableMatchups.forEach { matchup in
             recalculateNewDayRemainingAllocations(
                 for: matchup,
                 cached: &cached
@@ -41,9 +41,9 @@ extension AssignmentState {
         let maxTimeNumbers = maxTimeAllocations[unchecked: team]
         let maxLocationNumbers = maxLocationAllocations[unchecked: team]
         var available = availableSlots
-        for slot in availableSlots {
+        availableSlots.forEach { slot in
             if timeNumbers[unchecked: slot.time] >= maxTimeNumbers[unchecked: slot.time] || locationNumbers[unchecked: slot.location] >= maxLocationNumbers[unchecked: slot.location] {
-                available.remove(slot)
+                available.removeMember(slot)
             }
         }
         remainingAllocations[unchecked: team] = available
@@ -59,7 +59,7 @@ extension AssignmentState {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
         var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
-        for matchup in availableMatchups {
+        availableMatchups.forEach { matchup in
             recalculateRemainingAllocations(
                 day: day,
                 for: matchup,
@@ -115,7 +115,7 @@ extension AssignmentState {
         let maxTimeNumbers = maxTimeAllocations[unchecked: team]
         let maxLocationNumbers = maxLocationAllocations[unchecked: team]
         var available = availableSlots
-        for slot in availableSlots {
+        availableSlots.forEach { slot in
             if !canPlayAt.test(
                 time: slot.time,
                 location: slot.location,
@@ -130,7 +130,7 @@ extension AssignmentState {
                 maxLocationNumber: UInt8(maxLocationNumbers[unchecked: slot.location]),
                 gameGap: gameGap
             ) {
-                available.remove(slot)
+                available.removeMember(slot)
             }
         }
         remainingAllocations[unchecked: team] = available

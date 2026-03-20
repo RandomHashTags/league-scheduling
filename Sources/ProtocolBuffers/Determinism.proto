@@ -30,23 +30,10 @@ syntax = "proto3";
 
 package lit_leagues.leagues;
 
-import "Determinism.proto";
-
-// Constraints that influence the schedule generation process.
-message GenerationConstraints {
-    // Maximum number of seconds the schedule can take to generate. Default value is 60; 0=infinite (will continue until the regeneration attempt threshold is met).
-    optional uint32 timeoutDelay = 1;
-
-    // Maximum number of regeneration attempts when failing to generate the first game day. Default value is 100.
-    optional uint32 regenerationAttemptsForFirstDay = 2;
-
-    // Maximum number of regeneration attempts when failing to generate a game day other than the first. Default value is 100.
-    optional uint32 regenerationAttemptsForConsecutiveDay = 3;
-
-    // Maximum number of total regeneration attempts before stopping execution and marking the schedule generation as a failure.
-    // Default value is 10,000.
-    optional uint32 regenerationAttemptsThreshold = 4;
-
-    // Deterministic constraints. If not provided, the output is non-deterministic (heavily relies on randomness and probabilities).
-    optional Determinism determinism = 5;
+// Constraints that influence how deterministic the schedule generation process is.
+message Determinism {
+    optional uint32 technique = 1;
+    optional uint64 seed = 2;
+    optional uint64 multiplier = 3;
+    optional uint64 increment = 4;
 }

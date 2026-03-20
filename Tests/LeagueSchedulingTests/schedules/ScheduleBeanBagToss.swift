@@ -17,7 +17,7 @@ struct ScheduleBeanBagToss: ScheduleTestsProtocol {
         )
     }
     static func schedule8GameDays3Times3Locations1Division9Teams(
-        constraints: GenerationConstraints = .default
+        constraints: GenerationConstraints = .unitTestDefault
     ) throws -> RequestPayload.Runtime {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (8, 3, 3, 9)
@@ -397,7 +397,7 @@ extension ScheduleBeanBagToss {
         try expectations(settings: schedule, matchupsCount: 210, data: data)
     }
     static func scheduleBeanBagToss_10GameDays4Time8Locations1Division21Teams(
-        constraints: GenerationConstraints = .default
+        constraints: GenerationConstraints = .unitTestDefault
     ) throws -> RequestPayload.Runtime {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 8, 21)
@@ -443,7 +443,7 @@ extension ScheduleBeanBagToss {
         try expectations(settings: schedule, matchupsCount: 230, data: data)
     }
     static func scheduleBeanBagToss_10GameDays4Times6Locations2Division23Teams(
-        constraints: GenerationConstraints = .default
+        constraints: GenerationConstraints = .unitTestDefault
     ) throws -> RequestPayload.Runtime {
         let maxEntryMatchupsPerGameDay:EntryMatchupsPerGameDay = 2
         let (gameDays, times, locations, teams):(DayIndex, TimeIndex, LocationIndex, Int) = (10, 4, 6, 23)

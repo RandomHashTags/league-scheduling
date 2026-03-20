@@ -2,7 +2,7 @@
 import StaticDateTimes
 
 // MARK: Noncopyable
-struct AssignmentState: Sendable, ~Copyable {
+struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let entries:[Entry.Runtime]
     var startingTimes:[StaticTime]
     var matchupDuration:MatchupDuration
@@ -14,7 +14,7 @@ struct AssignmentState: Sendable, ~Copyable {
     /// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
     /// 
     /// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
-    var remainingAllocations:RemainingAllocations
+    var remainingAllocations:Config.RemainingAllocations
 
     /// When entries can play against each other again.
     /// 
@@ -45,31 +45,31 @@ struct AssignmentState: Sendable, ~Copyable {
     let maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled.
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:Config.MatchupPairSet
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:Config.AvailableSlotSet
     
-    var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
+    var playsAt:Config.PlaysAt
+    var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
     var playsAtLocations:PlaysAtLocations
 
     /// Available matchups that can be scheduled.
-    var matchups:Set<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory = [LeagueShuffleAction]()
 
-    func copyable() -> AssignmentStateCopyable {
+    func copyable() -> AssignmentStateCopyable<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,
@@ -133,7 +133,7 @@ struct AssignmentState: Sendable, ~Copyable {
 }
 
 // MARK: Copyable
-struct AssignmentStateCopyable {
+struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     let entries:[Entry.Runtime]
     let startingTimes:[StaticTime]
     let matchupDuration:MatchupDuration
@@ -141,7 +141,7 @@ struct AssignmentStateCopyable {
 
     /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
-    var remainingAllocations:RemainingAllocations
+    var remainingAllocations:Config.RemainingAllocations
     var recurringDayLimits:RecurringDayLimits
     var assignedTimes:AssignedTimes
     var assignedLocations:AssignedLocations
@@ -164,29 +164,29 @@ struct AssignmentStateCopyable {
     var maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:Config.MatchupPairSet
 
-    var prioritizedEntries:Set<Entry.IDValue>
+    var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:Config.AvailableSlotSet
 
-    var playsAt:PlaysAt
-    var playsAtTimes:PlaysAtTimes
+    var playsAt:Config.PlaysAt
+    var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
     var playsAtLocations:PlaysAtLocations
-    var matchups:Set<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory:[LeagueShuffleAction]
 
-    func noncopyable() -> AssignmentState {
+    func noncopyable() -> AssignmentState<Config> {
         return .init(
             entries: entries,
             startingTimes: startingTimes,

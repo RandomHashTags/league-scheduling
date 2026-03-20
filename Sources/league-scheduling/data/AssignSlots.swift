@@ -53,7 +53,7 @@ extension LeagueScheduleData {
         var assignmentIndex = 0
         var fms = failedMatchupSelections[unchecked: assignmentIndex]
         var optimalAvailableMatchups = assignmentState.availableMatchups.filter { !fms.contains($0) }
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: optimalAvailableMatchups
@@ -78,7 +78,7 @@ extension LeagueScheduleData {
             }*/
             guard let originalPair = selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return false }
             var matchup = originalPair
-            matchup.balanceHomeAway(assignmentState: assignmentState)
+            matchup.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
             // successfully selected a matchup
             guard let _ = assignMatchupPair(
                 matchup,
@@ -87,9 +87,9 @@ extension LeagueScheduleData {
                 canPlayAt: canPlayAt
             ) else {
                 // failed to assign matchup, skip it for now
-                failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
+                failedMatchupSelections[unchecked: assignmentIndex].insertMember(originalPair)
                 prioritizedMatchups.remove(originalPair)
-                assignmentState.availableMatchups.remove(originalPair)
+                assignmentState.availableMatchups.removeMember(originalPair)
                 continue
             }
             // successfully assigned pair
@@ -117,7 +117,7 @@ extension LeagueScheduleData {
                     availableMatchups: optimalAvailableMatchups
                 )
             }
-            assignmentState.availableMatchups.remove(originalPair)
+            assignmentState.availableMatchups.removeMember(originalPair)
         }
         return assignmentState.matchups.count == expectedMatchupsCount
     }
@@ -136,19 +136,19 @@ extension LeagueScheduleData {
             }
             // TODO: pick the optimal combination that should be selected?
             combinationLoop: for combination in allowedDivisionCombinations {
-                var assignedSlots = Set<AvailableSlot>()
-                var combinationTimeAllocations:ContiguousArray<Set<TimeIndex>> = .init(
-                    repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay),
+                var assignedSlots = Config.AvailableSlotSet()
+                var combinationTimeAllocations:ContiguousArray<Config.TimeSet> = .init(
+                    repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)),
                     count: combination.first?.count ?? 10
                 )
                 for (divisionIndex, divisionCombination) in combination.enumerated() {
                     let division = Division.IDValue(divisionIndex)
                     let divisionMatchups = assignmentState.allDivisionMatchups[unchecked: division]
                     assignmentState.availableMatchups = divisionMatchups
-                    assignmentState.prioritizedEntries.removeAll(keepingCapacity: true)
-                    for matchup in assignmentState.availableMatchups {
-                        assignmentState.prioritizedEntries.insert(matchup.team1)
-                        assignmentState.prioritizedEntries.insert(matchup.team2)
+                    assignmentState.prioritizedEntries.removeAllKeepingCapacity()
+                    assignmentState.availableMatchups.forEach { matchup in
+                        assignmentState.prioritizedEntries.insertMember(matchup.team1)
+                        assignmentState.prioritizedEntries.insertMember(matchup.team2)
                     }
                     assignmentState.recalculateAllRemainingAllocations(
                         day: day,
@@ -159,7 +159,7 @@ extension LeagueScheduleData {
                     #if LOG
                     print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
                     #endif
-                    var disallowedTimes = Set<TimeIndex>(minimumCapacity: defaultMaxEntryMatchupsPerGameDay)
+                    var disallowedTimes = Config.TimeSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay))
                     for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
                         guard amount > 0 else { continue }
                         let combinationTimeAllocation = combinationTimeAllocations[divisionCombinationIndex]
@@ -188,10 +188,10 @@ extension LeagueScheduleData {
                             #endif
                             continue combinationLoop
                         }
-                        for matchup in matchups {
-                            disallowedTimes.insert(matchup.time)
-                            combinationTimeAllocations[divisionCombinationIndex].insert(matchup.time)
-                            assignedSlots.insert(matchup.slot)
+                        matchups.forEach { matchup in
+                            disallowedTimes.insertMember(matchup.time)
+                            combinationTimeAllocations[divisionCombinationIndex].insertMember(matchup.time)
+                            assignedSlots.insertMember(matchup.slot)
                         }
                         assignmentState.availableSlots = slots.filter { !disallowedTimes.contains($0.time) }
                         assignmentState.recalculateAvailableMatchups(
@@ -245,30 +245,31 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
-        assignmentState: inout AssignmentState,
+        allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator,
+        assignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
         var pair:MatchupPair? = nil
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: assignmentState.availableMatchups
         )
         while pair == nil {
-            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups, rng: &rng) else { return nil }
             if !shouldSkipSelection(selected) {
                 pair = selected
                 prioritizedMatchups.update(prioritizedEntries: assignmentState.prioritizedEntries, availableMatchups: assignmentState.availableMatchups)
             } else {
                 prioritizedMatchups.remove(selected)
-                assignmentState.availableMatchups.remove(selected)
+                assignmentState.availableMatchups.removeMember(selected)
             }
         }
         guard var pair else { return nil }
-        pair.balanceHomeAway(assignmentState: assignmentState)
+        pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
         print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
@@ -295,23 +296,24 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
-        assignmentState: inout AssignmentState,
+        allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator,
+        assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup? {
         var pair:MatchupPair? = nil
-        var prioritizedMatchups = PrioritizedMatchups(
+        var prioritizedMatchups = PrioritizedMatchups<Config>(
             entriesCount: entriesCount,
             prioritizedEntries: assignmentState.prioritizedEntries,
             availableMatchups: assignmentState.availableMatchups
         )
         while pair == nil {
-            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups, rng: &rng) else { return nil }
             pair = selected
         }
         guard var pair else { return nil }
-        pair.balanceHomeAway(assignmentState: assignmentState)
+        pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
         print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")

@@ -1,16 +1,16 @@
 
-struct PrioritizedMatchups: Sendable, ~Copyable {
-    private(set) var matchups:Set<MatchupPair>
+struct PrioritizedMatchups<Config: ScheduleConfiguration>: Sendable, ~Copyable {
+    private(set) var matchups:Config.MatchupPairSet
     private(set) var availableMatchupCountForEntry:ContiguousArray<Int>
 
     init(
         entriesCount: Int,
-        prioritizedEntries: Set<Entry.IDValue>,
-        availableMatchups: Set<MatchupPair>
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
     ) {
         let matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         var availableMatchupCountForEntry = ContiguousArray<Int>(repeating: 0, count: entriesCount)
-        for matchup in matchups {
+        matchups.forEach { matchup in
             availableMatchupCountForEntry[unchecked: matchup.team1] += 1
             availableMatchupCountForEntry[unchecked: matchup.team2] += 1
         }
@@ -19,14 +19,14 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
     }
 
     mutating func update(
-        prioritizedEntries: Set<Entry.IDValue>,
-        availableMatchups: Set<MatchupPair>
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
     ) {
         matchups = Self.filterMatchups(prioritizedEntries: prioritizedEntries, availableMatchups: availableMatchups)
         for i in availableMatchupCountForEntry.indices {
             availableMatchupCountForEntry[unchecked: i] = 0
         }
-        for matchup in matchups {
+        matchups.forEach { matchup in
             availableMatchupCountForEntry[unchecked: matchup.team1] += 1
             availableMatchupCountForEntry[unchecked: matchup.team2] += 1
         }
@@ -34,13 +34,13 @@ struct PrioritizedMatchups: Sendable, ~Copyable {
 
     /// Removes the specified matchup pair from `matchups`.
     mutating func remove(_ matchup: MatchupPair) {
-        matchups.remove(matchup)
+        matchups.removeMember(matchup)
     }
 
     private static func filterMatchups(
-        prioritizedEntries: Set<Entry.IDValue>,
-        availableMatchups: Set<MatchupPair>
-    ) -> Set<MatchupPair> {
+        prioritizedEntries: Config.EntryIDSet,
+        availableMatchups: Config.MatchupPairSet
+    ) -> Config.MatchupPairSet {
         if prioritizedEntries.isEmpty {
             return availableMatchups
         }

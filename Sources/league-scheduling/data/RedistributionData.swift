@@ -1,5 +1,5 @@
 
-struct RedistributionData: Sendable {
+struct RedistributionData<Config: ScheduleConfiguration>: Sendable {
     /// The latest `DayIndex` that is allowed to redistribute matchups from.
     let startDayIndex:DayIndex
     let entryMatchupsPerGameDay:EntryMatchupsPerGameDay
@@ -14,14 +14,15 @@ struct RedistributionData: Sendable {
         dayIndex: DayIndex,
         startDayIndex: DayIndex,
         settings: RequestPayload.Runtime,
-        data: borrowing LeagueScheduleData
+        entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
+        entriesPerMatchup: EntriesPerMatchup
     ) {
         self.startDayIndex = startDayIndex
-        self.entryMatchupsPerGameDay = data.defaultMaxEntryMatchupsPerGameDay
-        redistributedEntries = .init(repeating: 0, count: data.entriesCount)
+        self.entryMatchupsPerGameDay = entryMatchupsPerGameDay
+        redistributedEntries = .init(repeating: 0, count: settings.entries.count)
         redistributed = []
 
-        let threshold = (data.entriesCount / data.entriesPerMatchup)// * entryMatchupsPerGameDay
+        let threshold = (settings.entries.count / entriesPerMatchup)// * entryMatchupsPerGameDay
         var minMatchupsRequired = threshold
         var maxMovableMatchups = threshold
         if let r = settings.daySettings[unchecked: dayIndex].general.redistributionSettings ?? settings.general.redistributionSettings {
@@ -42,7 +43,7 @@ extension RedistributionData {
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable,
         day: DayIndex,
         gameGap: GameGap.TupleValue,
-        assignmentState: inout AssignmentState,
+        assignmentState: inout AssignmentState<Config>,
         executionSteps: inout [ExecutionStep],
         generationData: inout LeagueGenerationData
     ) -> Bool {
@@ -52,7 +53,7 @@ extension RedistributionData {
         #endif
 
         var assigned = 0
-        var redistributables = Set<Redistributable>()
+        var redistributables = Config.RedistributableMatchupSet()
         for fromDayIndex in stride(from: startDayIndex, through: 0, by: -1) {
             for matchup in generationData.schedule[unchecked: fromDayIndex] {
                 guard !redistributed.contains(matchup) else { continue }
@@ -67,7 +68,7 @@ extension RedistributionData {
 
                 let homeMaxAssignedLocations = assignmentState.maxLocationAllocations[unchecked: matchup.home]
                 let awayMaxAssignedLocations = assignmentState.maxLocationAllocations[unchecked: matchup.away]
-                for slot in assignmentState.availableSlots {
+                assignmentState.availableSlots.forEach { slot in
                     assignmentState.decrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
                     if canPlayAt.test(
                         time: slot.time,
@@ -96,7 +97,7 @@ extension RedistributionData {
                         maxLocationNumber: UInt8(awayMaxAssignedLocations[unchecked: slot.location]),
                         gameGap: gameGap
                     ) {
-                        redistributables.insert(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
+                        redistributables.insertMember(.init(fromDay: fromDayIndex, matchup: matchup, toSlot: slot))
                     }
                     assignmentState.incrementAssignData(home: matchup.home, away: matchup.away, slot: matchup.slot)
                 }
@@ -127,17 +128,17 @@ extension RedistributionData {
 // MARK: Select redistributable
 extension RedistributionData {
     private func selectRedistributable(
-        from redistributables: Set<Redistributable>,
+        from redistributables: Config.RedistributableMatchupSet,
         generationData: LeagueGenerationData
-    ) -> Redistributable? {
-        var redistributable:Redistributable? = nil
+    ) -> RedistributableMatchup? {
+        var redistributable:RedistributableMatchup? = nil
 
         // prioritize entries that have been redistributed the least
         var (cMin, cMax):(UInt16, UInt16) = (.max, .max)
-        for r in redistributables {
+        redistributables.forEach { r in
             if generationData.schedule[unchecked: r.fromDay].count <= minMatchupsRequired {
                 // don't take from the day since the matchups for it will render the day incomplete
-                continue
+                return
             }
             let (rMin, rMax) = calculateMinMax(matchup: r.matchup)
             if rMin < cMin {
@@ -171,9 +172,9 @@ extension RedistributionData {
 // MARK: Redistribute
 extension RedistributionData {
     private mutating func redistribute(
-        redistributable: inout Redistributable,
-        redistributables: inout Set<Redistributable>,
-        assignmentState: inout AssignmentState,
+        redistributable: inout RedistributableMatchup,
+        redistributables: inout Config.RedistributableMatchupSet,
+        assignmentState: inout AssignmentState<Config>,
         generationData: inout LeagueGenerationData
     ) {
         generationData.schedule[unchecked: redistributable.fromDay].remove(redistributable.matchup)
@@ -192,18 +193,9 @@ extension RedistributionData {
 
         redistributable.matchup.time = redistributable.toSlot.time
         redistributable.matchup.location = redistributable.toSlot.location
-        assignmentState.matchups.insert(redistributable.matchup)
-        assignmentState.availableSlots.remove(redistributable.toSlot)
+        assignmentState.matchups.insertMember(redistributable.matchup)
+        assignmentState.availableSlots.removeMember(redistributable.toSlot)
         assignmentState.incrementAssignData(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
         assignmentState.insertPlaysAt(home: redistributable.matchup.home, away: redistributable.matchup.away, slot: redistributable.toSlot)
-    }
-}
-
-// MARK: Redistributable
-extension RedistributionData {
-    private struct Redistributable: Hashable, Sendable {
-        let fromDay:DayIndex
-        var matchup:Matchup
-        let toSlot:AvailableSlot
     }
 }

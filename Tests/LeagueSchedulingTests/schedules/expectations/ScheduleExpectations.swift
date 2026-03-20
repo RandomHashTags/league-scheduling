@@ -5,6 +5,16 @@ import Testing
 protocol ScheduleExpectations: Sendable {
 }
 
+extension GenerationConstraints {
+    static let unitTestDefault = Self(
+        timeoutDelay: Self.default.timeoutDelay,
+        regenerationAttemptsForFirstDay: Self.default.regenerationAttemptsForFirstDay,
+        regenerationAttemptsForConsecutiveDay: Self.default.regenerationAttemptsForConsecutiveDay,
+        regenerationAttemptsThreshold: Self.default.regenerationAttemptsThreshold,
+        determinism: nil//.init(seed: 69)
+    )
+}
+
 // MARK: Expectations
 extension ScheduleExpectations {
     func expectations(
@@ -13,8 +23,9 @@ extension ScheduleExpectations {
         data: LeagueGenerationResult
     ) throws {
         guard !Task.isCancelled else { return }
+        let determinism = settings.constraints.determinism
         let regenerationAttempts:String = data.results.map {
-            "assignLocationTimeRegenerationAttempts=\($0.assignLocationTimeRegenerationAttempts);negativeDayIndexRegenerationAttempts=\($0.negativeDayIndexRegenerationAttempts)"
+            "hasDeterminism=\(settings.constraints.hasDeterminism),technique=\(determinism.technique),seed=\(determinism.seed);assignLocationTimeRegenerationAttempts=\($0.assignLocationTimeRegenerationAttempts);negativeDayIndexRegenerationAttempts=\($0.negativeDayIndexRegenerationAttempts)"
         }.joined(separator: "\n")
         if false {
             for result in data.results {

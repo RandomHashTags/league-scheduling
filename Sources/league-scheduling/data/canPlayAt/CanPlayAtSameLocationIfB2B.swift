@@ -7,8 +7,8 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
         location: LocationIndex,
         allowedTimes: Set<TimeIndex>,
         allowedLocations: Set<LocationIndex>,
-        playsAt: PlaysAt.Element,
-        playsAtTimes: PlaysAtTimes.Element,
+        playsAt: borrowing some SetOfAvailableSlots & ~Copyable,
+        playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         playsAtLocations: PlaysAtLocations.Element,
         timeNumber: UInt8,
         locationNumber: UInt8,
@@ -40,7 +40,7 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
     static func test(
         time: TimeIndex,
         location: LocationIndex,
-        playsAtTimes: PlaysAtTimes.Element,
+        playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         playsAtLocations: PlaysAtLocations.Element
     ) -> Bool {
         if time > 0 && playsAtTimes.contains(time-1) || playsAtTimes.contains(time+1) {

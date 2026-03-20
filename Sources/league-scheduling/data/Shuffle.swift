@@ -10,7 +10,7 @@ extension AssignmentState {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: Config.MatchupPairSet,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> AvailableSlot? {
         // TODO: fix (can get stuck shuffling the same matchup to the same slot)
@@ -32,7 +32,7 @@ extension AssignmentState {
         let team2LocationNumbers = assignedLocations[unchecked: matchup.team2]
         let team2MaxTimeNumbers = maxTimeAllocations[unchecked: matchup.team2]
         let team2MaxLocationNumbers = maxLocationAllocations[unchecked: matchup.team2]
-        for swapped in matchups {
+        return matchups.forEachWithReturn { swapped in
             // make sure the failed assigned matchup is allowed to go where the assigned matchup is
             guard canPlayAt.test(
                 time: swapped.time,
@@ -61,14 +61,14 @@ extension AssignmentState {
                 maxLocationNumber: UInt8(team2MaxLocationNumbers[unchecked: swapped.location]),
                 gameGap: gameGap
             ) else {
-                continue
+                return nil
             }
 
             let swappedSlot = swapped.slot
             var homePlaysAt = playsAt[unchecked: swapped.home]
             var awayPlaysAt = playsAt[unchecked: swapped.away]
-            homePlaysAt.remove(swappedSlot)
-            awayPlaysAt.remove(swappedSlot)
+            homePlaysAt.removeMember(swappedSlot)
+            awayPlaysAt.removeMember(swappedSlot)
 
             let homeAllowedTimes = entries[unchecked: swapped.home].gameTimes[unchecked: day]
             let awayAllowedTimes = entries[unchecked: swapped.away].gameTimes[unchecked: day]
@@ -78,8 +78,8 @@ extension AssignmentState {
 
             var homePlaysAtTimes = playsAtTimes[unchecked: swapped.home]
             var awayPlaysAtTimes = playsAtTimes[unchecked: swapped.away]
-            homePlaysAtTimes.remove(swapped.time)
-            awayPlaysAtTimes.remove(swapped.time)
+            homePlaysAtTimes.removeMember(swapped.time)
+            awayPlaysAtTimes.removeMember(swapped.time)
 
             var homePlaysAtLocations = playsAtLocations[unchecked: swapped.home]
             var awayPlaysAtLocations = playsAtLocations[unchecked: swapped.away]
@@ -124,7 +124,7 @@ extension AssignmentState {
                     maxLocationNumber: UInt8(maxAwayLocationNumbers[unchecked: $0.location]),
                     gameGap: gameGap
                 )
-            }) else { continue }
+            }) else { return nil }
 
             #if LOG
             print("shuffle;day=\(day);moved \(swapped) to \(slot) to make room for \(matchup)")
@@ -144,6 +144,5 @@ extension AssignmentState {
             shuffleHistory.append(.init(day: day, from: swappedSlot, to: slot, pair: swapped.pair))
             return swappedSlot
         }
-        return nil
     }
 }

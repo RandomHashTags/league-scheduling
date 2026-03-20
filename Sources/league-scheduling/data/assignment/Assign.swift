@@ -41,26 +41,26 @@ extension AssignmentState {
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) -> Matchup {
-        prioritizedEntries.remove(matchup.team1)
-        prioritizedEntries.remove(matchup.team2)
+        prioritizedEntries.removeMember(matchup.team1)
+        prioritizedEntries.removeMember(matchup.team2)
         let home:Entry.IDValue = matchup.team1
         let away:Entry.IDValue = matchup.team2
         incrementRecurringDayLimits(home: home, away: away, entryDivisions: entryDivisions, divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval)
 
         incrementAssignData(home: home, away: away, slot: slot)
         insertPlaysAt(home: home, away: away, slot: slot)
-        availableSlots.remove(slot)
+        availableSlots.removeMember(slot)
         let leagueMatchup = Matchup(
             time: slot.time,
             location: slot.location,
             home: home,
             away: away
         )
-        matchups.insert(leagueMatchup)
+        matchups.insertMember(leagueMatchup)
 
-        availableMatchups.remove(matchup)
+        availableMatchups.removeMember(matchup)
         // TODO: fix (why is the following line necessary | it fixes an issue that allowed matchups to exceed the maximumSameOpponentsMatchupsCap, but availableMatchups still contains matchups that shouldn't be scheduled when scheduling b2b)
-        availableMatchups.remove(.init(team1: matchup.team2, team2: matchup.team1))
+        availableMatchups.removeMember(.init(team1: matchup.team2, team2: matchup.team1))
         if playsAtTimes[unchecked: home].count == entryMatchupsPerGameDay {
             #if LOG
             remainingAllocations[unchecked: home].removeAll()
@@ -81,7 +81,7 @@ extension AssignmentState {
         }
 
         #if LOG
-        for av in availableMatchups {
+        availableMatchups.forEach { av in
             if assignedEntryHomeAways[unchecked: av.team1][unchecked: av.team2].sum == maxSameOpponentMatchups[unchecked: av.team1][unchecked: av.team2] {
                 fatalError("assign;day=\(day);gameGap=\(gameGap);matchup=\(matchup);av=\(av);availableSlots.count=\(availableSlots.count);matchups.count=\(matchups.count)")
             } else if assignedEntryHomeAways[unchecked: av.team2][unchecked: av.team1].sum == maxSameOpponentMatchups[unchecked: av.team2][unchecked: av.team1] {
@@ -133,10 +133,10 @@ extension AssignmentState {
         away: Entry.IDValue,
         slot: AvailableSlot
     ) {
-        playsAt[unchecked: home].insert(slot)
-        playsAt[unchecked: away].insert(slot)
-        playsAtTimes[unchecked: home].insert(slot.time)
-        playsAtTimes[unchecked: away].insert(slot.time)
+        playsAt[unchecked: home].insertMember(slot)
+        playsAt[unchecked: away].insertMember(slot)
+        playsAtTimes.insertMember(entryID: home, member: slot.time)
+        playsAtTimes.insertMember(entryID: away, member: slot.time)
         playsAtLocations[unchecked: home].insert(slot.location)
         playsAtLocations[unchecked: away].insert(slot.location)
     }

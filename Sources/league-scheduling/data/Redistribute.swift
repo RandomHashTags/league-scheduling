@@ -48,7 +48,8 @@ extension LeagueScheduleData {
                 dayIndex: day,
                 startDayIndex: startDayIndex,
                 settings: settings,
-                data: self
+                entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
+                entriesPerMatchup: entriesPerMatchup
             )
         }
         let previousSchedule = generationData.schedule

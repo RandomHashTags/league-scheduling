@@ -21,6 +21,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/RandomHashTags/swift-staticdatetime", from: "0.3.5"),
 
+        // Ordered sets
+        .package(url: "https://github.com/apple/swift-collections", from: "1.4.0"),
+
         // Protocol buffers
         .package(url: "https://github.com/apple/swift-protobuf", from: "1.31.0"),
     ],
@@ -28,6 +31,7 @@ let package = Package(
         .target(
             name: "LeagueScheduling",
             dependencies: [
+                .product(name: "OrderedCollections", package: "swift-collections"),
                 .product(name: "StaticDateTimes", package: "swift-staticdatetime"),
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ],

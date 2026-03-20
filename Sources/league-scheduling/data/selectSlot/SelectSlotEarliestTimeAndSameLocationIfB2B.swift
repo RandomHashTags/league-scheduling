@@ -1,13 +1,13 @@
 
 struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable {
-    func select(
+    func select<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: PlaysAtTimes,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: PlaysAtLocations,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]
@@ -51,7 +51,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
             } else {
                 nonBackToBackSlots.append(targetSlot)
             }
-            playableSlots.remove(targetSlot)
+            playableSlots.removeMember(targetSlot)
         }
         return nonBackToBackSlots.first
     }

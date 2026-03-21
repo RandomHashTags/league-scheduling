@@ -12,7 +12,7 @@ struct EntryAssignmentData: Sendable {
     var maximumPlayableMatchups:UInt32
 
     /// Remaining allocations for the current `day`.
-    var remainingAllocations:Set<AvailableSlot>
+    var possibleAllocations:Set<AvailableSlot>
 
     /// When entries can play against each other again.
     /// 

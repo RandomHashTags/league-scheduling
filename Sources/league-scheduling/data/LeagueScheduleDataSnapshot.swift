@@ -73,7 +73,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: .init(repeating: 0, count: entriesCount),
-            remainingAllocations: [],
+            possibleAllocations: [],
             recurringDayLimits: .init(repeating: .init(repeating: 0, count: entriesCount), count: entriesCount),
             assignedTimes: .init(repeating: .init(repeating: 0, count: maxStartingTimes), count: entriesCount),
             assignedLocations: .init(repeating: .init(repeating: 0, count: maxLocations), count: entriesCount),

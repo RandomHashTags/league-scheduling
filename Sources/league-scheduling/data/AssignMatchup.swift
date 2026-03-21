@@ -92,12 +92,12 @@ extension AssignmentState {
 // MARK: Playable slots
 extension AssignmentState {
     func playableSlots(for pair: MatchupPair) -> Config.AvailableSlotSet {
-        return Self.playableSlots(for: pair, remainingAllocations: remainingAllocations)
+        return Self.playableSlots(for: pair, possibleAllocations: possibleAllocations)
     }
     static func playableSlots(
         for pair: MatchupPair,
-        remainingAllocations: Config.RemainingAllocations
+        possibleAllocations: Config.PossibleAllocations
     ) -> Config.AvailableSlotSet {
-        return remainingAllocations[unchecked: pair.team1].intersection(remainingAllocations[unchecked: pair.team2])
+        return possibleAllocations[unchecked: pair.team1].intersection(possibleAllocations[unchecked: pair.team2])
     }
 }

@@ -166,7 +166,7 @@ extension LeagueScheduleData {
         for i in 0..<assignmentState.playsAtLocations.count {
             assignmentState.playsAtLocations[unchecked: i].removeAll(keepingCapacity: true)
         }
-        assignmentState.recalculateNewDayRemainingAllocations(entriesCount: entriesCount)
+        assignmentState.recalculateNewDayPossibleAllocations(entriesCount: entriesCount)
 
         #if LOG
         print("newDay;day=\(day);availableSlots=\(availableSlots.map({ $0.description }));defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay);expectedMatchupsCount=\(expectedMatchupsCount);availableMatchups.count=\(availableMatchups.count);allowedDivisionCombinations=\(allowedDivisionCombinations);numberOfAssignedMatchups=\(assignmentState.numberOfAssignedMatchups);maximumPlayableMatchups=\(assignmentState.maximumPlayableMatchups)")

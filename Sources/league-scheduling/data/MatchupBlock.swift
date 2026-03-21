@@ -99,7 +99,7 @@ extension LeagueScheduleData {
         ) else { return nil }
         adjacentTimes = calculateAdjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
         localAssignmentState.availableSlots = localAssignmentState.availableSlots.filter { $0.time == firstMatchup.time }
-        localAssignmentState.recalculateAllRemainingAllocations(
+        localAssignmentState.recalculateAllPossibleAllocations(
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
@@ -173,7 +173,7 @@ extension LeagueScheduleData {
                 selectedEntries.contains($0.team1) && selectedEntries.contains($0.team2)
             }
             localAssignmentState.availableSlots = assignmentState.availableSlots.filter { $0.time == time }
-            localAssignmentState.recalculateAllRemainingAllocations(
+            localAssignmentState.recalculateAllPossibleAllocations(
                 day: day,
                 entriesCount: entriesCount,
                 gameGap: gameGap,

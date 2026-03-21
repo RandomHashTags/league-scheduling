@@ -1,7 +1,7 @@
 
 // MARK: Select matchup
 extension LeagueScheduleData {
-    /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
+    /// - Returns: Matchup pair that should be prioritized to be scheduled.
     mutating func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
         return assignmentState.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
@@ -11,7 +11,7 @@ extension LeagueScheduleData {
 }
 
 extension AssignmentState {
-    /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
+    /// - Returns: Matchup pair that should be prioritized to be scheduled.
     func selectMatchup(
         prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         rng: inout some RandomNumberGenerator
@@ -20,17 +20,17 @@ extension AssignmentState {
             prioritizedMatchups: prioritizedMatchups,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
             recurringDayLimits: recurringDayLimits,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             rng: &rng
         )
     }
 
-    /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
+    /// - Returns: Matchup pair that should be prioritized to be scheduled.
     static func selectMatchup(
         prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
-        remainingAllocations: Config.RemainingAllocations,
+        possibleAllocations: Config.PossibleAllocations,
         rng: inout some RandomNumberGenerator
     ) -> MatchupPair? {
         #if LOG
@@ -49,7 +49,7 @@ extension AssignmentState {
                     minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                     totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                     recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
-                    remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                    possibleAllocations: Self.possibleAllocations(for: pair, possibleAllocations: possibleAllocations),
                     remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                     pool: &pool
                 )
@@ -61,7 +61,7 @@ extension AssignmentState {
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
-                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            possibleAllocations: Self.possibleAllocations(for: pair, possibleAllocations: possibleAllocations),
                             remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                             pool: &pool
                         )
@@ -75,7 +75,7 @@ extension AssignmentState {
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: recurringDayLimit(for: pair, recurringDayLimits: recurringDayLimits),
-                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            possibleAllocations: Self.possibleAllocations(for: pair, possibleAllocations: possibleAllocations),
                             remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                             pool: &pool
                         )
@@ -90,7 +90,7 @@ extension AssignmentState {
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: pairRecurringDayLimit,
-                            remainingAllocations: Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations),
+                            possibleAllocations: Self.possibleAllocations(for: pair, possibleAllocations: possibleAllocations),
                             remainingMatchupCount: remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                             pool: &pool
                         )
@@ -98,29 +98,29 @@ extension AssignmentState {
                     return
                 }
 
-                let pairRemainingAllocations = Self.remainingAllocations(for: pair, remainingAllocations: remainingAllocations)
-                guard pairRemainingAllocations.min == selected.remainingAllocations.min else {
-                    if pairRemainingAllocations.min < selected.remainingAllocations.min {
+                let pairRemainingAllocations = Self.possibleAllocations(for: pair, possibleAllocations: possibleAllocations)
+                guard pairRemainingAllocations.min == selected.possibleAllocations.min else {
+                    if pairRemainingAllocations.min < selected.possibleAllocations.min {
                         selected = select(
                             pair: pair,
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: pairRecurringDayLimit,
-                            remainingAllocations: pairRemainingAllocations,
+                            possibleAllocations: pairRemainingAllocations,
                             remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                             pool: &pool
                         )
                     }
                     return
                 }
-                guard pairRemainingAllocations.max == selected.remainingAllocations.max else {
-                    if pairRemainingAllocations.max < selected.remainingAllocations.max {
+                guard pairRemainingAllocations.max == selected.possibleAllocations.max else {
+                    if pairRemainingAllocations.max < selected.possibleAllocations.max {
                         selected = select(
                             pair: pair,
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: pairRecurringDayLimit,
-                            remainingAllocations: pairRemainingAllocations,
+                            possibleAllocations: pairRemainingAllocations,
                             remainingMatchupCount: Self.remainingMatchupCount(for: pair, prioritizedMatchups.availableMatchupCountForEntry),
                             pool: &pool
                         )
@@ -136,7 +136,7 @@ extension AssignmentState {
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: pairRecurringDayLimit,
-                            remainingAllocations: pairRemainingAllocations,
+                            possibleAllocations: pairRemainingAllocations,
                             remainingMatchupCount: pairRemainingMatchupCount,
                             pool: &pool
                         )
@@ -150,7 +150,7 @@ extension AssignmentState {
                             minMatchupsPlayedSoFar: pairMinMatchupsPlayedSoFar,
                             totalMatchupsPlayedSoFar: pairTotalMatchupsPlayedSoFar,
                             recurringDayLimit: pairRecurringDayLimit,
-                            remainingAllocations: pairRemainingAllocations,
+                            possibleAllocations: pairRemainingAllocations,
                             remainingMatchupCount: pairRemainingMatchupCount,
                             pool: &pool
                         )
@@ -174,7 +174,7 @@ extension AssignmentState {
         var minMatchupsPlayedSoFar:Int
         /// The sum of the total number of matchups `pair.team1` and `pair.team2` has played so far
         var totalMatchupsPlayedSoFar:Int
-        var remainingAllocations:(min: Int, max: Int)
+        var possibleAllocations:(min: Int, max: Int)
         var remainingMatchupCount:(min: Int, max: Int)
         var recurringDayLimit:RecurringDayLimitInterval
     }
@@ -186,9 +186,9 @@ extension AssignmentState {
     private static func recurringDayLimit(for pair: MatchupPair, recurringDayLimits: RecurringDayLimits) -> RecurringDayLimitInterval {
         return recurringDayLimits[unchecked: pair.team1][unchecked: pair.team2]
     }
-    private static func remainingAllocations(for pair: MatchupPair, remainingAllocations: Config.RemainingAllocations) -> (min: Int, max: Int) {
-        let team1 = remainingAllocations[unchecked: pair.team1].count
-        let team2 = remainingAllocations[unchecked: pair.team2].count
+    private static func possibleAllocations(for pair: MatchupPair, possibleAllocations: Config.PossibleAllocations) -> (min: Int, max: Int) {
+        let team1 = possibleAllocations[unchecked: pair.team1].count
+        let team2 = possibleAllocations[unchecked: pair.team2].count
         return (
             min(team1, team2),
             max(team1, team2)
@@ -207,7 +207,7 @@ extension AssignmentState {
         minMatchupsPlayedSoFar: Int,
         totalMatchupsPlayedSoFar: Int,
         recurringDayLimit: RecurringDayLimitInterval,
-        remainingAllocations: (min: Int, max: Int),
+        possibleAllocations: (min: Int, max: Int),
         remainingMatchupCount: (min: Int, max: Int),
         pool: inout Config.MatchupPairSet
     ) -> SelectedMatchup {
@@ -217,7 +217,7 @@ extension AssignmentState {
             pair: pair,
             minMatchupsPlayedSoFar: minMatchupsPlayedSoFar,
             totalMatchupsPlayedSoFar: totalMatchupsPlayedSoFar,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             remainingMatchupCount: remainingMatchupCount,
             recurringDayLimit: recurringDayLimit
         )

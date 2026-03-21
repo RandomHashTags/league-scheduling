@@ -144,48 +144,79 @@ extension RequestPayload.Runtime {
         for (divisionID, division) in divisions.enumerated() {
             grouped[DayOfWeek(division.dayOfWeek), default: .init()].formUnion(divisionEntries[divisionID])
         }
+
+        var finalResults = [LeagueGenerationData]()
+        finalResults.reserveCapacity(grouped.count)
+        var attempts = constraints.hasDeterminism ? 1 : max(1, constraints.attempts)
         guard constraints.timeoutDelay > 0 else {
-            return await withTaskGroup { group in
+            while attempts > 0 {
+                #if LOG
+                print("Generation;generateDivisionSchedulesInParallel;remaining attempts=\(attempts);remainingTimeoutDelay=\(remainingTimeoutDelay)")
+                #endif
+                attempts -= 1
+                await withTaskGroup { group in
+                    for (dow, scheduledEntries) in grouped {
+                        group.addTask {
+                            return (dow, Self.generateSchedule(
+                                settings: self,
+                                dataSnapshot: dataSnapshot,
+                                divisionsCount: divisionsCount,
+                                maxStartingTimes: maxStartingTimes,
+                                maxLocations: maxLocations,
+                                scheduledEntries: scheduledEntries
+                            ))
+                        }
+                    }
+                    for await (dow, result) in group {
+                        if result.error == nil || attempts == 0 {
+                            finalResults.append(result)
+                            grouped[dow] = nil
+                        }
+                    }
+                }
+                if grouped.isEmpty {
+                    break
+                }
+            }
+            return finalResults
+        }
+        var remainingTimeoutDelay = Duration.seconds(constraints.timeoutDelay)
+        while attempts > 0, remainingTimeoutDelay > .milliseconds(1) {
+            #if LOG
+            print("Generation;generateDivisionSchedulesInParallel;remaining attempts=\(attempts);remainingTimeoutDelay=\(remainingTimeoutDelay)")
+            #endif
+            attempts -= 1
+            let now = ContinuousClock.now
+            let results = try await withTimeout(
+                key: "generateSchedules",
+                resultCount: grouped.count,
+                timeout: remainingTimeoutDelay
+            ) { group in
                 for (dow, scheduledEntries) in grouped {
                     group.addTask {
-                        return Self.generateSchedule(
-                            dayOfWeek: dow,
+                        return (dow, Self.generateSchedule(
                             settings: self,
                             dataSnapshot: dataSnapshot,
                             divisionsCount: divisionsCount,
                             maxStartingTimes: maxStartingTimes,
                             maxLocations: maxLocations,
                             scheduledEntries: scheduledEntries
-                        )
+                        ))
                     }
                 }
-                var results = [LeagueGenerationData]()
-                results.reserveCapacity(grouped.count)
-                for await r in group {
-                    results.append(r)
-                }
-                return results
             }
-        }
-        return try await withTimeout(
-            key: "generateSchedules",
-            resultCount: grouped.count,
-            timeout: .seconds(constraints.timeoutDelay)
-        ) { group in
-            for (dow, scheduledEntries) in grouped {
-                group.addTask {
-                    return Self.generateSchedule(
-                        dayOfWeek: dow,
-                        settings: self,
-                        dataSnapshot: dataSnapshot,
-                        divisionsCount: divisionsCount,
-                        maxStartingTimes: maxStartingTimes,
-                        maxLocations: maxLocations,
-                        scheduledEntries: scheduledEntries
-                    )
+            remainingTimeoutDelay -= ContinuousClock.now - now
+            for (dow, result) in results {
+                if result.error == nil || attempts == 0 {
+                    finalResults.append(result)
+                    grouped[dow] = nil
                 }
             }
+            if grouped.isEmpty {
+                break
+            }
         }
+        return finalResults
     }
 }
 
@@ -232,7 +263,6 @@ extension RequestPayload.Runtime {
 // MARK: Generate schedule
 extension RequestPayload.Runtime {
     private static func generateSchedule<Config: ScheduleConfiguration>(
-        dayOfWeek: DayOfWeek,
         settings: RequestPayload.Runtime,
         dataSnapshot: LeagueScheduleDataSnapshot<Config>,
         divisionsCount: Int,

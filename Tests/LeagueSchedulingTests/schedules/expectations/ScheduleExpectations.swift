@@ -11,7 +11,8 @@ extension GenerationConstraints {
         regenerationAttemptsForFirstDay: Self.default.regenerationAttemptsForFirstDay,
         regenerationAttemptsForConsecutiveDay: Self.default.regenerationAttemptsForConsecutiveDay,
         regenerationAttemptsThreshold: Self.default.regenerationAttemptsThreshold,
-        determinism: nil//.init(seed: 69)
+        determinism: nil,//.init(seed: 69),
+        attempts: 3
     )
 }
 

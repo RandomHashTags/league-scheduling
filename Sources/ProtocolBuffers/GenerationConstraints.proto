@@ -49,4 +49,7 @@ message GenerationConstraints {
 
     // Deterministic constraints. If not provided, the output is non-deterministic (heavily relies on randomness and probabilities).
     optional Determinism determinism = 5;
+
+    // Number of attempts to try generating the schedule. Only tries once if not provided or determinism is enabled.
+    optional uint32 attempts = 6;
 }

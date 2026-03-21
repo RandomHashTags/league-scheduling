@@ -18,6 +18,9 @@ extension GenerationConstraints: Codable {
         if let v = try container.decodeIfPresent(LitLeagues_Leagues_Determinism.self, forKey: .determinism) {
             determinism = v
         }
+        if let v = try container.decodeIfPresent(UInt32.self, forKey: .attempts) {
+            attempts = v
+        }
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -37,6 +40,9 @@ extension GenerationConstraints: Codable {
         if hasDeterminism {
             try container.encode(determinism, forKey: .determinism)
         }
+        if hasAttempts {
+            try container.encode(attempts, forKey: .attempts)
+        }
     }
 
     enum CodingKeys: CodingKey {
@@ -45,6 +51,7 @@ extension GenerationConstraints: Codable {
         case regenerationAttemptsForConsecutiveDay
         case regenerationAttemptsThreshold
         case determinism
+        case attempts
     }
 }
 #endif

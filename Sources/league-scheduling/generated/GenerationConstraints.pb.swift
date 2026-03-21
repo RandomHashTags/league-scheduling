@@ -105,6 +105,16 @@ public struct LitLeagues_Leagues_GenerationConstraints: Sendable {
   /// Clears the value of `determinism`. Subsequent reads from it will return its default value.
   public mutating func clearDeterminism() {self._determinism = nil}
 
+  /// Number of attempts to try generating the schedule. Only tries once if not provided or determinism is enabled.
+  public var attempts: UInt32 {
+    get {return _attempts ?? 0}
+    set {_attempts = newValue}
+  }
+  /// Returns true if `attempts` has been explicitly set.
+  public var hasAttempts: Bool {return self._attempts != nil}
+  /// Clears the value of `attempts`. Subsequent reads from it will return its default value.
+  public mutating func clearAttempts() {self._attempts = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -114,6 +124,7 @@ public struct LitLeagues_Leagues_GenerationConstraints: Sendable {
   fileprivate var _regenerationAttemptsForConsecutiveDay: UInt32? = nil
   fileprivate var _regenerationAttemptsThreshold: UInt32? = nil
   fileprivate var _determinism: LitLeagues_Leagues_Determinism? = nil
+  fileprivate var _attempts: UInt32? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -122,7 +133,7 @@ fileprivate let _protobuf_package = "lit_leagues.leagues"
 
 extension LitLeagues_Leagues_GenerationConstraints: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GenerationConstraints"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timeoutDelay\0\u{1}regenerationAttemptsForFirstDay\0\u{1}regenerationAttemptsForConsecutiveDay\0\u{1}regenerationAttemptsThreshold\0\u{1}determinism\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timeoutDelay\0\u{1}regenerationAttemptsForFirstDay\0\u{1}regenerationAttemptsForConsecutiveDay\0\u{1}regenerationAttemptsThreshold\0\u{1}determinism\0\u{1}attempts\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -135,6 +146,7 @@ extension LitLeagues_Leagues_GenerationConstraints: SwiftProtobuf.Message, Swift
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self._regenerationAttemptsForConsecutiveDay) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self._regenerationAttemptsThreshold) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._determinism) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self._attempts) }()
       default: break
       }
     }
@@ -160,6 +172,9 @@ extension LitLeagues_Leagues_GenerationConstraints: SwiftProtobuf.Message, Swift
     try { if let v = self._determinism {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
+    try { if let v = self._attempts {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -169,6 +184,7 @@ extension LitLeagues_Leagues_GenerationConstraints: SwiftProtobuf.Message, Swift
     if lhs._regenerationAttemptsForConsecutiveDay != rhs._regenerationAttemptsForConsecutiveDay {return false}
     if lhs._regenerationAttemptsThreshold != rhs._regenerationAttemptsThreshold {return false}
     if lhs._determinism != rhs._determinism {return false}
+    if lhs._attempts != rhs._attempts {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

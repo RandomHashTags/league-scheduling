@@ -6,7 +6,8 @@ extension GenerationConstraints {
         regenerationAttemptsForFirstDay: UInt32,
         regenerationAttemptsForConsecutiveDay: UInt32,
         regenerationAttemptsThreshold: UInt32,
-        determinism: LitLeagues_Leagues_Determinism?
+        determinism: LitLeagues_Leagues_Determinism?,
+        attempts: UInt32
     ) {
         self.timeoutDelay = timeoutDelay
         self.regenerationAttemptsForFirstDay = regenerationAttemptsForFirstDay
@@ -15,6 +16,7 @@ extension GenerationConstraints {
         if let determinism {
             self.determinism = determinism
         }
+        self.attempts = attempts
     }
 }
 
@@ -25,6 +27,7 @@ extension GenerationConstraints {
         regenerationAttemptsForFirstDay: 100,
         regenerationAttemptsForConsecutiveDay: 100,
         regenerationAttemptsThreshold: 10_000,
-        determinism: nil
+        determinism: nil,
+        attempts: 1
     )
 }

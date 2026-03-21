@@ -25,14 +25,14 @@ extension AssignmentState {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             allAvailableMatchups: allAvailableMatchups
         )
-        recalculateAllRemainingAllocations(
+        recalculateAllPossibleAllocations(
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
             canPlayAt: canPlayAt
         )
         #if LOG
-        print("unassign;day=\(day);matchup=\(matchup);availableMatchups.count=\(availableMatchups.count);remainingAllocations=\(remainingAllocations.map { $0.count })")
+        print("unassign;day=\(day);matchup=\(matchup);availableMatchups.count=\(availableMatchups.count);possibleAllocations=\(possibleAllocations.map { $0.count })")
         #endif
     }
 }

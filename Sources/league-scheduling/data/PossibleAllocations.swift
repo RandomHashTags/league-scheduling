@@ -1,36 +1,36 @@
 
 // MARK: New Day
 extension AssignmentState {
-    mutating func recalculateNewDayRemainingAllocations(
+    mutating func recalculateNewDayPossibleAllocations(
         entriesCount: Int
     ) {
-        remainingAllocations = .init(repeating: availableSlots, count: entriesCount)
+        possibleAllocations = .init(repeating: availableSlots, count: entriesCount)
         var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
         availableMatchups.forEach { matchup in
-            recalculateNewDayRemainingAllocations(
+            recalculateNewDayPossibleAllocations(
                 for: matchup,
                 cached: &cached
             )
         }
         #if LOG
-        print("RemainingAllocations;recalculateNewDayRemainingAllocations;remainingAllocations=\(remainingAllocations.map { $0.count })")
+        print("PossibleAllocations;recalculateNewDayPossibleAllocations;possibleAllocations=\(possibleAllocations.map { $0.count })")
         #endif
     }
 
-    private mutating func recalculateNewDayRemainingAllocations(
+    private mutating func recalculateNewDayPossibleAllocations(
         for pair: MatchupPair,
         cached: inout Set<Entry.IDValue>
     ) {
-        recalculateNewDayRemainingAllocations(
+        recalculateNewDayPossibleAllocations(
             for: pair.team1,
             cached: &cached
         )
-        recalculateNewDayRemainingAllocations(
+        recalculateNewDayPossibleAllocations(
             for: pair.team2,
             cached: &cached
         )
     }
-    private mutating func recalculateNewDayRemainingAllocations(
+    private mutating func recalculateNewDayPossibleAllocations(
         for team: Entry.IDValue,
         cached: inout Set<Entry.IDValue>
     ) {
@@ -46,13 +46,13 @@ extension AssignmentState {
                 available.removeMember(slot)
             }
         }
-        remainingAllocations[unchecked: team] = available
+        possibleAllocations[unchecked: team] = available
     }
 }
 
 // MARK: All
 extension AssignmentState {
-    mutating func recalculateAllRemainingAllocations(
+    mutating func recalculateAllPossibleAllocations(
         day: DayIndex,
         entriesCount: Int,
         gameGap: GameGap.TupleValue,
@@ -60,7 +60,7 @@ extension AssignmentState {
     ) {
         var cached = Set<Entry.IDValue>(minimumCapacity: entriesCount)
         availableMatchups.forEach { matchup in
-            recalculateRemainingAllocations(
+            recalculatePossibleAllocations(
                 day: day,
                 for: matchup,
                 cached: &cached,
@@ -69,25 +69,25 @@ extension AssignmentState {
             )
         }
         #if LOG
-        print("RemainingAllocations;recalculateAllRemainingAllocations;remainingAllocations=\(remainingAllocations.map { $0.count })")
+        print("PossibleAllocations;recalculateAllPossibleAllocations;possibleAllocations=\(possibleAllocations.map { $0.count })")
         #endif
     }
 
-    private mutating func recalculateRemainingAllocations(
+    private mutating func recalculatePossibleAllocations(
         day: DayIndex,
         for pair: MatchupPair,
         cached: inout Set<Entry.IDValue>,
         gameGap: GameGap.TupleValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
-        recalculateRemainingAllocations(
+        recalculatePossibleAllocations(
             day: day,
             for: pair.team1,
             cached: &cached,
             gameGap: gameGap,
             canPlayAt: canPlayAt
         )
-        recalculateRemainingAllocations(
+        recalculatePossibleAllocations(
             day: day,
             for: pair.team2,
             cached: &cached,
@@ -96,7 +96,7 @@ extension AssignmentState {
         )
     }
 
-    private mutating func recalculateRemainingAllocations(
+    private mutating func recalculatePossibleAllocations(
         day: DayIndex,
         for team: Entry.IDValue,
         cached: inout Set<Entry.IDValue>,
@@ -133,6 +133,6 @@ extension AssignmentState {
                 available.removeMember(slot)
             }
         }
-        remainingAllocations[unchecked: team] = available
+        possibleAllocations[unchecked: team] = available
     }
 }

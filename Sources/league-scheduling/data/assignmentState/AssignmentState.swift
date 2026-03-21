@@ -11,10 +11,10 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
 
-    /// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
+    /// Current possible slot allocations for entries.
     /// 
-    /// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
-    var remainingAllocations:Config.RemainingAllocations
+    /// - Usage: [`Entry.IDValue`: `possible slot allocations`]
+    var possibleAllocations:Config.PossibleAllocations
 
     /// When entries can play against each other again.
     /// 
@@ -76,7 +76,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,
@@ -107,7 +107,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,
@@ -141,7 +141,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
 
     /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
-    var remainingAllocations:Config.RemainingAllocations
+    var possibleAllocations:Config.PossibleAllocations
     var recurringDayLimits:RecurringDayLimits
     var assignedTimes:AssignedTimes
     var assignedLocations:AssignedLocations
@@ -193,7 +193,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,

@@ -62,13 +62,13 @@ extension AssignmentState {
         availableMatchups.removeMember(.init(team1: matchup.team2, team2: matchup.team1)) // necessary because the pair's home/away could've been swapped due to balancing
         if playsAtTimes[unchecked: home].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: home].removeAll()
+            possibleAllocations[unchecked: home].removeAll()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != home && $0.team2 != home })
         }
         if playsAtTimes[unchecked: away].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: away].removeAll()
+            possibleAllocations[unchecked: away].removeAll()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != away && $0.team2 != away })
         }
@@ -99,7 +99,7 @@ extension AssignmentState {
         print(string)
         #endif
 
-        recalculateAllRemainingAllocations(
+        recalculateAllPossibleAllocations(
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,

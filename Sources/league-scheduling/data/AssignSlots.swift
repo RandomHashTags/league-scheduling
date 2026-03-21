@@ -32,7 +32,7 @@ extension LeagueScheduleData {
         print("AssignSlots;selectAndAssignSlots;assignmentState.matchupDuration=\(assignmentState.matchupDuration);sameLocationIfB2B=\(sameLocationIfB2B);gameGap=\(gameGap);defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay)")
         #endif
 
-        assignmentState.recalculateAllRemainingAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAt: canPlayAt)
+        assignmentState.recalculateAllPossibleAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAt: canPlayAt)
         if gameGap.min == 1 && gameGap.max == 1 && defaultMaxEntryMatchupsPerGameDay != 1 { // back 2 back
             return try assignSlotsB2B(canPlayAt: canPlayAt)
         }
@@ -150,14 +150,14 @@ extension LeagueScheduleData {
                         assignmentState.prioritizedEntries.insertMember(matchup.team1)
                         assignmentState.prioritizedEntries.insertMember(matchup.team2)
                     }
-                    assignmentState.recalculateAllRemainingAllocations(
+                    assignmentState.recalculateAllPossibleAllocations(
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,
                         canPlayAt: canPlayAt
                     )
                     #if LOG
-                    print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
+                    print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));possibleAllocations=\(assignmentState.possibleAllocations.map { $0.map({ $0.description }) })")
                     #endif
                     var disallowedTimes = Config.TimeSet(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay))
                     for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
@@ -170,7 +170,7 @@ extension LeagueScheduleData {
                                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                                 allAvailableMatchups: divisionMatchups
                             )
-                            assignmentState.recalculateAllRemainingAllocations(
+                            assignmentState.recalculateAllPossibleAllocations(
                                 day: day,
                                 entriesCount: entriesCount,
                                 gameGap: gameGap,
@@ -199,7 +199,7 @@ extension LeagueScheduleData {
                             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                             allAvailableMatchups: divisionMatchups
                         )
-                        assignmentState.recalculateAllRemainingAllocations(
+                        assignmentState.recalculateAllPossibleAllocations(
                             day: day,
                             entriesCount: entriesCount,
                             gameGap: gameGap,
@@ -211,7 +211,7 @@ extension LeagueScheduleData {
                         // successfully assigned matchup block of <amount> for <division>
                     }
                     assignmentState.availableSlots = slots.filter { !assignedSlots.contains($0) }
-                    assignmentState.recalculateAllRemainingAllocations(
+                    assignmentState.recalculateAllPossibleAllocations(
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,
@@ -272,7 +272,7 @@ extension LeagueScheduleData {
         pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
-        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")
         #endif
         return assignmentState.assignMatchupPair(
             pair,
@@ -316,7 +316,7 @@ extension LeagueScheduleData {
         pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
-        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")
         #endif
         return assignmentState.assignMatchupPair(
             pair,

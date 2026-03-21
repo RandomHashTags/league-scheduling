@@ -9,7 +9,10 @@ protocol ScheduleConfiguration: Sendable, ~Copyable {
     associatedtype RedistributableMatchupSet:AbstractSet where RedistributableMatchupSet.Element == RedistributableMatchup
     associatedtype FlippableMatchupSet:AbstractSet where FlippableMatchupSet.Element == FlippableMatchup
 
-    typealias RemainingAllocations = ContiguousArray<AvailableSlotSet>
+    /// Current possible slot allocations for entries.
+    /// 
+    /// - Usage: [`Entry.IDValue`: `possible slot allocations`]
+    typealias PossibleAllocations = ContiguousArray<AvailableSlotSet>
     typealias PlaysAt = ContiguousArray<AvailableSlotSet>
     typealias PlaysAtTimes = ContiguousArray<TimeSet>
 }

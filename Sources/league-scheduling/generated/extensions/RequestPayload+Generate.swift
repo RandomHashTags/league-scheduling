@@ -64,49 +64,49 @@ extension RequestPayload {
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: ScheduleConfig<
+                c: (
                     BitSet64<DayIndex>,
                     BitSet64<TimeIndex>,
                     BitSet64<LocationIndex>,
                     BitSet64<Entry.IDValue>
-                >.self
+                ).self
             )
         } else if gameDays <= 128 && settings.timeSlots <= 128 && settings.locations <= 128 && entries.count <= 128 {
             return try await generate(
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: ScheduleConfig<
+                c: (
                     BitSet128<DayIndex>,
                     BitSet128<TimeIndex>,
                     BitSet128<LocationIndex>,
                     BitSet128<Entry.IDValue>
-                >.self
+                ).self
             )
         } else {
             return try await generate(
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: ScheduleConfig<
+                c: (
                     Set<DayIndex>,
                     Set<TimeIndex>,
                     Set<LocationIndex>,
                     Set<Entry.IDValue>
-                >.self
+                ).self
             )
         }
     }
 }
 
 extension RequestPayload {
-    private func generate<Config: ScheduleConfiguration>(
+    private func generate<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes, EntryIDSet: SetOfEntryIDs>(
         defaultGameGap: GameGap,
         divisionsCount: Int,
         startingDayOfWeek: DayOfWeek,
-        c: Config.Type
+        c: (DaySet, TimeSet, LocationSet, EntryIDSet).Type
     ) async throws(LeagueError) -> LeagueGenerationResult {
-        let divisionDefaults:DivisionDefaults<Config.DaySet, Config.TimeSet, Config.LocationSet> = loadDivisionDefaults(divisionsCount: divisionsCount)
+        let divisionDefaults:DivisionDefaults<DaySet, TimeSet, LocationSet> = loadDivisionDefaults(divisionsCount: divisionsCount)
         var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
         let entries = try parseEntries(
             divisionsCount: divisionsCount,
@@ -129,7 +129,7 @@ extension RequestPayload {
             maximumPlayableMatchups: settings.maximumPlayableMatchups.array
         )
 
-        let timesSet = Config.TimeSet(0..<settings.timeSlots)
+        let timesSet = TimeSet(0..<settings.timeSlots)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
@@ -146,23 +146,37 @@ extension RequestPayload {
                 }
             }
         }
-        var balancedTimes:Config.TimeSet
-        var balancedLocations:Config.LocationSet
+        var balancedTimes:TimeSet
+        var balancedLocations:LocationSet
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
             balancedTimes = .init()
         }
         if settings.balanceLocationStrictness != .lenient {
-            balancedLocations = Config.LocationSet(0..<settings.locations)
+            balancedLocations = LocationSet(0..<settings.locations)
         } else {
             balancedLocations = .init()
         }
+        // TODO: fix
         return try await generate(
             divisions: divisions,
             entries: entries,
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
-            general: GeneralSettings.Runtime<Config>(
+            general: GeneralSettings.Runtime<
+                    ScheduleConfig<
+                        SystemRandomNumberGenerator,
+                        DaySet,
+                        TimeSet,
+                        LocationSet,
+                        EntryIDSet,
+                        Set<AvailableSlot>,
+                        Set<MatchupPair>,
+                        Set<Matchup>,
+                        Set<RedistributableMatchup>,
+                        Set<FlippableMatchup>
+                    >
+                >(
                 gameGap: defaultGameGap,
                 timeSlots: settings.timeSlots,
                 startingTimes: settings.startingTimes.times,

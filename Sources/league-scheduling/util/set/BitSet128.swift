@@ -1,14 +1,18 @@
 
-/// - Warning: Only supports a maximum of 64 entries!
-/// - Warning: Only supports integers < `64`!
-struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
-    private(set) var storage:UInt64
+/// - Warning: Only supports a maximum of 128 entries!
+/// - Warning: Only supports integers < `128`!
+struct BitSet128<Element: FixedWidthInteger & Sendable>: Sendable {
+    private(set) var storage:UInt128
 
     init() {
         storage = 0
     }
 
-    init(storage: UInt64) {
+    init(minimumCapacity: Int) {
+        storage = 0
+    }
+
+    init(storage: UInt128) {
         self.storage = storage
     }
 
@@ -16,12 +20,6 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
         storage = 0
         for e in collection {
             insertMember(e)
-        }
-    }
-    init<T: AbstractSet>(_ set: T) where T.Element == Element {
-        storage = 0
-        set.forEach {
-            insertMember($0)
         }
     }
 
@@ -38,28 +36,28 @@ struct BitSet64<Element: FixedWidthInteger & Sendable>: Sendable {
 }
 
 // MARK: contains
-extension BitSet64 {
+extension BitSet128 {
     func contains(_ member: Element) -> Bool {
         (storage & (1 << member)) != 0
     }
 }
 
 // MARK: insert
-extension BitSet64 {
+extension BitSet128 {
     mutating func insertMember(_ member: Element) {
         storage |= (1 << member)
     }
 }
 
 // MARK: remove
-extension BitSet64 {
+extension BitSet128 {
     mutating func removeMember(_ member: Element) {
         storage &= ~(1 << member)
     }
 }
 
 // MARK: remove all
-extension BitSet64 {
+extension BitSet128 {
     mutating func removeAll() {
         storage = 0
     }
@@ -76,7 +74,7 @@ extension BitSet64 {
 }
 
 // MARK: iterator
-extension BitSet64 {
+extension BitSet128 {
     func forEach(_ body: (Element) throws -> Void) rethrows {
         var temp = storage
         while temp != 0 {
@@ -99,14 +97,14 @@ extension BitSet64 {
 }
 
 // MARK: form union
-extension BitSet64 {
+extension BitSet128 {
     mutating func formUnion(_ bitSet: Self) {
         storage |= bitSet.storage
     }
 }
 
 // MARK: Random
-extension BitSet64 {
+extension BitSet128 {
     func randomElement() -> Element? {
         guard storage != 0 else { return nil }
         let skip = Int.random(in: 0..<count)
@@ -116,24 +114,71 @@ extension BitSet64 {
         }
         return Element(temp.trailingZeroBitCount)
     }
+    func randomElement(using: inout some RandomNumberGenerator) -> Element? {
+        guard storage != 0 else { return nil }
+        let skip = Int.random(in: 0..<count, using: &using)
+        var temp = storage
+        for _ in 0..<skip {
+            temp &= temp - 1
+        }
+        return Element(temp.trailingZeroBitCount)
+    }
 }
 
 // MARK: AbstractSet
-extension BitSet64: AbstractSet {}
-extension BitSet64: SetOfUInt32 where Element == UInt32 {}
+extension BitSet128: AbstractSet {
+    func filter(_ closure: (Element) throws -> Bool) rethrows -> Self {
+        var temp = UInt128(0)
+        try forEach { i in
+            if try closure(i) {
+                temp |= 1 << i
+            }
+        }
+        return .init(storage: temp)
+    }
 
-extension BitSet64: SetOfEntryIDs where Element == Entry.IDValue {
-    func availableMatchupPairs(
+    var first: Element? {
+        let e = storage.trailingZeroBitCount
+        guard e > 0 else { return nil }
+        return 1 << e
+    }
+
+    func first(where condition: (Element) throws -> Bool) rethrows -> Element? {
+        return try forEachWithReturn { i in
+            if try condition(i) {
+                return 1 << i
+            }
+            return nil
+        }
+    }
+
+    func map<Result>(_ body: (Element) throws -> Result) rethrows -> [Result] {
+        var array = [Result]()
+        array.reserveCapacity(count)
+        try forEach {
+            try array.append(body($0))
+        }
+        return array
+    }
+
+    func intersection(_ other: borrowing Self) -> Self  {
+        return .init(storage: storage & other.storage)
+    }
+}
+extension BitSet128: SetOfUInt32 where Element == UInt32 {}
+
+extension BitSet128: SetOfEntryIDs where Element == Entry.IDValue {
+    func availableMatchupPairs<MatchupPairSet: AbstractSet>(
         assignedEntryHomeAways: AssignedEntryHomeAways,
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
-    ) -> Set<MatchupPair> {
-        var pairs = Set<MatchupPair>(minimumCapacity: (count-1) * 2)
+    ) -> MatchupPairSet where MatchupPairSet.Element == MatchupPair {
+        var pairs = MatchupPairSet(minimumCapacity: (count-1) * 2)
         forEach { home in
             let assignedHome = assignedEntryHomeAways[unchecked: home]
             let maxSameOpponentMatchups = maxSameOpponentMatchups[unchecked: home]
             forEach { away in
                 if away > home, assignedHome[unchecked: away].sum < maxSameOpponentMatchups[unchecked: away] {
-                    pairs.insert(.init(team1: home, team2: away))
+                    pairs.insertMember(.init(team1: home, team2: away))
                 }
             }
         }

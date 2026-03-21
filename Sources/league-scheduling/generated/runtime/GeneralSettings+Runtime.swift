@@ -101,15 +101,15 @@ extension GeneralSettings.Runtime {
 
 // MARK: Available slots
 extension GeneralSettings.Runtime {
-    func availableSlots() -> Set<AvailableSlot> {
-        var slots = Set<AvailableSlot>(minimumCapacity: timeSlots * locations)
+    func availableSlots() -> Config.AvailableSlotSet {
+        var slots = Config.AvailableSlotSet(minimumCapacity: Int(timeSlots) * locations)
         if let exclusivities = locationTimeExclusivities {
             for location in 0..<locations {
                 if let timeExclusives = exclusivities[uncheckedPositive: location] {
                     for time in 0..<timeSlots {
                         if timeExclusives.contains(time) {
                             let slot = AvailableSlot(time: time, location: location)
-                            slots.insert(slot)
+                            slots.insertMember(slot)
                         }
                     }
                 }
@@ -118,7 +118,7 @@ extension GeneralSettings.Runtime {
             for time in 0..<timeSlots {
                 for location in 0..<locations {
                     let slot = AvailableSlot(time: time, location: location)
-                    slots.insert(slot)
+                    slots.insertMember(slot)
                 }
             }
         }

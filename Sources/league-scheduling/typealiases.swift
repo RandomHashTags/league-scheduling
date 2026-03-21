@@ -40,11 +40,6 @@ typealias AssignedEntryHomeAways = ContiguousArray<ContiguousArray<HomeAwayValue
 typealias MaximumSameOpponentMatchups = ContiguousArray<ContiguousArray<MaximumSameOpponentMatchupsCap>>
 typealias MaximumSameOpponentMatchupsCap = UInt32
 
-/// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
-/// 
-/// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
-typealias RemainingAllocations = ContiguousArray<Set<AvailableSlot>>
-
 /// When entries can play against each other again.
 /// 
 /// - Usage: [`Entry.IDValue`: [opponent `Entry.IDValue`: `RecurringDayLimitInterval`]]
@@ -69,8 +64,3 @@ typealias MaximumTimeAllocations = ContiguousArray<ContiguousArray<TimeIndex>>
 /// 
 /// - Usage: [`Entry.IDValue`: [`LocationIndex`: `maximum allowed at LocationIndex`]]
 typealias MaximumLocationAllocations = ContiguousArray<ContiguousArray<LocationIndex>>
-
-/// Slots where an entry has already played at for the `day`.
-/// 
-/// - Usage: [`Entry.IDValue`: `Set<AvailableSlot>`]
-typealias PlaysAt = ContiguousArray<Set<AvailableSlot>>

@@ -19,7 +19,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Config.MatchupPairSet>
 
     var assignmentState:AssignmentStateCopyable<Config>
     var prioritizeEarlierTimes = false
@@ -61,14 +61,20 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         }
         self.entryDivisions = entryDivisions
 
-        failedMatchupSelections = .init(repeating: Set(), count: entriesCount)
+        failedMatchupSelections = .init(repeating: .init(), count: entriesCount)
+        let playsAt = ContiguousArray<Config.AvailableSlotSet>(
+            repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount
+        )
+        let playsAtTimes = PlaysAtTimesArray<Config.TimeSet>(
+            times: .init(repeating: .init(minimumCapacity: Int(defaultMaxEntryMatchupsPerGameDay)), count: entriesCount)
+        )
         assignmentState = .init(
             entries: entries,
             startingTimes: startingTimes,
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: .init(repeating: 0, count: entriesCount),
-            remainingAllocations: [],
+            possibleAllocations: [],
             recurringDayLimits: .init(repeating: .init(repeating: 0, count: entriesCount), count: entriesCount),
             assignedTimes: .init(repeating: .init(repeating: 0, count: maxStartingTimes), count: entriesCount),
             assignedLocations: .init(repeating: .init(repeating: 0, count: maxLocations), count: entriesCount),
@@ -79,15 +85,15 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
             homeMatchups: .init(repeating: 0, count: entriesCount),
             awayMatchups: .init(repeating: 0, count: entriesCount),
             maxSameOpponentMatchups: maxSameOpponentMatchups,
-            allMatchups: [],
+            allMatchups: .init(),
             allDivisionMatchups: [],
-            availableMatchups: [],
+            availableMatchups: .init(),
             prioritizedEntries: prioritizedEntries,
-            availableSlots: [],
-            playsAt: .init(repeating: Set(minimumCapacity: defaultMaxEntryMatchupsPerGameDay), count: entriesCount),
-            playsAtTimes: .init(repeating: .init(), count: entriesCount),
+            availableSlots: .init(),
+            playsAt: playsAt,
+            playsAtTimes: playsAtTimes,
             playsAtLocations: .init(repeating: .init(), count: entriesCount),
-            matchups: [],
+            matchups: .init(),
             shuffleHistory: []
         )
     }

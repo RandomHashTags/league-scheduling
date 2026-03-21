@@ -11,7 +11,7 @@ extension LeagueScheduleData {
             }
             // TODO: pick the optimal combination that should be selected?
             combinationLoop: for combination in allowedDivisionCombinations {
-                var assignedSlots = Set<AvailableSlot>()
+                var assignedSlots = Config.AvailableSlotSet()
                 var combinationTimeAllocations:ContiguousArray<Config.TimeSet> = .init(
                     repeating: .init(),
                     count: combination.first?.count ?? 10
@@ -21,18 +21,18 @@ extension LeagueScheduleData {
                     let divisionMatchups = assignmentState.allDivisionMatchups[unchecked: division]
                     assignmentState.availableMatchups = divisionMatchups
                     assignmentState.prioritizedEntries.removeAllKeepingCapacity()
-                    for matchup in assignmentState.availableMatchups {
+                    assignmentState.availableMatchups.forEach { matchup in
                         assignmentState.prioritizedEntries.insertMember(matchup.team1)
                         assignmentState.prioritizedEntries.insertMember(matchup.team2)
                     }
-                    assignmentState.recalculateAllRemainingAllocations(
+                    assignmentState.recalculateAllPossibleAllocations(
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,
                         canPlayAt: canPlayAt
                     )
                     #if LOG
-                    print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));remainingAllocations=\(assignmentState.remainingAllocations.map { $0.map({ $0.description }) })")
+                    print("assignSlots;b2b;division=\(division);divisionCombination=\(divisionCombination);matchups.count=\(assignmentState.matchups.count);availableSlots=\(assignmentState.availableSlots.map({ $0.description }));possibleAllocations=\(assignmentState.possibleAllocations.map { $0.map({ $0.description }) })")
                     #endif
                     var disallowedTimes = Config.TimeSet()
                     for (divisionCombinationIndex, amount) in divisionCombination.enumerated() {
@@ -45,7 +45,7 @@ extension LeagueScheduleData {
                                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                                 allAvailableMatchups: divisionMatchups
                             )
-                            assignmentState.recalculateAllRemainingAllocations(
+                            assignmentState.recalculateAllPossibleAllocations(
                                 day: day,
                                 entriesCount: entriesCount,
                                 gameGap: gameGap,
@@ -63,10 +63,10 @@ extension LeagueScheduleData {
                             #endif
                             continue combinationLoop
                         }
-                        for matchup in matchups {
+                        matchups.forEach { matchup in
                             disallowedTimes.insertMember(matchup.time)
                             combinationTimeAllocations[divisionCombinationIndex].insertMember(matchup.time)
-                            assignedSlots.insert(matchup.slot)
+                            assignedSlots.insertMember(matchup.slot)
                         }
                         assignmentState.availableSlots = slots.filter { !disallowedTimes.contains($0.time) }
                         assignmentState.recalculateAvailableMatchups(
@@ -74,7 +74,7 @@ extension LeagueScheduleData {
                             entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                             allAvailableMatchups: divisionMatchups
                         )
-                        assignmentState.recalculateAllRemainingAllocations(
+                        assignmentState.recalculateAllPossibleAllocations(
                             day: day,
                             entriesCount: entriesCount,
                             gameGap: gameGap,
@@ -86,7 +86,7 @@ extension LeagueScheduleData {
                         // successfully assigned matchup block of <amount> for <division>
                     }
                     assignmentState.availableSlots = slots.filter { !assignedSlots.contains($0) }
-                    assignmentState.recalculateAllRemainingAllocations(
+                    assignmentState.recalculateAllPossibleAllocations(
                         day: day,
                         entriesCount: entriesCount,
                         gameGap: gameGap,

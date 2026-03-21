@@ -7,9 +7,9 @@ struct SelectSlotB2B: SelectSlotProtocol, ~Copyable {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: ContiguousArray<LocationSet>,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         filter(
             team1: team1,
@@ -32,8 +32,8 @@ extension SelectSlotB2B {
     private func filter<TimeSet: SetOfTimeIndexes>(
         team1: Entry.IDValue,
         team2: Entry.IDValue,
-        playsAtTimes: ContiguousArray<TimeSet>,
-        playableSlots: inout Set<AvailableSlot>
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) {
         //print("filterSlotBack2Back;playsAtTimes[unchecked: team1].isEmpty=\(playsAtTimes[unchecked: team1].isEmpty);playsAtTimes[unchecked: team2].isEmpty=\(playsAtTimes[unchecked: team2].isEmpty)")
         if playsAtTimes[unchecked: team1].isEmpty && playsAtTimes[unchecked: team2].isEmpty {

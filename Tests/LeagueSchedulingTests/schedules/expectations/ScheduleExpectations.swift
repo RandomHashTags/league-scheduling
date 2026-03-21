@@ -55,7 +55,7 @@ extension ScheduleExpectations {
                 matchupsPerDay[unchecked: dayIndex] = UInt32(matchups.count)
 
                 var b2bMatchupsAtDifferentLocations = Set<ValidLeagueMatchup>()
-                var assignedSlots = [Set<AvailableSlot>](repeating: [], count: entriesCount)
+                var assignedSlots = [Config.AvailableSlotSet](repeating: [], count: entriesCount)
                 for matchup in matchups {
                     let home = matchup.home
                     let away = matchup.away
@@ -184,7 +184,7 @@ extension ScheduleExpectations {
     func insertB2BSlotsAtDifferentLocations(
         dayIndex: DayIndex,
         matchup: Matchup,
-        slots: Set<AvailableSlot>,
+        slots: Config.AvailableSlotSet,
         b2bMatchupsAtDifferentLocations: inout Set<ValidLeagueMatchup>
     ) {
         for slot in slots {
@@ -237,7 +237,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     func printMatchups(
         day: Int,
-        _ matchups: Set<Matchup>
+        _ matchups: Config.MatchupSet
     ) {
         return
         let results:String = matchups.sorted(by: {

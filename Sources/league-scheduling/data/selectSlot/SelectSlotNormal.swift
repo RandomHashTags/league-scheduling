@@ -5,9 +5,9 @@ struct SelectSlotNormal: SelectSlotProtocol, ~Copyable {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: ContiguousArray<LocationSet>,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         return Self.select(
             team1: team1,
@@ -26,7 +26,7 @@ extension SelectSlotNormal {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playableSlots: Set<AvailableSlot>
+        playableSlots: borrowing some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let team1Times = assignedTimes[unchecked: team1]
@@ -48,14 +48,18 @@ extension SelectSlotNormal {
         team1Locations: AssignedLocations.Element,
         team2Times: AssignedTimes.Element,
         team2Locations: AssignedLocations.Element,
-        playableSlots: Set<AvailableSlot>
+        playableSlots: borrowing some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
-        var selected = getSelectedSlot(playableSlots[playableSlots.startIndex], team1Times, team1Locations, team2Times, team2Locations)
-        for slot in playableSlots[playableSlots.index(after: playableSlots.startIndex)...] {
-            let minimum = getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations)
-            if minimum <= selected.minimumAssigned {
-                selected.slot = slot
-                selected.minimumAssigned = minimum
+        var selected:SelectedSlot! = nil
+        playableSlots.forEach { slot in
+            if selected == nil {
+                selected = getSelectedSlot(slot, team1Times, team1Locations, team2Times, team2Locations)
+            } else {
+                let minimum = getMinimumAssigned(slot, team1Times, team1Locations, team2Times, team2Locations)
+                if minimum <= selected.minimumAssigned {
+                    selected.slot = slot
+                    selected.minimumAssigned = minimum
+                }
             }
         }
         return selected.slot

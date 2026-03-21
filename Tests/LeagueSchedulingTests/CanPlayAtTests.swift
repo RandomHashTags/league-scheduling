@@ -98,7 +98,7 @@ extension CanPlayAtTests {
         ]
         var time:TimeIndex = 0
         var location:LocationIndex = 0
-        var playsAt:Set<AvailableSlot> = []
+        var playsAt:Config.AvailableSlotSet = []
         var gameGap = GameGap.upTo(5).minMax
         
         #expect(CanPlayAtWithTravelDurations.test(

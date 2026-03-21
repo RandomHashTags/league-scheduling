@@ -49,27 +49,27 @@ extension AssignmentState {
 
         incrementAssignData(home: home, away: away, slot: slot)
         insertPlaysAt(home: home, away: away, slot: slot)
-        availableSlots.remove(slot)
+        availableSlots.removeMember(slot)
         let leagueMatchup = Matchup(
             time: slot.time,
             location: slot.location,
             home: home,
             away: away
         )
-        matchups.insert(leagueMatchup)
+        matchups.insertMember(leagueMatchup)
 
-        availableMatchups.remove(matchup)
+        availableMatchups.removeMember(matchup)
         // TODO: fix (why is the following line necessary | it fixes an issue that allowed matchups to exceed the maximumSameOpponentsMatchupsCap, but availableMatchups still contains matchups that shouldn't be scheduled when scheduling b2b)
-        availableMatchups.remove(.init(team1: matchup.team2, team2: matchup.team1))
+        availableMatchups.removeMember(.init(team1: matchup.team2, team2: matchup.team1))
         if playsAtTimes[unchecked: home].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: home].removeAllKeepingCapacity()
+            possibleAllocations[unchecked: home].removeAllKeepingCapacity()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != home && $0.team2 != home })
         }
         if playsAtTimes[unchecked: away].count == entryMatchupsPerGameDay {
             #if LOG
-            remainingAllocations[unchecked: away].removeAllKeepingCapacity()
+            possibleAllocations[unchecked: away].removeAllKeepingCapacity()
             #endif
             availableMatchups = availableMatchups.filter({ $0.team1 != away && $0.team2 != away })
         }
@@ -100,7 +100,7 @@ extension AssignmentState {
         print(string)
         #endif
 
-        recalculateAllRemainingAllocations(
+        recalculateAllPossibleAllocations(
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
@@ -133,10 +133,10 @@ extension AssignmentState {
         away: Entry.IDValue,
         slot: AvailableSlot
     ) {
-        playsAt[unchecked: home].insert(slot)
-        playsAt[unchecked: away].insert(slot)
-        playsAtTimes[unchecked: home].insertMember(slot.time)
-        playsAtTimes[unchecked: away].insertMember(slot.time)
+        playsAt[unchecked: home].insertMember(slot)
+        playsAt[unchecked: away].insertMember(slot)
+        playsAtTimes.insertMember(entryID: home, member: slot.time)
+        playsAtTimes.insertMember(entryID: away, member: slot.time)
         playsAtLocations[unchecked: home].insertMember(slot.location)
         playsAtLocations[unchecked: away].insertMember(slot.location)
     }

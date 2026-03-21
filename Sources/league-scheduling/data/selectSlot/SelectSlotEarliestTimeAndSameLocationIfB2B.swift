@@ -5,9 +5,9 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: ContiguousArray<LocationSet>,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot? {
         guard !playableSlots.isEmpty else { return nil }
         let homePlaysAtTimes = playsAtTimes[unchecked: team1]
@@ -52,7 +52,7 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
             } else {
                 nonBackToBackSlots.append(targetSlot)
             }
-            playableSlots.remove(targetSlot)
+            playableSlots.removeMember(targetSlot)
         }
         return nonBackToBackSlots.first
     }

@@ -5,8 +5,8 @@ protocol SelectSlotProtocol: Sendable, ~Copyable {
         team2: Entry.IDValue,
         assignedTimes: AssignedTimes,
         assignedLocations: AssignedLocations,
-        playsAtTimes: ContiguousArray<TimeSet>,
+        playsAtTimes: borrowing PlaysAtTimesArray<TimeSet>,
         playsAtLocations: ContiguousArray<LocationSet>,
-        playableSlots: inout Set<AvailableSlot>
+        playableSlots: inout some SetOfAvailableSlots & ~Copyable
     ) -> AvailableSlot?
 }

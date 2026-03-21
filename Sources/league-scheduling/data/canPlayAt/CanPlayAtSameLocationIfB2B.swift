@@ -7,7 +7,7 @@ struct CanPlayAtSameLocationIfB2B: CanPlayAtProtocol, ~Copyable {
         location: LocationIndex,
         allowedTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         allowedLocations: borrowing some SetOfLocationIndexes & ~Copyable,
-        playsAt: PlaysAt.Element,
+        playsAt: borrowing some SetOfAvailableSlots & ~Copyable,
         playsAtTimes: borrowing some SetOfTimeIndexes & ~Copyable,
         playsAtLocations: borrowing some SetOfLocationIndexes & ~Copyable,
         timeNumber: UInt8,

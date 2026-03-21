@@ -1,37 +1,37 @@
 
 // MARK: New Day
 extension AssignmentState {
-    mutating func recalculateNewDayRemainingAllocations(
+    mutating func recalculateNewDayPossibleAllocations(
         entriesCount: Int
     ) {
-        remainingAllocations = .init(repeating: availableSlots, count: entriesCount)
+        possibleAllocations = .init(repeating: availableSlots, count: entriesCount)
         var cached = Config.EntryIDSet()
         cached.reserveCapacity(entriesCount)
-        for matchup in availableMatchups {
-            recalculateNewDayRemainingAllocations(
+        availableMatchups.forEach { matchup in
+            recalculateNewDayPossibleAllocations(
                 for: matchup,
                 cached: &cached
             )
         }
         #if LOG
-        print("RemainingAllocations;recalculateNewDayRemainingAllocations;remainingAllocations=\(remainingAllocations.map { $0.count })")
+        print("PossibleAllocations;recalculateNewDayPossibleAllocations;possibleAllocations=\(possibleAllocations.map { $0.count })")
         #endif
     }
 
-    private mutating func recalculateNewDayRemainingAllocations(
+    private mutating func recalculateNewDayPossibleAllocations(
         for pair: MatchupPair,
         cached: inout Config.EntryIDSet
     ) {
-        recalculateNewDayRemainingAllocations(
+        recalculateNewDayPossibleAllocations(
             for: pair.team1,
             cached: &cached
         )
-        recalculateNewDayRemainingAllocations(
+        recalculateNewDayPossibleAllocations(
             for: pair.team2,
             cached: &cached
         )
     }
-    private mutating func recalculateNewDayRemainingAllocations(
+    private mutating func recalculateNewDayPossibleAllocations(
         for team: Entry.IDValue,
         cached: inout Config.EntryIDSet
     ) {
@@ -42,18 +42,18 @@ extension AssignmentState {
         let maxTimeNumbers = maxTimeAllocations[unchecked: team]
         let maxLocationNumbers = maxLocationAllocations[unchecked: team]
         var available = availableSlots
-        for slot in availableSlots {
+        availableSlots.forEach { slot in
             if timeNumbers[unchecked: slot.time] >= maxTimeNumbers[unchecked: slot.time] || locationNumbers[unchecked: slot.location] >= maxLocationNumbers[unchecked: slot.location] {
-                available.remove(slot)
+                available.removeMember(slot)
             }
         }
-        remainingAllocations[unchecked: team] = available
+        possibleAllocations[unchecked: team] = available
     }
 }
 
 // MARK: All
 extension AssignmentState {
-    mutating func recalculateAllRemainingAllocations(
+    mutating func recalculateAllPossibleAllocations(
         day: DayIndex,
         entriesCount: Int,
         gameGap: GameGap.TupleValue,
@@ -61,8 +61,8 @@ extension AssignmentState {
     ) {
         var cached = Config.EntryIDSet()
         cached.reserveCapacity(entriesCount)
-        for matchup in availableMatchups {
-            recalculateRemainingAllocations(
+        availableMatchups.forEach { matchup in
+            recalculatePossibleAllocations(
                 day: day,
                 for: matchup,
                 cached: &cached,
@@ -71,25 +71,25 @@ extension AssignmentState {
             )
         }
         #if LOG
-        print("RemainingAllocations;recalculateAllRemainingAllocations;remainingAllocations=\(remainingAllocations.map { $0.count })")
+        print("PossibleAllocations;recalculateAllPossibleAllocations;possibleAllocations=\(possibleAllocations.map { $0.count })")
         #endif
     }
 
-    private mutating func recalculateRemainingAllocations(
+    private mutating func recalculatePossibleAllocations(
         day: DayIndex,
         for pair: MatchupPair,
         cached: inout Config.EntryIDSet,
         gameGap: GameGap.TupleValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
     ) {
-        recalculateRemainingAllocations(
+        recalculatePossibleAllocations(
             day: day,
             for: pair.team1,
             cached: &cached,
             gameGap: gameGap,
             canPlayAt: canPlayAt
         )
-        recalculateRemainingAllocations(
+        recalculatePossibleAllocations(
             day: day,
             for: pair.team2,
             cached: &cached,
@@ -98,7 +98,7 @@ extension AssignmentState {
         )
     }
 
-    private mutating func recalculateRemainingAllocations(
+    private mutating func recalculatePossibleAllocations(
         day: DayIndex,
         for team: Entry.IDValue,
         cached: inout Config.EntryIDSet,
@@ -117,7 +117,7 @@ extension AssignmentState {
         let maxTimeNumbers = maxTimeAllocations[unchecked: team]
         let maxLocationNumbers = maxLocationAllocations[unchecked: team]
         var available = availableSlots
-        for slot in availableSlots {
+        availableSlots.forEach { slot in
             if !canPlayAt.test(
                 time: slot.time,
                 location: slot.location,
@@ -132,9 +132,9 @@ extension AssignmentState {
                 maxLocationNumber: UInt8(maxLocationNumbers[unchecked: slot.location]),
                 gameGap: gameGap
             ) {
-                available.remove(slot)
+                available.removeMember(slot)
             }
         }
-        remainingAllocations[unchecked: team] = available
+        possibleAllocations[unchecked: team] = available
     }
 }

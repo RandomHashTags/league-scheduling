@@ -6,7 +6,7 @@ extension LeagueScheduleData {
         amount: Int,
         division: Division.IDValue,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> Set<Matchup>? {
+    ) -> Config.MatchupSet? {
         if gameGap.min == 1 && gameGap.max == 1 {
             return Self.assignBlockOfMatchups(
                 amount: amount,
@@ -56,12 +56,12 @@ extension LeagueScheduleData {
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
-    ) -> Set<Matchup>? {
+    ) -> Config.MatchupSet? {
         let limit = amount * entryMatchupsPerGameDay
         var remainingPrioritizedEntries = assignmentState.prioritizedEntries
         var remainingAvailableSlots = assignmentState.availableSlots
         var localAssignmentState = assignmentState.copy()
-        localAssignmentState.matchups.removeAll(keepingCapacity: true)
+        localAssignmentState.matchups.removeAllKeepingCapacity()
         localAssignmentState.recalculateAvailableMatchups(
             day: day,
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
@@ -95,7 +95,7 @@ extension LeagueScheduleData {
         ) else { return nil }
         adjacentTimes = calculateAdjacentTimes(for: firstMatchup.time, entryMatchupsPerGameDay: entryMatchupsPerGameDay)
         localAssignmentState.availableSlots = localAssignmentState.availableSlots.filter { $0.time == firstMatchup.time }
-        localAssignmentState.recalculateAllRemainingAllocations(
+        localAssignmentState.recalculateAllPossibleAllocations(
             day: day,
             entriesCount: entriesCount,
             gameGap: gameGap,
@@ -167,7 +167,7 @@ extension LeagueScheduleData {
                 selectedEntries.contains($0.team1) && selectedEntries.contains($0.team2)
             }
             localAssignmentState.availableSlots = assignmentState.availableSlots.filter { $0.time == time }
-            localAssignmentState.recalculateAllRemainingAllocations(
+            localAssignmentState.recalculateAllPossibleAllocations(
                 day: day,
                 entriesCount: entriesCount,
                 gameGap: gameGap,
@@ -203,8 +203,8 @@ extension LeagueScheduleData {
         let previousMatchups = assignmentState.matchups
         assignmentState = localAssignmentState.copy()
         assignmentState.matchups.formUnion(previousMatchups)
-        for matchup in localAssignmentState.matchups {
-            remainingAvailableSlots.remove(matchup.slot)
+        localAssignmentState.matchups.forEach { matchup in
+            remainingAvailableSlots.removeMember(matchup.slot)
         }
         assignmentState.availableSlots = remainingAvailableSlots
         assignmentState.prioritizedEntries = remainingPrioritizedEntries
@@ -222,7 +222,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: Config.MatchupPairSet,
         localAssignmentState: inout AssignmentState<Config>,
         remainingPrioritizedEntries: inout Config.EntryIDSet,
         selectedEntries: inout Config.EntryIDSet,
@@ -259,7 +259,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: Config.MatchupPairSet,
         localAssignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
         remainingPrioritizedEntries: inout Config.EntryIDSet,

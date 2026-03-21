@@ -32,7 +32,7 @@ extension LeagueScheduleData {
         print("AssignSlots;selectAndAssignSlots;assignmentState.matchupDuration=\(assignmentState.matchupDuration);sameLocationIfB2B=\(sameLocationIfB2B);gameGap=\(gameGap);defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay)")
         #endif
 
-        assignmentState.recalculateAllRemainingAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAt: canPlayAt)
+        assignmentState.recalculateAllPossibleAllocations(day: day, entriesCount: entriesCount, gameGap: gameGap, canPlayAt: canPlayAt)
         if gameGap.min == 1 && gameGap.max == 1 && defaultMaxEntryMatchupsPerGameDay != 1 { // back 2 back
             return try assignSlotsB2B(canPlayAt: canPlayAt)
         }
@@ -87,9 +87,9 @@ extension LeagueScheduleData {
                 canPlayAt: canPlayAt
             ) else {
                 // failed to assign matchup, skip it for now
-                failedMatchupSelections[unchecked: assignmentIndex].insert(originalPair)
+                failedMatchupSelections[unchecked: assignmentIndex].insertMember(originalPair)
                 prioritizedMatchups.remove(originalPair)
-                assignmentState.availableMatchups.remove(originalPair)
+                assignmentState.availableMatchups.removeMember(originalPair)
                 continue
             }
             // successfully assigned pair
@@ -117,7 +117,7 @@ extension LeagueScheduleData {
                     availableMatchups: optimalAvailableMatchups
                 )
             }
-            assignmentState.availableMatchups.remove(originalPair)
+            assignmentState.availableMatchups.removeMember(originalPair)
         }
         return assignmentState.matchups.count == expectedMatchupsCount
     }
@@ -136,7 +136,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: Config.MatchupPairSet,
         assignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
@@ -155,14 +155,14 @@ extension LeagueScheduleData {
                 prioritizedMatchups.update(prioritizedEntries: assignmentState.prioritizedEntries, availableMatchups: assignmentState.availableMatchups)
             } else {
                 prioritizedMatchups.remove(selected)
-                assignmentState.availableMatchups.remove(selected)
+                assignmentState.availableMatchups.removeMember(selected)
             }
         }
         guard var pair else { return nil }
         pair.balanceHomeAway(assignmentState: assignmentState)
 
         #if LOG
-        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")
         #endif
         return assignmentState.assignMatchupPair(
             pair,
@@ -186,7 +186,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
-        allAvailableMatchups: Set<MatchupPair>,
+        allAvailableMatchups: Config.MatchupPairSet,
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
@@ -205,7 +205,7 @@ extension LeagueScheduleData {
         pair.balanceHomeAway(assignmentState: assignmentState)
 
         #if LOG
-        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);remainingAllocations[team1]=\(assignmentState.remainingAllocations[unchecked: pair.team1].map({ $0.description }));remainingAllocations[team2]=\(assignmentState.remainingAllocations[unchecked: pair.team2].map({ $0.description }))")
+        print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")
         #endif
         return assignmentState.assignMatchupPair(
             pair,

@@ -28,7 +28,7 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     var allowedDivisionCombinations:ContiguousArray<ContiguousArray<ContiguousArray<Int>>> = []
 
     /// - Usage: [`selection index` : `Set<previous failed scheduling attempt when selecting any of these matchup pairs>`]
-    var failedMatchupSelections:ContiguousArray<Set<MatchupPair>>
+    var failedMatchupSelections:ContiguousArray<Config.MatchupPairSet>
 
     var assignmentState:AssignmentState<Config>
     var prioritizeEarlierTimes:Bool
@@ -110,7 +110,7 @@ extension LeagueScheduleData {
         day: DayIndex,
         daySettings: GeneralSettings.Runtime<Config>,
         divisionEntries: ContiguousArray<Config.EntryIDSet>,
-        availableSlots: Set<AvailableSlot>,
+        availableSlots: Config.AvailableSlotSet,
         settings: borrowing RequestPayload.Runtime<Config>,
         generationData: inout LeagueGenerationData
     ) throws(LeagueError) {
@@ -124,12 +124,12 @@ extension LeagueScheduleData {
         self.prioritizeEarlierTimes = daySettings.prioritizeEarlierTimes
         self.gameGap = daySettings.gameGap.minMax
         self.sameLocationIfB2B = daySettings.sameLocationIfB2B
-        var availableMatchups = Set<MatchupPair>()
+        var availableMatchups = Config.MatchupPairSet()
         var prioritizedEntries = Config.EntryIDSet()
         prioritizedEntries.reserveCapacity(entriesCount)
         var entryCountsForDivision:ContiguousArray<Int> = .init(repeating: 0, count: divisionEntries.count)
         expectedMatchupsCount = 0
-        assignmentState.allDivisionMatchups = .init(repeating: [], count: divisionEntries.count)
+        assignmentState.allDivisionMatchups = .init(repeating: .init(), count: divisionEntries.count)
         for (divisionIndex, var entriesInDivision) in divisionEntries.enumerated() {
             if !entriesInDivision.isEmpty {
                 divisionRecurringDayLimitInterval[divisionIndex] = Self.recurringDayLimitInterval(
@@ -147,7 +147,7 @@ extension LeagueScheduleData {
                 #if LOG
                 print("LeagueScheduleData;newDay;day=\(day);expectedMatchupsCount=\(expectedMatchupsCount);divisionIndex=\(divisionIndex);entryCountsForDivision=\(entriesInDivision.count);divisionRecurringDayLimitInterval=\(divisionRecurringDayLimitInterval[divisionIndex])")
                 #endif
-                let availableDivisionMatchups = entriesInDivision.availableMatchupPairs(
+                let availableDivisionMatchups:Config.MatchupPairSet = entriesInDivision.availableMatchupPairs(
                     assignedEntryHomeAways: assignmentState.assignedEntryHomeAways,
                     maxSameOpponentMatchups: assignmentState.maxSameOpponentMatchups
                 )
@@ -167,21 +167,19 @@ extension LeagueScheduleData {
         default:
             break
         }
-        failedMatchupSelections = .init(repeating: Set(), count: expectedMatchupsCount)
+        failedMatchupSelections = .init(repeating: .init(), count: expectedMatchupsCount)
         assignmentState.allMatchups = availableMatchups
         assignmentState.availableMatchups = availableMatchups
         assignmentState.prioritizedEntries = prioritizedEntries
-        assignmentState.matchups = Set(minimumCapacity: availableSlots.count)
+        assignmentState.matchups = .init(minimumCapacity: availableSlots.count)
         for i in 0..<assignmentState.playsAt.count {
-            assignmentState.playsAt[unchecked: i].removeAll(keepingCapacity: true)
+            assignmentState.playsAt[unchecked: i].removeAllKeepingCapacity()
         }
-        for i in 0..<assignmentState.playsAtTimes.count {
-            assignmentState.playsAtTimes[unchecked: i].removeAllKeepingCapacity()
-        }
+        assignmentState.playsAtTimes.removeAllKeepingCapacity()
         for i in 0..<assignmentState.playsAtLocations.count {
             assignmentState.playsAtLocations[unchecked: i].removeAllKeepingCapacity()
         }
-        assignmentState.recalculateNewDayRemainingAllocations(entriesCount: entriesCount)
+        assignmentState.recalculateNewDayPossibleAllocations(entriesCount: entriesCount)
 
         #if LOG
         print("newDay;day=\(day);availableSlots=\(availableSlots.map({ $0.description }));defaultMaxEntryMatchupsPerGameDay=\(defaultMaxEntryMatchupsPerGameDay);expectedMatchupsCount=\(expectedMatchupsCount);availableMatchups.count=\(availableMatchups.count);allowedDivisionCombinations=\(allowedDivisionCombinations);numberOfAssignedMatchups=\(assignmentState.numberOfAssignedMatchups);maximumPlayableMatchups=\(assignmentState.maximumPlayableMatchups)")

@@ -14,7 +14,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     /// Remaining allocations allowed for a matchup pair, for a `DayIndex`.
     /// 
     /// - Usage: [`Entry.IDValue`: `the number of remaining allocations`]
-    var remainingAllocations:RemainingAllocations
+    var possibleAllocations:Config.PossibleAllocations
 
     /// When entries can play against each other again.
     /// 
@@ -45,27 +45,27 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled.
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:Config.MatchupPairSet
 
     var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:Config.AvailableSlotSet
     
-    var playsAt:PlaysAt
-    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAt:Config.PlaysAt
+    var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
     var playsAtLocations:ContiguousArray<Config.LocationSet>
 
     /// Available matchups that can be scheduled.
-    var matchups:Set<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory = [LeagueShuffleAction]()
 
@@ -80,7 +80,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,
@@ -111,7 +111,7 @@ struct AssignmentState<Config: ScheduleConfiguration>: Sendable, ~Copyable {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,
@@ -145,7 +145,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
 
     /// - Usage: [`Entry.IDValue`: `total number of matchups played so far in the schedule`]
     var numberOfAssignedMatchups:[Int]
-    var remainingAllocations:RemainingAllocations
+    var possibleAllocations:Config.PossibleAllocations
     var recurringDayLimits:RecurringDayLimits
     var assignedTimes:AssignedTimes
     var assignedLocations:AssignedLocations
@@ -168,25 +168,25 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
     var maxSameOpponentMatchups:MaximumSameOpponentMatchups
 
     /// All matchup pairs that can be scheduled
-    var allMatchups:Set<MatchupPair>
+    var allMatchups:Config.MatchupPairSet
 
     /// All matchup pairs that can be scheduled, grouped by division.
     /// 
     /// - Usage: [`Division.IDValue`: `available matchups`]
-    var allDivisionMatchups:ContiguousArray<Set<MatchupPair>>
+    var allDivisionMatchups:ContiguousArray<Config.MatchupPairSet>
 
     /// Remaining available matchup pairs that can be assigned for the `day`.
-    var availableMatchups:Set<MatchupPair>
+    var availableMatchups:Config.MatchupPairSet
 
     var prioritizedEntries:Config.EntryIDSet
 
     /// Remaining available slots that can be filled for the `day`.
-    var availableSlots:Set<AvailableSlot>
+    var availableSlots:Config.AvailableSlotSet
 
-    var playsAt:PlaysAt
-    var playsAtTimes:ContiguousArray<Config.TimeSet>
+    var playsAt:Config.PlaysAt
+    var playsAtTimes:PlaysAtTimesArray<Config.TimeSet>
     var playsAtLocations:ContiguousArray<Config.LocationSet>
-    var matchups:Set<Matchup>
+    var matchups:Config.MatchupSet
 
     var shuffleHistory:[LeagueShuffleAction]
 
@@ -201,7 +201,7 @@ struct AssignmentStateCopyable<Config: ScheduleConfiguration> {
             matchupDuration: matchupDuration,
             locationTravelDurations: locationTravelDurations,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
-            remainingAllocations: remainingAllocations,
+            possibleAllocations: possibleAllocations,
             recurringDayLimits: recurringDayLimits,
             assignedTimes: assignedTimes,
             assignedLocations: assignedLocations,

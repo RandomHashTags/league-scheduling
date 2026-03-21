@@ -81,8 +81,8 @@ extension RequestPayload.Runtime {
         let finalMaxLocations = maxLocations
         guard constraints.timeoutDelay > 0 else {
             return await withTaskGroup { group in
-                let settingsCopy = copy()
                 for (dow, scheduledEntries) in grouped {
+                    let settingsCopy = copy()
                     group.addTask {
                         return Self.generateSchedule(
                             dayOfWeek: dow,
@@ -108,8 +108,8 @@ extension RequestPayload.Runtime {
             resultCount: grouped.count,
             timeout: .seconds(constraints.timeoutDelay)
         ) { group in
-            let settingsCopy = copy()
             for (dow, scheduledEntries) in grouped {
+                let settingsCopy = copy()
                 group.addTask {
                     return Self.generateSchedule(
                         dayOfWeek: dow,
@@ -269,14 +269,18 @@ extension RequestPayload.Runtime {
                 } else {
                     #if LOG
                     print("failed to assign slots for day \(day)")
-                    generationData.schedule[unchecked: day] = data.assignmentState.matchups
+                    var set = Set<Matchup>(minimumCapacity: data.assignmentState.matchups.count)
+                    data.assignmentState.matchups.forEach { set.insert($0) } // TODO: optimize
+                    generationData.schedule[unchecked: day] = set
                     break;
                     #endif
                     
                     data.loadSnapshot(todayData)
                 }
             } else {
-                generationData.schedule[unchecked: day] = data.assignmentState.matchups
+                var set = Set<Matchup>(minimumCapacity: data.assignmentState.matchups.count)
+                data.assignmentState.matchups.forEach { set.insert($0) } // TODO: optimize
+                generationData.schedule[unchecked: day] = set
                 snapshots.append(todayData)
                 day += 1
                 gameDayRegenerationAttempt = 0

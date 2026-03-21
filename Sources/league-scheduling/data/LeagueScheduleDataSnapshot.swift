@@ -2,6 +2,7 @@
 import StaticDateTimes
 
 struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
+    let rng:Config.RNG
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<Division.IDValue>
@@ -32,6 +33,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     init(
+        rng: Config.RNG,
         maxStartingTimes: TimeIndex,
         startingTimes: [StaticTime],
         maxLocations: LocationIndex,
@@ -45,6 +47,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
         locationTravelDurations: [[MatchupDuration]],
         maxSameOpponentMatchups: MaximumSameOpponentMatchups
     ) {
+        self.rng = rng
         self.entriesPerMatchup = entriesPerMatchup
         self.entriesCount = entries.count
         self.gameGap = gameGap
@@ -103,6 +106,7 @@ struct LeagueScheduleDataSnapshot<Config: ScheduleConfiguration>: Sendable {
     @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     init(_ snapshot: borrowing LeagueScheduleData<Config>) {
+        rng = snapshot.rng
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions

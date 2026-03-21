@@ -78,7 +78,7 @@ extension LeagueScheduleData {
             }*/
             guard let originalPair = selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return false }
             var matchup = originalPair
-            matchup.balanceHomeAway(assignmentState: assignmentState)
+            matchup.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
             // successfully selected a matchup
             guard let _ = assignMatchupPair(
                 matchup,
@@ -137,6 +137,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator & Sendable,
         assignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
@@ -149,7 +150,7 @@ extension LeagueScheduleData {
             availableMatchups: assignmentState.availableMatchups
         )
         while pair == nil {
-            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups, rng: &rng) else { return nil }
             if !shouldSkipSelection(selected) {
                 pair = selected
                 prioritizedMatchups.update(prioritizedEntries: assignmentState.prioritizedEntries, availableMatchups: assignmentState.availableMatchups)
@@ -159,7 +160,7 @@ extension LeagueScheduleData {
             }
         }
         guard var pair else { return nil }
-        pair.balanceHomeAway(assignmentState: assignmentState)
+        pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
         print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")
@@ -187,6 +188,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator & Sendable,
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
@@ -198,11 +200,11 @@ extension LeagueScheduleData {
             availableMatchups: assignmentState.availableMatchups
         )
         while pair == nil {
-            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups) else { return nil }
+            guard let selected = assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups, rng: &rng) else { return nil }
             pair = selected
         }
         guard var pair else { return nil }
-        pair.balanceHomeAway(assignmentState: assignmentState)
+        pair.balanceHomeAway(rng: &rng, assignmentState: assignmentState)
 
         #if LOG
         print("AssignSlots;selectAndAssignMatchup;pair=\(pair);possibleAllocations[team1]=\(assignmentState.possibleAllocations[unchecked: pair.team1].map({ $0.description }));possibleAllocations[team2]=\(assignmentState.possibleAllocations[unchecked: pair.team2].map({ $0.description }))")

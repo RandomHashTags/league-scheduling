@@ -5,6 +5,7 @@ import StaticDateTimes
 /// Fundamental building block that keeps track of and enforces assignment rules when building the schedule.
 struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
     let clock = ContinuousClock()
+    var rng:Config.RNG
     let entriesPerMatchup:EntriesPerMatchup
     let entriesCount:Int
     let entryDivisions:ContiguousArray<Division.IDValue>
@@ -47,6 +48,7 @@ struct LeagueScheduleData<Config: ScheduleConfiguration>: Sendable, ~Copyable {
         snapshot: LeagueScheduleDataSnapshot<Config>
     ) {
         //locations = snapshot.locations
+        rng = snapshot.rng
         entriesPerMatchup = snapshot.entriesPerMatchup
         entriesCount = snapshot.entriesCount
         entryDivisions = snapshot.entryDivisions
@@ -72,6 +74,7 @@ extension LeagueScheduleData {
     #endif
     mutating func loadSnapshot(_ snapshot: LeagueScheduleDataSnapshot<Config>) {
         //locations = snapshot.locations
+        rng = snapshot.rng
         divisionRecurringDayLimitInterval = snapshot.divisionRecurringDayLimitInterval
         day = snapshot.day
         defaultMaxEntryMatchupsPerGameDay = snapshot.defaultMaxEntryMatchupsPerGameDay

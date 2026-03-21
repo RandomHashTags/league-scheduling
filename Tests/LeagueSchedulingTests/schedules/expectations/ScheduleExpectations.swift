@@ -55,7 +55,7 @@ extension ScheduleExpectations {
                 matchupsPerDay[unchecked: dayIndex] = UInt32(matchups.count)
 
                 var b2bMatchupsAtDifferentLocations = Set<ValidLeagueMatchup>()
-                var assignedSlots = [Config.AvailableSlotSet](repeating: [], count: entriesCount)
+                var assignedSlots = [Config.AvailableSlotSet](repeating: .init(), count: entriesCount)
                 for matchup in matchups {
                     let home = matchup.home
                     let away = matchup.away
@@ -70,8 +70,8 @@ extension ScheduleExpectations {
                     assignedEntryHomeAways[unchecked: home][unchecked: away].home += 1
                     assignedEntryHomeAways[unchecked: away][unchecked: home].away += 1
 
-                    assignedSlots[unchecked: home].insert(matchup.slot)
-                    assignedSlots[unchecked: away].insert(matchup.slot)
+                    assignedSlots[unchecked: home].insertMember(matchup.slot)
+                    assignedSlots[unchecked: away].insertMember(matchup.slot)
                     let homeSlots = assignedSlots[unchecked: home]
                     if homeSlots.count > 1 {
                         insertB2BSlotsAtDifferentLocations(
@@ -184,10 +184,10 @@ extension ScheduleExpectations {
     func insertB2BSlotsAtDifferentLocations(
         dayIndex: DayIndex,
         matchup: Matchup,
-        slots: Config.AvailableSlotSet,
+        slots: some SetOfAvailableSlots,
         b2bMatchupsAtDifferentLocations: inout Set<ValidLeagueMatchup>
     ) {
-        for slot in slots {
+        slots.forEach { slot in
             var b2bTimes = Set<TimeIndex>()
             if slot.time > 0 {
                 b2bTimes.insert(slot.time-1)
@@ -237,7 +237,7 @@ extension ScheduleExpectations {
 extension ScheduleExpectations {
     func printMatchups(
         day: Int,
-        _ matchups: Config.MatchupSet
+        _ matchups: Set<Matchup>
     ) {
         return
         let results:String = matchups.sorted(by: {

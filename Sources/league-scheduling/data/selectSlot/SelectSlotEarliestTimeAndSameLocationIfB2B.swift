@@ -33,7 +33,6 @@ struct SelectSlotEarliestTimeAndSameLocationIfB2B: SelectSlotProtocol, ~Copyable
         var nonBackToBackSlots = [AvailableSlot]()
         nonBackToBackSlots.reserveCapacity(playableSlots.count)
 
-        // TODO: fix | balancing of home/away can make the new home no longer play at home
         while !playableSlots.isEmpty, let targetSlot = SelectSlotNormal.select(
             team1Times: team1Times,
             team1Locations: team1Locations,

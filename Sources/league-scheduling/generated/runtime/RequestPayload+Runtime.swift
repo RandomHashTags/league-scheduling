@@ -2,6 +2,8 @@
 extension RequestPayload {
     /// For optimal runtime performance.
     struct Runtime<Config: ScheduleConfiguration>: Sendable, ~Copyable {
+        var rng:Config.RNG
+
         let constraints:GenerationConstraints
 
         /// Number of days where games are played.
@@ -26,6 +28,7 @@ extension RequestPayload {
         @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
         #endif
         init(
+            rng: Config.RNG,
             constraints: GenerationConstraints,
             gameDays: DayIndex,
             divisions: [Config.DivisionRuntime],
@@ -33,6 +36,7 @@ extension RequestPayload {
             general: GeneralSettings.Runtime<Config>,
             daySettings: [GeneralSettings.Runtime<Config>]
         ) {
+            self.rng = rng
             self.constraints = constraints
             self.gameDays = gameDays
             self.divisions = divisions
@@ -42,7 +46,7 @@ extension RequestPayload {
         }
 
         func copy() -> Self {
-            .init(constraints: constraints, gameDays: gameDays, divisions: divisions, entries: entries, general: general, daySettings: daySettings)
+            .init(rng: rng, constraints: constraints, gameDays: gameDays, divisions: divisions, entries: entries, general: general, daySettings: daySettings)
         }
 
         func redistributionSettings(for day: DayIndex) -> LitLeagues_Leagues_RedistributionSettings? {

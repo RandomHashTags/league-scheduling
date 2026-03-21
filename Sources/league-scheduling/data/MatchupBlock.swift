@@ -18,6 +18,7 @@ extension LeagueScheduleData {
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                rng: &rng,
                 assignmentState: &assignmentState,
                 selectSlot: SelectSlotB2B(entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay),
                 canPlayAt: canPlayAt
@@ -33,6 +34,7 @@ extension LeagueScheduleData {
                 gameGap: gameGap,
                 entryMatchupsPerGameDay: defaultMaxEntryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
+                rng: &rng,
                 assignmentState: &assignmentState,
                 selectSlot: SelectSlotNormal(),
                 canPlayAt: canPlayAt
@@ -53,6 +55,7 @@ extension LeagueScheduleData {
         gameGap: GameGap.TupleValue,
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
+        rng: inout some RandomNumberGenerator & Sendable,
         assignmentState: inout AssignmentState<Config>,
         selectSlot: borrowing some SelectSlotProtocol & ~Copyable,
         canPlayAt: borrowing some CanPlayAtProtocol & ~Copyable
@@ -86,6 +89,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
+            rng: &rng,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: { _ in false },
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
@@ -113,6 +117,7 @@ extension LeagueScheduleData {
                 entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                 divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                 allAvailableMatchups: localAssignmentState.availableMatchups,
+                rng: &rng,
                 localAssignmentState: &localAssignmentState,
                 remainingPrioritizedEntries: &remainingPrioritizedEntries,
                 selectedEntries: &selectedEntries,
@@ -153,6 +158,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: localAssignmentState.availableMatchups,
+            rng: &rng,
             localAssignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
             remainingPrioritizedEntries: &remainingPrioritizedEntries,
@@ -161,7 +167,7 @@ extension LeagueScheduleData {
             canPlayAt: canPlayAt
         ) else { return nil }
         // last matchup was successfully assigned; continue
-        if var time = adjacentTimes.randomElement() { // TODO: pick an adjacent time that needs to be prioritized over others
+        if var time = adjacentTimes.randomElement(using: &rng) { // TODO: pick an adjacent time that needs to be prioritized over others
             // assign matchups from previously scheduled entries until they have played all their games
             localAssignmentState.availableMatchups = localAssignmentState.availableMatchups.filter {
                 selectedEntries.contains($0.team1) && selectedEntries.contains($0.team2)
@@ -185,6 +191,7 @@ extension LeagueScheduleData {
                         entryMatchupsPerGameDay: entryMatchupsPerGameDay,
                         divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
                         allAvailableMatchups: localAssignmentState.availableMatchups,
+                        rng: &rng,
                         assignmentState: &localAssignmentState,
                         selectSlot: selectSlot,
                         canPlayAt: canPlayAt
@@ -194,7 +201,7 @@ extension LeagueScheduleData {
                 #if LOG
                 print("assignBlockOfMatchups;j=\(j);finished time \(time)")
                 #endif
-                if let nextTime = adjacentTimes.randomElement() {
+                if let nextTime = adjacentTimes.randomElement(using: &rng) {
                     time = nextTime
                 }
             }
@@ -223,6 +230,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator & Sendable,
         localAssignmentState: inout AssignmentState<Config>,
         remainingPrioritizedEntries: inout Config.EntryIDSet,
         selectedEntries: inout Config.EntryIDSet,
@@ -238,6 +246,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
+            rng: &rng,
             assignmentState: &localAssignmentState,
             selectSlot: selectSlot,
             canPlayAt: canPlayAt
@@ -260,6 +269,7 @@ extension LeagueScheduleData {
         entryMatchupsPerGameDay: EntryMatchupsPerGameDay,
         divisionRecurringDayLimitInterval: ContiguousArray<RecurringDayLimitInterval>,
         allAvailableMatchups: Config.MatchupPairSet,
+        rng: inout some RandomNumberGenerator & Sendable,
         localAssignmentState: inout AssignmentState<Config>,
         shouldSkipSelection: (MatchupPair) -> Bool,
         remainingPrioritizedEntries: inout Config.EntryIDSet,
@@ -276,6 +286,7 @@ extension LeagueScheduleData {
             entryMatchupsPerGameDay: entryMatchupsPerGameDay,
             divisionRecurringDayLimitInterval: divisionRecurringDayLimitInterval,
             allAvailableMatchups: allAvailableMatchups,
+            rng: &rng,
             assignmentState: &localAssignmentState,
             shouldSkipSelection: shouldSkipSelection,
             selectSlot: selectSlot,

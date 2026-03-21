@@ -11,7 +11,7 @@ struct CanPlayAtTests {
         let locations = 3
 
         var gameGap = GameGap.upTo(1).minMax
-        var playsAt:PlaysAt.Element = []
+        var playsAt:Set<AvailableSlot> = []
         var playsAtTimes:BitSet64<TimeIndex> = .init()
         var timeNumbers:AssignedTimes.Element = .init(repeating: 0, count: times)
         var locationNumbers:AssignedLocations.Element = .init(repeating: 0, count: locations)
@@ -98,7 +98,7 @@ extension CanPlayAtTests {
         ]
         var time:TimeIndex = 0
         var location:LocationIndex = 0
-        var playsAt:Config.AvailableSlotSet = []
+        var playsAt:Set<AvailableSlot> = []
         var gameGap = GameGap.upTo(5).minMax
         
         #expect(CanPlayAtWithTravelDurations.test(

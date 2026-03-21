@@ -2,21 +2,23 @@
 // MARK: Select matchup
 extension LeagueScheduleData {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
-    func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
-        return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups)
+    mutating func selectMatchup(prioritizedMatchups: borrowing PrioritizedMatchups<Config>) -> MatchupPair? {
+        return assignmentState.selectMatchup(prioritizedMatchups: prioritizedMatchups, rng: &rng)
     }
 }
 
 extension AssignmentState {
     /// - Returns: Matchup pair that should be prioritized to be scheduled due to how many allocations it has remaining.
     func selectMatchup(
-        prioritizedMatchups: borrowing PrioritizedMatchups<Config>
+        prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
+        rng: inout some RandomNumberGenerator & Sendable
     ) -> MatchupPair? {
         return Self.selectMatchup(
             prioritizedMatchups: prioritizedMatchups,
             numberOfAssignedMatchups: numberOfAssignedMatchups,
             recurringDayLimits: recurringDayLimits,
-            possibleAllocations: possibleAllocations
+            possibleAllocations: possibleAllocations,
+            rng: &rng
         )
     }
 
@@ -25,7 +27,8 @@ extension AssignmentState {
         prioritizedMatchups: borrowing PrioritizedMatchups<Config>,
         numberOfAssignedMatchups: [Int],
         recurringDayLimits: RecurringDayLimits,
-        possibleAllocations: Config.PossibleAllocations
+        possibleAllocations: Config.PossibleAllocations,
+        rng: inout some RandomNumberGenerator & Sendable
     ) -> MatchupPair? {
         #if LOG
         print("SelectMatchup;selectMatchup;prioritizedMatchups.count=\(prioritizedMatchups.matchups.count);availableMatchupCountForEntry=\(prioritizedMatchups.availableMatchupCountForEntry)")
@@ -158,7 +161,7 @@ extension AssignmentState {
         #if LOG
         print("SelectMatchup;selectMatchup;selected.pair=\(selected.pair.description);pool=\(pool.map({ $0.description }))")
         #endif
-        return pool.isEmpty ? selected.pair : pool.randomElement()
+        return pool.isEmpty ? selected?.pair : pool.randomElement(using: &rng)
     }
 }
 

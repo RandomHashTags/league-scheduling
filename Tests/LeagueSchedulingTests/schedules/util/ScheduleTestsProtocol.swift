@@ -4,7 +4,18 @@ import struct FoundationEssentials.Date
 import StaticDateTimes
 
 protocol ScheduleTestsProtocol: ScheduleExpectations {
-    typealias UnitTestScheduleConfig = ScheduleConfig<BitSet64<DayIndex>, BitSet64<TimeIndex>, BitSet64<LocationIndex>, BitSet64<Entry.IDValue>>
+    typealias UnitTestScheduleConfig = ScheduleConfig<
+        SystemRandomNumberGenerator,
+        BitSet64<DayIndex>,
+        BitSet64<TimeIndex>,
+        BitSet64<LocationIndex>,
+        BitSet64<Entry.IDValue>,
+        Set<AvailableSlot>,
+        Set<MatchupPair>,
+        Set<Matchup>,
+        Set<RedistributableMatchup>,
+        Set<FlippableMatchup>
+    >
     typealias UnitTestRuntimeSchedule = RequestPayload.Runtime<UnitTestScheduleConfig>
 }
 
@@ -132,6 +143,7 @@ extension ScheduleTestsProtocol {
             daySettings.append(settings)
         }
         return .init(
+            rng: .init(),
             constraints: constraints,
             gameDays: gameDays,
             divisions: divisions,

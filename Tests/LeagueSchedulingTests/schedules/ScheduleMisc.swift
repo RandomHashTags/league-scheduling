@@ -116,7 +116,7 @@ extension ScheduleMisc {
             balanceHomeAway: true,
             balanceTimeStrictness: .normal,
             balanceLocationStrictness: .normal,
-            gameGaps: .upTo(1), // TODO: fails if we try b2b
+            gameGaps: .no,
             divisions: [
                 try Self.getDivision(dayOfWeek: .saturday, values: (gameDays, maxEntryMatchupsPerGameDay, teams))
             ],

@@ -1,4 +1,5 @@
 
+import OrderedCollections
 import StaticDateTimes
 
 // MARK: Generate
@@ -64,7 +65,7 @@ extension RequestPayload {
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: (
+                (
                     BitSet64<DayIndex>,
                     BitSet64<TimeIndex>,
                     BitSet64<LocationIndex>,
@@ -76,7 +77,7 @@ extension RequestPayload {
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: (
+                (
                     BitSet128<DayIndex>,
                     BitSet128<TimeIndex>,
                     BitSet128<LocationIndex>,
@@ -84,15 +85,28 @@ extension RequestPayload {
                 ).self
             )
         } else {
+            guard generationConstraints.hasDeterminism else {
+                return try await generate(
+                    defaultGameGap: defaultGameGap,
+                    divisionsCount: divisionsCount,
+                    startingDayOfWeek: startingDayOfWeek,
+                    (
+                        Set<DayIndex>,
+                        Set<TimeIndex>,
+                        Set<LocationIndex>,
+                        Set<Entry.IDValue>
+                    ).self
+                )
+            }
             return try await generate(
                 defaultGameGap: defaultGameGap,
                 divisionsCount: divisionsCount,
                 startingDayOfWeek: startingDayOfWeek,
-                c: (
-                    Set<DayIndex>,
-                    Set<TimeIndex>,
-                    Set<LocationIndex>,
-                    Set<Entry.IDValue>
+                (
+                    OrderedSet<DayIndex>,
+                    OrderedSet<TimeIndex>,
+                    OrderedSet<LocationIndex>,
+                    OrderedSet<Entry.IDValue>
                 ).self
             )
         }
@@ -100,11 +114,21 @@ extension RequestPayload {
 }
 
 extension RequestPayload {
-    private func generate<DaySet: SetOfDayIndexes, TimeSet: SetOfTimeIndexes, LocationSet: SetOfLocationIndexes, EntryIDSet: SetOfEntryIDs>(
+    private func generate<
+            DaySet: SetOfDayIndexes,
+            TimeSet: SetOfTimeIndexes,
+            LocationSet: SetOfLocationIndexes,
+            EntryIDSet: SetOfEntryIDs
+        >(
         defaultGameGap: GameGap,
         divisionsCount: Int,
         startingDayOfWeek: DayOfWeek,
-        c: (DaySet, TimeSet, LocationSet, EntryIDSet).Type
+        _ c: (
+            DaySet,
+            TimeSet,
+            LocationSet,
+            EntryIDSet
+        ).Type
     ) async throws(LeagueError) -> LeagueGenerationResult {
         let divisionDefaults:DivisionDefaults<DaySet, TimeSet, LocationSet> = loadDivisionDefaults(divisionsCount: divisionsCount)
         var teamsForDivision = [Int](repeating: 0, count: divisionsCount)
@@ -122,14 +146,69 @@ extension RequestPayload {
             fallbackDayOfWeek: startingDayOfWeek,
             teamsForDivision: teamsForDivision
         )
+        guard generationConstraints.hasDeterminism else {
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                entries: entries,
+                divisions: divisions,
+                rng: SystemRandomNumberGenerator(),
+                ScheduleConfig<
+                    SystemRandomNumberGenerator,
+                    DaySet,
+                    TimeSet,
+                    LocationSet,
+                    EntryIDSet,
+                    Set<AvailableSlot>,
+                    Set<MatchupPair>,
+                    Set<Matchup>,
+                    Set<RedistributableMatchup>,
+                    Set<FlippableMatchup>
+                >.self
+            )
+        }
+        switch generationConstraints.determinism.technique {
+        default:
+            let seed = generationConstraints.determinism.hasSeed ? generationConstraints.determinism.seed : 1
+            let multiplier = generationConstraints.determinism.hasMultiplier ? generationConstraints.determinism.multiplier : 6364136223846793005
+            let increment = generationConstraints.determinism.hasIncrement ? generationConstraints.determinism.increment : 1442695040888963407
+            return try await generate(
+                defaultGameGap: defaultGameGap,
+                entries: entries,
+                divisions: divisions,
+                rng: LCG(
+                    seed: seed,
+                    multiplier: multiplier,
+                    increment: increment
+                ),
+                ScheduleConfig<
+                    LCG,
+                    DaySet,
+                    TimeSet,
+                    LocationSet,
+                    EntryIDSet,
+                    OrderedSet<AvailableSlot>,
+                    OrderedSet<MatchupPair>,
+                    OrderedSet<Matchup>,
+                    OrderedSet<RedistributableMatchup>,
+                    OrderedSet<FlippableMatchup>
+                >.self
+            )
+        }
+    }
+    private func generate<Config: ScheduleConfiguration>(
+        defaultGameGap: GameGap,
+        entries: [Entry.Runtime<Config.DaySet, Config.TimeSet, Config.LocationSet>],
+        divisions: [Division.Runtime<Config.DaySet>],
+        rng: Config.RNG,
+        _ c: Config.Type
+    ) async throws(LeagueError) -> LeagueGenerationResult {
         let correctMaximumPlayableMatchups = Self.calculateMaximumPlayableMatchups(
             gameDays: gameDays,
             entryMatchupsPerGameDay: settings.entryMatchupsPerGameDay,
             teamsCount: entries.count,
             maximumPlayableMatchups: settings.maximumPlayableMatchups.array
         )
-
-        let timesSet = TimeSet(0..<settings.timeSlots)
+        let timesSet = Config.TimeSet(0..<settings.timeSlots)
         var defaultTimeExclusivities = Array(repeating: timesSet, count: settings.locations)
         if settings.hasLocationTimeExclusivities {
             for (location, exclusivities) in settings.locationTimeExclusivities.locations.enumerated() {
@@ -146,37 +225,24 @@ extension RequestPayload {
                 }
             }
         }
-        var balancedTimes:TimeSet
-        var balancedLocations:LocationSet
+        var balancedTimes:Config.TimeSet
+        var balancedLocations:Config.LocationSet
         if settings.balanceTimeStrictness != .lenient {
             balancedTimes = timesSet
         } else {
             balancedTimes = .init()
         }
         if settings.balanceLocationStrictness != .lenient {
-            balancedLocations = LocationSet(0..<settings.locations)
+            balancedLocations = Config.LocationSet(0..<settings.locations)
         } else {
             balancedLocations = .init()
         }
-        // TODO: fix
         return try await generate(
+            rng: rng,
             divisions: divisions,
             entries: entries,
             correctMaximumPlayableMatchups: correctMaximumPlayableMatchups,
-            general: GeneralSettings.Runtime<
-                    ScheduleConfig<
-                        SystemRandomNumberGenerator,
-                        DaySet,
-                        TimeSet,
-                        LocationSet,
-                        EntryIDSet,
-                        Set<AvailableSlot>,
-                        Set<MatchupPair>,
-                        Set<Matchup>,
-                        Set<RedistributableMatchup>,
-                        Set<FlippableMatchup>
-                    >
-                >(
+            general: GeneralSettings.Runtime<Config>(
                 gameGap: defaultGameGap,
                 timeSlots: settings.timeSlots,
                 startingTimes: settings.startingTimes.times,
@@ -204,6 +270,7 @@ extension RequestPayload {
     @_specialize(where Config == ScheduleConfig<Set<DayIndex>, Set<TimeIndex>, Set<LocationIndex>, Set<Entry.IDValue>>)
     #endif
     private func generate<Config: ScheduleConfiguration>(
+        rng: Config.RNG,
         divisions: [Config.DivisionRuntime],
         entries: [Config.EntryRuntime],
         correctMaximumPlayableMatchups: [UInt32],
@@ -231,6 +298,7 @@ extension RequestPayload {
             }
         }
         let runtime = RequestPayload.Runtime(
+            rng: rng,
             constraints: constraints,
             gameDays: gameDays,
             divisions: divisions,
